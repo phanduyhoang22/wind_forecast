@@ -26,7 +26,7 @@ Mục mới thêm ở **đầu** mỗi phần. Kế hoạch tổng thể: [`Ke_h
 
 | Ngày | Quyết định | Lý do |
 |---|---|---|
-| 08/11/2026 | Dùng kernel CUDA chính thức `mamba-ssm` (selective_scan) cho Mamba trên GPU | Đề tài lấy Mamba làm trọng tâm; kernel gốc của Gu & Dao vừa nhanh vừa đứng vững trước reviewer. Không có wheel sẵn cho torch 2.14/CUDA 13 → tự build chỉ cho T4 (sm_75) |
+| 08/11/2026 | Dùng kernel CUDA chính thức `mamba-ssm` (selective_scan) cho Mamba trên GPU — **đã chạy** | Đề tài lấy Mamba làm trọng tâm; kernel gốc của Gu & Dao vừa nhanh vừa đứng vững trước reviewer. Không có wheel cho torch 2.14/CUDA 13 → tự build `csrc/selective_scan` chỉ cho T4 (sm_75), C++20, 24 phút. Khớp bản tham chiếu: forward 2,7e-7, gradient 7e-7. Tốc độ: **18 ms/batch** (PyTorch+compile 168, PyTorch thuần 630, LSTM 14). File `.so` lưu ở `Drive/WIND_FORECAST_DATA/kernels/` |
 | 08/11/2026 | `torch.compile` cho selective scan khi chạy GPU (bản PyTorch) | Nhanh ~3,5× (295 → 85 s/epoch), lệch so với bản gốc 6e-8 |
 | 08/11/2026 | RF chạy trên máy (CPU), các mô hình mạng nơ-ron chạy trên Colab (GPU T4) | RF không cần GPU; ~40 s/lượt trên i5-13500H |
 | 08/11/2026 | Thêm baseline PatchTST và DLinear | Bài S-Mamba (Neurocomputing 2025) và ECTO (arXiv 2026) dùng chúng; DLinear có thể thua persistence → cần có trong bảng |
@@ -65,6 +65,10 @@ Mục mới thêm ở **đầu** mỗi phần. Kế hoạch tổng thể: [`Ke_h
 - Lần chạy RF đầu chết: PowerShell `*>` làm hết bộ nhớ → chạy qua Bash.
 - RF hết RAM ở lượt 16/20 → chạy tiếp, script tự bỏ qua lượt đã xong.
 - Mamba bản PyTorch thuần chậm (295 s/epoch, gấp ~30× LSTM) → compile, rồi build kernel `mamba-ssm`.
+- Build `mamba-ssm` lỗi 2 lần: thiếu `ninja`; header torch 2.14 cần C++20 (mamba-ssm dùng C++17). Lần 3 thành công.
+- Pilot khởi động lại 2 lần (thêm compile, rồi thêm kernel); các lượt đã xong được giữ nguyên nhờ cơ chế bỏ qua.
+
+**Cách dùng kernel ở phiên Colab mới:** chép `Drive/WIND_FORECAST_DATA/kernels/selective_scan_cuda_sm75_torch2.14.1.so` thành `/content/ss_build/selective_scan_cuda.so`, chạy script với `PYTHONPATH=/content/ss_build`. Nếu Colab đổi phiên bản torch thì phải build lại (ô build trong notebook).
 
 ---
 
@@ -104,9 +108,10 @@ Skill so với persistence: A 16–28%, B 13–22%, C 17–34%, **D chỉ 5–7%
 
 ## 6. Việc còn mở
 
-- [ ] Build xong `mamba-ssm` selective_scan cho T4, kiểm tra khớp bản PyTorch, tích hợp vào `06_models.py`
+- [x] Build `mamba-ssm` selective_scan cho T4, kiểm tra khớp, tích hợp vào `06_models.py`
 - [ ] Pilot xong → họp agents → chốt chạy đủ 5 seed
-- [ ] Sửa ô đồng bộ Drive để chép cả `results/preds/` và `results/models/`
+- [x] Sửa ô đồng bộ Drive để chép cả `results/preds/` và `results/models/`
+- [ ] Đưa bước nạp kernel vào `notebooks/benchmark_colab.ipynb`
 - [ ] Chạy đủ 5 seed (E1), rồi `08` (bảng + DM)
 - [ ] LOSO (E3), SHAP (E4–E5), conformal (E6)
 - [ ] Viết lại bản thảo: nguồn dữ liệu, horizon, Table 1–8
