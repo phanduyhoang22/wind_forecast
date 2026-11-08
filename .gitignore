@@ -1,0 +1,11 @@
+data_raw/
+*.pt
+__pycache__/
+# data_v2: CSV 52 MB/tram -> chi commit ban .npz (cung noi dung, nho hon 5x)
+data_v2/*.csv
+!data_v2/_summary_table1.csv
+# ket qua dang chay / log cuc bo
+results/*.log
+results/runs_rf.csv
+# cau hinh may ca nhan
+.mcp.json
