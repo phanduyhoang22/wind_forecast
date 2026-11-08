@@ -183,6 +183,17 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     p = np.vstack(preds)
     y_pred = d.scaler_y.inverse(p.reshape(-1, 1)).reshape(p.shape)
 
+    if save_path and hasattr(d.scaler_y, "lo") and np.ndim(d.scaler_y.lo) == 1:
+        # Du doan tap val -> 11_conformal.py hieu chinh khoang du bao tren day
+        vp = []
+        with torch.no_grad():
+            for xb, _ in va:
+                with torch.amp.autocast("cuda", enabled=amp):
+                    vp.append(model(xb.to(dev)).float().cpu().numpy())
+        vp = np.vstack(vp)
+        np.savez_compressed(save_path[:-3] + "_val.npz",
+                            y_pred=d.scaler_y.inverse(vp.reshape(-1, 1)).reshape(vp.shape))
+
     return y_pred, dict(train_s=train_s, latency_ms=float(np.median(lat)),
                         params=mo.count_params(model), epochs=ep, best_epoch=best_ep)
 
@@ -214,7 +225,7 @@ def main():
     if os.path.exists(args.out):                       # cho phep chay tiep
         prev = pd.read_csv(args.out)
         done = set(zip(prev.site, prev.model, prev.seed))
-        print("Da co {} luot chay truoc, se bo qua.\n".format(len(done) // len(dp.HORIZONS)))
+        print("Da co {} luot chay truoc, se bo qua.\n".format(len(done)))
 
     rows = []
     total = len(sites) * len(models) * args.seeds
