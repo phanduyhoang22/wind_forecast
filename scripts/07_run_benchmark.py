@@ -65,7 +65,7 @@ def run_rf(d, seed, n_estimators=500, max_depth=16, **_):
 
 
 def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
-           weight_decay=0.01, device=None, max_batches=0, **kw):
+           weight_decay=0.01, device=None, max_batches=0, save_path=None, **kw):
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
@@ -158,6 +158,8 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
 
     model.load_state_dict(state)
     model.eval()
+    if save_path:                                   # 10_shap.py can trong so da train
+        torch.save(state, save_path)
 
     # Do do tre tren CPU, batch 1 -- dieu kien trien khai bien
     cpu_model = mo.build(name, d.n_features, len(d.horizons), **kw)
@@ -203,6 +205,8 @@ def main():
     args = ap.parse_args()
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    mdir = os.path.join(os.path.dirname(args.out), "models")
+    os.makedirs(mdir, exist_ok=True)
     sites = [s.strip().upper() for s in args.sites.split(",")]
     models = [m.strip() for m in args.models.split(",")]
 
@@ -231,7 +235,8 @@ def main():
                     y_pred, info = run_nn(
                         d, seed, name, epochs=args.epochs, patience=args.patience,
                         batch_size=args.batch_size, device=args.device,
-                        max_batches=args.max_batches)
+                        max_batches=args.max_batches,
+                        save_path=os.path.join(mdir, "{}_{}_{}.pt".format(site, name, seed)))
                 m = dp.metrics(d.y_raw[d.idx_test], y_pred)
 
                 # Luu du doan tung mau -> 08 can cho kiem dinh Diebold-Mariano
