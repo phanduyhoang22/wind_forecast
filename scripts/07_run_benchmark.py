@@ -97,6 +97,12 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     te = DataLoader(W(d.idx_test), batch_size=256, shuffle=False, pin_memory=pin)
 
     model = mo.build(name, d.n_features, len(d.horizons), **kw).to(dev)
+    if dev.type == "cuda":
+        # Selective scan la chuoi phep toan tung phan tu -> compile gop kernel, nhanh ~3.5x tren T4.
+        # Khong doi toan hoc, khong doi state_dict; latency CPU van do tren ban eager.
+        for blk in getattr(model, "layers", []):
+            if hasattr(blk, "ssm"):
+                blk.ssm = torch.compile(blk.ssm)
     opt = torch.optim.AdamW(mo.param_groups(model, weight_decay), lr=lr)
     sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", patience=3, factor=0.5)
     lossf = nn.MSELoss()
@@ -227,6 +233,12 @@ def main():
                         batch_size=args.batch_size, device=args.device,
                         max_batches=args.max_batches)
                 m = dp.metrics(d.y_raw[d.idx_test], y_pred)
+
+                # Luu du doan tung mau -> 08 can cho kiem dinh Diebold-Mariano
+                pdir = os.path.join(os.path.dirname(args.out), "preds")
+                os.makedirs(pdir, exist_ok=True)
+                np.savez_compressed(os.path.join(pdir, "{}_{}_{}.npz".format(site, name, seed)),
+                                    y_pred=y_pred.astype(np.float32))
 
                 for h, r in m.iterrows():
                     rows.append(dict(site=site, model=name, seed=seed, horizon=h,

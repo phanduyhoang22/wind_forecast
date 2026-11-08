@@ -1,0 +1,167 @@
+"""
+Tong hop ket qua benchmark -> bang cho bai bao.
+
+Doc results/runs*.csv (+ baselines.csv, preds/) va ghi:
+    results/summary_by_site.csv   mean +- std theo model x tram x horizon, kem skill score
+    results/summary_overall.csv   trung binh 4 tram (Table 4)
+    results/summary_cost.csv      tham so, thoi gian train, latency (Table 6)
+    results/dm_tests.csv          Diebold-Mariano: Mamba vs tung model, theo tram x horizon
+
+Skill score = 1 - RMSE_model / RMSE_persistence. SS > 0 nghia la vuot persistence.
+
+    py scripts/08_aggregate.py                      # runs.csv + runs_rf.csv
+    py scripts/08_aggregate.py --runs results/pilot.csv results/runs_rf.csv
+    py scripts/08_aggregate.py --selftest
+"""
+
+import argparse
+import glob
+import importlib.util
+import math
+import os
+
+import numpy as np
+import pandas as pd
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+RESULTS = os.path.join(os.path.dirname(HERE), "results")
+REF = "Mamba"
+
+
+def _load(mod, path):
+    spec = importlib.util.spec_from_file_location(mod, os.path.join(HERE, path))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def dm_test(e1, e2, h):
+    """Diebold-Mariano voi sai so binh phuong, phuong sai Newey-West (lag h-1)
+    va hieu chinh mau nho Harvey-Leybourne-Newbold.
+    d = e1^2 - e2^2. stat < 0 nghia la model 1 tot hon. Tra ve (stat, p hai phia)."""
+    d = e1 ** 2 - e2 ** 2
+    n = len(d)
+    dc = d - d.mean()
+    var = np.dot(dc, dc) / n
+    for k in range(1, h):
+        var += 2 * (1 - k / h) * np.dot(dc[k:], dc[:-k]) / n
+    if var <= 0:
+        return float("nan"), float("nan")
+    stat = d.mean() / math.sqrt(var / n)
+    stat *= math.sqrt((n + 1 - 2 * h + h * (h - 1) / n) / n)     # HLN
+    p = math.erfc(abs(stat) / math.sqrt(2))                       # ~ N(0,1) voi n lon
+    return float(stat), float(p)
+
+
+def summarize(runs, base):
+    pers = base[base.model == "persistence"].set_index(["site", "horizon"]).RMSE
+    g = runs.groupby(["model", "site", "horizon"])
+    by_site = g[["RMSE", "MAE", "R2"]].agg(["mean", "std"])
+    by_site.columns = ["_".join(c) for c in by_site.columns]
+    by_site["n_seeds"] = g.seed.nunique()
+    by_site = by_site.reset_index()
+    by_site["skill"] = 1 - by_site.RMSE_mean / [pers[(s, h)] for s, h in zip(by_site.site, by_site.horizon)]
+
+    # Trung binh 4 tram: lay trung binh theo tram trong tung seed, roi mean/std qua seed
+    per_seed = runs.groupby(["model", "horizon", "seed"])[["RMSE", "MAE", "R2"]].mean()
+    overall = per_seed.groupby(["model", "horizon"]).agg(["mean", "std"])
+    overall.columns = ["_".join(c) for c in overall.columns]
+    overall = overall.reset_index()
+    sk = by_site.groupby(["model", "horizon"]).skill.mean().rename("skill_avg")
+    overall = overall.merge(sk.reset_index(), on=["model", "horizon"])
+
+    cost = (runs.drop_duplicates(["model", "site", "seed"])
+            .groupby("model")[["params", "train_s", "latency_ms", "best_epoch"]]
+            .agg(["mean", "std"]))
+    cost.columns = ["_".join(c) for c in cost.columns]
+    return by_site, overall, cost.reset_index()
+
+
+def dm_all(runs, pred_dir, dp):
+    """So Mamba voi tung model, dung du doan trung binh qua cac seed."""
+    rows = []
+    if not os.path.isdir(pred_dir) or REF not in set(runs.model):
+        return pd.DataFrame(rows)
+    for site in sorted(runs.site.unique()):
+        d = dp.load_site(site)
+        y = d.y_raw[d.idx_test]
+
+        def ens(model):
+            fs = sorted(glob.glob(os.path.join(pred_dir, "{}_{}_*.npz".format(site, model))))
+            return np.mean([np.load(f)["y_pred"] for f in fs], axis=0) if fs else None
+
+        ref = ens(REF)
+        if ref is None:
+            continue
+        for other in sorted(set(runs.model) - {REF}):
+            p = ens(other)
+            if p is None:
+                continue
+            for j, (k, lab) in enumerate(dp.HORIZONS):
+                stat, pv = dm_test(y[:, j] - ref[:, j], y[:, j] - p[:, j], k)
+                rows.append(dict(site=site, horizon=lab, vs=other, dm_stat=stat, p_value=pv,
+                                 mamba_better=bool(stat < 0 and pv < 0.05)))
+    return pd.DataFrame(rows)
+
+
+def _selftest():
+    rng = np.random.default_rng(0)
+    y = rng.normal(size=5000)
+    a = y + rng.normal(scale=0.5, size=5000)
+    b = y + rng.normal(scale=0.5, size=5000)
+    s, p = dm_test(y - a, y - b, 4)
+    assert p > 0.01, ("hai du bao ngang nhau ma DM bao khac", s, p)
+    c = y + rng.normal(scale=1.0, size=5000)
+    s, p = dm_test(y - a, y - c, 4)
+    assert s < 0 and p < 1e-6, ("a tot hon ro rang ma DM khong bat duoc", s, p)
+    print("selftest DM: dat")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", nargs="+", default=None)
+    ap.add_argument("--selftest", action="store_true")
+    args = ap.parse_args()
+    if args.selftest:
+        _selftest()
+        return
+
+    paths = args.runs or [p for p in (os.path.join(RESULTS, "runs.csv"),
+                                      os.path.join(RESULTS, "runs_rf.csv")) if os.path.exists(p)]
+    runs = pd.concat([pd.read_csv(p) for p in paths], ignore_index=True)
+    base = pd.read_csv(os.path.join(RESULTS, "baselines.csv"))
+    print("Doc:", ", ".join(os.path.basename(p) for p in paths),
+          "| {} luot".format(len(runs.drop_duplicates(["site", "model", "seed"]))))
+
+    by_site, overall, cost = summarize(runs, base)
+    by_site.to_csv(os.path.join(RESULTS, "summary_by_site.csv"), index=False)
+    overall.to_csv(os.path.join(RESULTS, "summary_overall.csv"), index=False)
+    cost.to_csv(os.path.join(RESULTS, "summary_cost.csv"), index=False)
+
+    f4 = lambda x: "%.4f" % x
+    print("\nRMSE theo tram (mean qua seed) | persistence de so:")
+    piv = by_site.pivot_table(index=["site", "horizon"], columns="model", values="RMSE_mean")
+    piv["persistence"] = base[base.model == "persistence"].set_index(["site", "horizon"]).RMSE
+    print(piv.to_string(float_format=f4))
+    print("\nSkill score theo tram:")
+    print(by_site.pivot_table(index=["site", "horizon"], columns="model", values="skill")
+          .to_string(float_format=f4))
+    print("\nTrung binh 4 tram:")
+    print(overall.pivot_table(index="horizon", columns="model", values="RMSE_mean")
+          .to_string(float_format=f4))
+    print("\nChi phi:")
+    print(cost.to_string(index=False, float_format=lambda x: "%.3g" % x))
+
+    dp = _load("dp", "04_data_pipeline.py")
+    dm = dm_all(runs, os.path.join(RESULTS, "preds"), dp)
+    if len(dm):
+        dm.to_csv(os.path.join(RESULTS, "dm_tests.csv"), index=False)
+        print("\nDiebold-Mariano (Mamba vs X; stat<0 = Mamba tot hon):")
+        print(dm.pivot_table(index=["site", "horizon"], columns="vs", values="dm_stat")
+              .to_string(float_format=lambda x: "%.2f" % x))
+    else:
+        print("\n(Chua co du doan trong results/preds -> bo qua DM)")
+
+
+if __name__ == "__main__":
+    main()
