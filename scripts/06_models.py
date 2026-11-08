@@ -57,6 +57,42 @@ def _scan_parallel(dA, dBx, C):
     return torch.einsum("bldn,bln->bld", b, C)
 
 
+try:
+    # Kernel CUDA chinh thuc cua mamba-ssm (Gu & Dao), build tu csrc/selective_scan.
+    # Khong co -> dung ban PyTorch o tren (cung toan hoc, cham hon).
+    import selective_scan_cuda as _ss_cuda
+except ImportError:
+    _ss_cuda = None
+
+
+class _SelectiveScanCUDA(torch.autograd.Function):
+    """Boc selective_scan_cuda.fwd/bwd, giong SelectiveScanFn cua mamba_ssm
+    (khong z, khong delta_bias, delta da qua softplus)."""
+
+    @staticmethod
+    def forward(ctx, u, delta, A, B, C, D):
+        # u, delta: (b, d, l); A: (d, n); B, C: (b, 1, n, l); D: (d,)
+        out, x, *_ = _ss_cuda.fwd(u, delta, A, B, C, D, None, None, False)
+        ctx.save_for_backward(u, delta, A, B, C, D, x)
+        return out
+
+    @staticmethod
+    def backward(ctx, dout):
+        u, delta, A, B, C, D, x = ctx.saved_tensors
+        du, ddelta, dA, dB, dC, dD, *_ = _ss_cuda.bwd(
+            u, delta, A, B, C, D, None, None, dout.contiguous(), x, None, None, False, False)
+        return du, ddelta, dA, dB, dC, dD
+
+
+def _scan_cuda(x, dt, A, Bm, Cm, D):
+    """x, dt: (B, L, d); Bm, Cm: (B, L, n) -> y: (B, L, d), da gom D*x."""
+    u = x.transpose(1, 2).contiguous()
+    delta = dt.transpose(1, 2).contiguous()
+    B = Bm.transpose(1, 2).unsqueeze(1).contiguous()
+    C = Cm.transpose(1, 2).unsqueeze(1).contiguous()
+    return _SelectiveScanCUDA.apply(u, delta, A.contiguous(), B, C, D.float()).transpose(1, 2)
+
+
 class MambaBlock(nn.Module):
     """Khoi Mamba (S6). Tham chieu: Gu & Dao 2023, Alg. 2."""
 
@@ -105,6 +141,9 @@ class MambaBlock(nn.Module):
         dt, Bm, Cm = torch.split(
             dbc, [self.dt_rank, self.d_state, self.d_state], dim=-1)
         dt = F.softplus(self.dt_proj(dt))                           # (B, L, d_inner)
+
+        if self.scan == "parallel" and x.is_cuda and _ss_cuda is not None:
+            return _scan_cuda(x, dt, A, Bm, Cm, self.D)
 
         # Roi rac hoa ZOH: A_bar = exp(dt A),  B_bar x = dt B x
         dA = torch.exp(dt.unsqueeze(-1) * A)                        # (B,L,d_inner,N)
@@ -326,6 +365,22 @@ def _self_test():
     print("   lech tuyet doi lon nhat = {:.3e}  (tuong doi {:.3e})".format(dev, rel))
     assert rel < 1e-4, "hai ban quet khong khop -- scan song song bi sai"
     print("   => hai ban quet khop nhau")
+
+    if torch.cuda.is_available() and _ss_cuda is not None:
+        print("\nDoi chieu kernel CUDA mamba-ssm voi ban PyTorch (forward + gradient):")
+        torch.manual_seed(0)
+        blk = MambaBlock(64).cuda()
+        x = torch.randn(4, L, blk.d_inner, device="cuda", requires_grad=True)
+        y1 = blk.ssm(x)                                   # kernel CUDA
+        g1 = torch.autograd.grad(y1.square().sum(), [x, blk.A_log, blk.D, blk.x_proj.weight])
+        blk.scan = "sequential"
+        y2 = blk.ssm(x)                                   # ban tham chieu
+        g2 = torch.autograd.grad(y2.square().sum(), [x, blk.A_log, blk.D, blk.x_proj.weight])
+        fwd = ((y1 - y2).abs().max() / y2.abs().max()).item()
+        bwd = max(((a - b).abs().max() / b.abs().max()).item() for a, b in zip(g1, g2))
+        print("   forward lech tuong doi {:.2e} | gradient lech tuong doi {:.2e}".format(fwd, bwd))
+        assert fwd < 1e-3 and bwd < 1e-2, "kernel CUDA khong khop ban tham chieu"
+        print("   => khop")
 
     print("\nKiem tra tinh nhan qua (buoc t khong duoc nhin thay t+1):")
     blk = MambaBlock(64, scan="parallel").eval()

@@ -97,7 +97,7 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     te = DataLoader(W(d.idx_test), batch_size=256, shuffle=False, pin_memory=pin)
 
     model = mo.build(name, d.n_features, len(d.horizons), **kw).to(dev)
-    if dev.type == "cuda":
+    if dev.type == "cuda" and mo._ss_cuda is None:
         # Selective scan la chuoi phep toan tung phan tu -> compile gop kernel, nhanh ~3.5x tren T4.
         # Khong doi toan hoc, khong doi state_dict; latency CPU van do tren ban eager.
         for blk in getattr(model, "layers", []):
