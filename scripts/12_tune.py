@@ -39,7 +39,8 @@ def grid(model):
         return [{"max_depth": d} for d in (12, 16, 24)]
     base = [{"lr": lr, "dropout": dr} for lr, dr in itertools.product((3e-4, 1e-3), (0.1, 0.2))]
     if model == "PatchTST":
-        return [dict(c, revin=r) for c in base for r in (False, True)]
+        # ~19 phut/luot tren T4 -> giu dropout 0.1 (o Mamba/LSTM/Transformer dropout doi val < 1%)
+        return [{"lr": lr, "dropout": 0.1, "revin": r} for lr in (3e-4, 1e-3) for r in (False, True)]
     if model == "DLinear":                       # khong co dropout -> chi luoi lr
         return [{"lr": lr} for lr in (3e-4, 1e-3)]
     return base
