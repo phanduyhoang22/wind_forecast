@@ -279,10 +279,14 @@ class WindDLinear(nn.Module):
 
 
 class WindPatchTST(nn.Module):
-    # shortcut: khong dung RevIN vi input da MinMax theo train; them RevIN neu PatchTST kem bat thuong
+    """revin=True: chuan hoa tung kenh theo chinh cua so (Kim et al., ICLR 2022)
+    roi tra ve thang cu truoc lop mix -- nhu PatchTST goc."""
+
     def __init__(self, n_features, n_out, seq_len=96, patch_len=16, stride=8,
-                 d_model=64, n_heads=4, n_layers=2, dim_feedforward=128, dropout=0.1):
+                 d_model=64, n_heads=4, n_layers=2, dim_feedforward=128, dropout=0.1,
+                 revin=False):
         super().__init__()
+        self.revin = revin
         self.patch_len, self.stride = patch_len, stride
         n_patch = (seq_len - patch_len) // stride + 1
         self.embed = nn.Linear(patch_len, d_model)
@@ -295,10 +299,16 @@ class WindPatchTST(nn.Module):
 
     def forward(self, x):                            # (B, L, F)
         B, L, Fd = x.shape
+        if self.revin:
+            mu = x.mean(1, keepdim=True)
+            sd = x.std(1, keepdim=True) + 1e-5
+            x = (x - mu) / sd
         p = x.transpose(1, 2).unfold(-1, self.patch_len, self.stride)  # (B, F, P, patch)
         z = self.embed(p.reshape(B * Fd, -1, self.patch_len)) + self.pos
         z = self.encoder(z).reshape(B, Fd, -1)       # (B, F, P*d)
         out = self.head(z)                           # (B, F, H)
+        if self.revin:
+            out = out * sd.transpose(1, 2) + mu.transpose(1, 2)
         return self.mix(out.transpose(1, 2)).squeeze(-1)
 
 
@@ -314,7 +324,10 @@ BUILDERS = {
 
 
 def build(name, n_features, n_out, **kw):
-    return BUILDERS[name](n_features, n_out, **kw)
+    # Luoi tuning dung chung (vd dropout, revin) -> bo tham so ma model khong co
+    import inspect
+    ok = inspect.signature(BUILDERS[name]).parameters
+    return BUILDERS[name](n_features, n_out, **{k: v for k, v in kw.items() if k in ok})
 
 
 def count_params(m):
@@ -322,13 +335,16 @@ def count_params(m):
 
 
 def param_groups(model, weight_decay):
-    """AdamW khong duoc phat weight decay len A_log va D -- day la tham so
-    dong hoc cua SSM, khong phai trong so tuyen tinh."""
+    """Chi phat weight decay len ma tran trong so (ndim >= 2). Khong decay:
+    bias, LayerNorm, va tham so dong hoc SSM (A_log, D, dt_proj.bias) -- giong
+    ban Mamba goc. Decay dt_proj.bias keo softplus(bias) ve ~0.69, day dt ra
+    khoi dai khoi tao [1e-3, 1e-1] (hop #1, 09/11/2026)."""
     decay, no_decay = [], []
     for p in model.parameters():
         if not p.requires_grad:
             continue
-        (no_decay if getattr(p, "_no_weight_decay", False) else decay).append(p)
+        skip = p.ndim < 2 or getattr(p, "_no_weight_decay", False)
+        (no_decay if skip else decay).append(p)
     return [{"params": decay, "weight_decay": weight_decay},
             {"params": no_decay, "weight_decay": 0.0}]
 

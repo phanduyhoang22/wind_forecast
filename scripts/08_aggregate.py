@@ -35,16 +35,18 @@ def _load(mod, path):
     return m
 
 
-def dm_test(e1, e2, h):
-    """Diebold-Mariano voi sai so binh phuong, phuong sai Newey-West (lag h-1)
-    va hieu chinh mau nho Harvey-Leybourne-Newbold.
+def dm_test(e1, e2, h, lag=96):
+    """Diebold-Mariano voi sai so binh phuong, phuong sai HAC Bartlett va hieu
+    chinh mau nho Harvey-Leybourne-Newbold. Lag = max(h-1, lag): chuoi 15 phut
+    co sai so tu tuong quan ca ngay, lag h-1 lam |stat| bi phong dai (hop #1).
     d = e1^2 - e2^2. stat < 0 nghia la model 1 tot hon. Tra ve (stat, p hai phia)."""
     d = e1 ** 2 - e2 ** 2
     n = len(d)
     dc = d - d.mean()
     var = np.dot(dc, dc) / n
-    for k in range(1, h):
-        var += 2 * (1 - k / h) * np.dot(dc[k:], dc[:-k]) / n
+    L = max(h - 1, lag)
+    for k in range(1, L + 1):
+        var += 2 * (1 - k / (L + 1)) * np.dot(dc[k:], dc[:-k]) / n
     if var <= 0:
         return float("nan"), float("nan")
     stat = d.mean() / math.sqrt(var / n)
@@ -99,9 +101,25 @@ def dm_all(runs, pred_dir, dp):
                 continue
             for j, (k, lab) in enumerate(dp.HORIZONS):
                 stat, pv = dm_test(y[:, j] - ref[:, j], y[:, j] - p[:, j], k)
-                rows.append(dict(site=site, horizon=lab, vs=other, dm_stat=stat, p_value=pv,
-                                 mamba_better=bool(stat < 0 and pv < 0.05)))
-    return pd.DataFrame(rows)
+                rows.append(dict(site=site, horizon=lab, vs=other, dm_stat=stat, p_value=pv))
+    df = pd.DataFrame(rows)
+    if len(df):
+        df["p_holm"] = holm(df.p_value.to_numpy())
+        df["mamba_better"] = (df.dm_stat < 0) & (df.p_holm < 0.05)
+        df["mamba_worse"] = (df.dm_stat > 0) & (df.p_holm < 0.05)
+    return df
+
+
+def holm(p):
+    """Hieu chinh Holm-Bonferroni cho ho phep so (tram x horizon x doi thu)."""
+    p = np.nan_to_num(np.asarray(p, float), nan=1.0)
+    order = np.argsort(p)
+    adj = np.empty_like(p)
+    run = 0.0
+    for i, j in enumerate(order):
+        run = max(run, min(1.0, (len(p) - i) * p[j]))
+        adj[j] = run
+    return adj
 
 
 def _selftest():
@@ -115,6 +133,9 @@ def _selftest():
     s, p = dm_test(y - a, y - c, 4)
     assert s < 0 and p < 1e-6, ("a tot hon ro rang ma DM khong bat duoc", s, p)
     print("selftest DM: dat")
+    adj = holm([0.01, 0.04, 0.03, 0.5])
+    assert np.allclose(adj, [0.04, 0.09, 0.09, 0.5]), adj
+    print("selftest Holm: dat")
 
 
 def main():

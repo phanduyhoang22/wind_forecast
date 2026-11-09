@@ -60,12 +60,15 @@ def run_rf(d, seed, n_estimators=500, max_depth=16, **_):
 
     y_pred = d.scaler_y.inverse(pred.reshape(-1, 1)).reshape(pred.shape)
     n_params = int(sum(e.tree_.node_count for e in m.estimators_))
+    val_best = float(np.mean((m.predict(d.flat(d.idx_val)) - d.y[d.idx_val]) ** 2))
+    # latency_ms o day la thong luong / mau (n_jobs=-1), KHONG phai batch 1 -> dung 13_latency.py
     return y_pred, dict(train_s=train_s, latency_ms=lat_ms, params=n_params,
-                        epochs=1, best_epoch=1)
+                        epochs=1, best_epoch=1, val_best=val_best)
 
 
 def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
-           weight_decay=0.01, device=None, max_batches=0, save_path=None, **kw):
+           weight_decay=0.01, device=None, max_batches=0, save_path=None,
+           warmup_epochs=1, **kw):
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
@@ -113,13 +116,20 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     scaler = torch.amp.GradScaler("cuda", enabled=amp)
 
     best, best_ep, wait, state = float("inf"), 0, 0, None
+    hist, step = [], 0
+    n_warm = warmup_epochs * (max_batches or len(tr))
     t0 = time.time()
     for ep in range(1, epochs + 1):
         ep_t0 = time.time()
         model.train()
+        tl, tn = 0.0, 0
         for bi, (xb, yb) in enumerate(tr):
             if max_batches and bi >= max_batches:   # chi dung khi chay thu
                 break
+            if step < n_warm:                       # warmup tuyen tinh (hop #1)
+                for g in opt.param_groups:
+                    g["lr"] = lr * (step + 1) / n_warm
+            step += 1
             xb, yb = xb.to(dev, non_blocking=True), yb.to(dev, non_blocking=True)
             opt.zero_grad(set_to_none=True)
             with torch.amp.autocast("cuda", enabled=amp):
@@ -129,6 +139,8 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             scaler.step(opt)
             scaler.update()
+            tl += loss.item() * len(xb)
+            tn += len(xb)
 
         model.eval()
         vl, n = 0.0, 0
@@ -142,10 +154,11 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
                 n += len(xb)
         vl /= max(n, 1)
         sched.step(vl)
+        hist.append(dict(epoch=ep, train=tl / max(tn, 1), val=vl, lr=opt.param_groups[0]["lr"]))
 
         if ep <= 3 or ep % 10 == 0:
-            print("      ep {:02d}  val={:.5f}  {:.1f}s".format(ep, vl, time.time() - ep_t0),
-                  flush=True)
+            print("      ep {:02d}  train={:.5f}  val={:.5f}  {:.1f}s".format(
+                ep, tl / max(tn, 1), vl, time.time() - ep_t0), flush=True)
 
         if vl < best - 1e-6:
             best, best_ep, wait = vl, ep, 0
@@ -160,6 +173,7 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     model.eval()
     if save_path:                                   # 10_shap.py can trong so da train
         torch.save(state, save_path)
+        pd.DataFrame(hist).to_csv(save_path[:-3] + "_hist.csv", index=False)
 
     # Do do tre tren CPU, batch 1 -- dieu kien trien khai bien
     cpu_model = mo.build(name, d.n_features, len(d.horizons), **kw)
@@ -195,7 +209,8 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
                             y_pred=d.scaler_y.inverse(vp.reshape(-1, 1)).reshape(vp.shape))
 
     return y_pred, dict(train_s=train_s, latency_ms=float(np.median(lat)),
-                        params=mo.count_params(model), epochs=ep, best_epoch=best_ep)
+                        params=mo.count_params(model), epochs=ep, best_epoch=best_ep,
+                        val_best=best)
 
 
 # ----------------------------------------------------------------------------
@@ -203,7 +218,9 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sites", default="A,B,C,D")
-    ap.add_argument("--models", default="RF,LSTM,Transformer,Mamba")
+    ap.add_argument("--models", default="RF,LSTM,Transformer,Mamba,PatchTST,DLinear")
+    ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"),
+                    help="cau hinh chot tu 12_tune.py; khong co file -> mac dinh")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--epochs", type=int, default=50)
     ap.add_argument("--patience", type=int, default=10)
@@ -220,6 +237,8 @@ def main():
     os.makedirs(mdir, exist_ok=True)
     sites = [s.strip().upper() for s in args.sites.split(",")]
     models = [m.strip() for m in args.models.split(",")]
+    tuned = json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}
+    print("Cau hinh:", {m: tuned.get(m, "mac dinh") for m in models})
 
     done = set()
     if os.path.exists(args.out):                       # cho phep chay tiep
@@ -241,13 +260,14 @@ def main():
                     continue
                 t0 = time.time()
                 if name == "RF":
-                    y_pred, info = run_rf(d, seed)
+                    y_pred, info = run_rf(d, seed, **tuned.get(name, {}))
                 else:
                     y_pred, info = run_nn(
                         d, seed, name, epochs=args.epochs, patience=args.patience,
                         batch_size=args.batch_size, device=args.device,
                         max_batches=args.max_batches,
-                        save_path=os.path.join(mdir, "{}_{}_{}.pt".format(site, name, seed)))
+                        save_path=os.path.join(mdir, "{}_{}_{}.pt".format(site, name, seed)),
+                        **tuned.get(name, {}))
                 m = dp.metrics(d.y_raw[d.idx_test], y_pred)
 
                 # Luu du doan tung mau -> 08 can cho kiem dinh Diebold-Mariano
