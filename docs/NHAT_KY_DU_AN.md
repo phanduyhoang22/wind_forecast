@@ -102,7 +102,36 @@ Skill so với persistence: A 16–28%, B 13–22%, C 17–34%, **D chỉ 5–7%
 
 *Sau mỗi kết quả hoặc mỗi giai đoạn, các agent (phương pháp/thống kê, chuyên gia năng lượng gió, kỹ sư ML/tính toán) cùng xem kết quả và chốt bước tiếp. Biên bản ghi ở đây.*
 
-(Chưa có — cuộc họp đầu tiên sau khi pilot xong.)
+### Họp #1 — 09/11/2026, sau pilot
+
+**Đầu vào:** [`meetings/2026-11-09_pilot_brief.md`](meetings/2026-11-09_pilot_brief.md). Thành viên: phương pháp & thống kê, khí tượng & năng lượng gió, kỹ sư ML.
+
+**Nhận định chung (cả 3 đồng thuận)**
+- "Mamba thắng" không đứng được: chênh với LSTM/Transformer 0,003–0,009 m/s, DM thường không ý nghĩa, Mamba thua ở D.
+- Best epoch 2–3 của Mamba là dấu hiệu cấu hình huấn luyện chưa đúng, không phải "hội tụ nhanh".
+- Trạm D là **kết quả** (giới hạn khả năng dự báo theo chế độ), không phải thất bại.
+- Latency CPU không phải luận điểm mạnh: dự báo phát lại mỗi 15 phút, mọi mô hình đều thừa sức chạy thời gian thực.
+
+**Lỗi phát hiện trong code**
+- Weight decay áp lên `dt_proj.bias` của Mamba (bản gốc miễn) và lên mọi bias/LayerNorm → kéo dt ra khỏi dải khởi tạo. *(Kỹ sư ML)*
+- Không có warmup; không lưu đường cong train/val. *(Kỹ sư ML)*
+- DM dùng lag HAC h−1, quá ngắn cho chuỗi 15 phút → |stat| phóng đại; không hiệu chỉnh đa phép so. *(Thống kê)*
+- `latency_ms` của RF là thông lượng/mẫu với `n_jobs=-1`, không so được với batch 1 của mạng nơ-ron. *(Kỹ sư ML)*
+- PatchTST không RevIN → đối thủ "rơm". *(cả 3)*
+
+**Chốt**
+1. Sửa code (không tốn GPU): decay chỉ trên ma trận trọng số; warmup 1 epoch; lưu đường cong; RevIN tuỳ chọn cho PatchTST; DM với HAC lag max(h−1, 96) + Holm. — **xong**, commit `ef77872`.
+2. Tuning cố định trước, cùng ngân sách: lr {3e-4, 1e-3} × dropout {0,1, 0,2}; PatchTST thêm RevIN {có, không}; DLinear chỉ lr; RF max_depth {12, 16, 24}. Trạm A + D, 1 seed, chọn theo val, áp chung 4 trạm. — **đang chạy** (`12_tune.py`).
+3. Kiểm tra RMSE theo phút (GAN vs WRF gốc). — **xong**, xem kết quả dưới.
+4. E1: 6 mô hình × 4 trạm × 5 seed với cấu hình chốt (~9 h GPU, 2 phiên).
+5. Sau E1: phân tích theo chế độ (gió mùa ĐB/TN, ngày/đêm, ramp, mùa bão 9–11), không train lại.
+6. E3 LOSO: Mamba, LSTM (+ RF nếu viết thêm, + persistence). E4 SHAP: Mamba + RF (TreeSHAP đối chiếu); `air_density` làm đối chứng âm.
+7. Đo latency bằng script riêng: CPU/GPU × batch 1/1024, số luồng cố định; thêm chế độ hồi quy từng bước của Mamba.
+8. Khung bài: "benchmark nghiêm ngặt + khả năng dự báo phụ thuộc chế độ gió–địa hình; SSM ngang mô hình tốt nhất"; đóng góp chính là khung đánh giá (purge, DM+Holm, LOSO, conformal, SHAP vật lý).
+
+**Kết quả kiểm tra theo phút** (`13_phase_check.py`, RF + persistence): tỷ số RMSE điểm GAN (:15/:30/:45) / điểm WRF gốc (:00) = **0,97–1,01** ở mọi trạm × horizon. Sai số không dồn vào điểm GAN sinh; đánh giá chỉ trên điểm :00 cho cùng kết luận → lo ngại "dự báo kết cấu GAN" bị loại trừ.
+
+**Để sau:** DM theo từng seed + Friedman/CD diagram; ACF/phổ trạm D vs A–C; kiểm tra lịch tái khởi tạo WRF; SHAP LSTM cần tắt cuDNN; `09` chưa lưu trọng số/val; DataLoader `num_workers=0`.
 
 ---
 
