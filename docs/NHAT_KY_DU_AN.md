@@ -98,6 +98,30 @@ Skill so với persistence: A 16–28%, B 13–22%, C 17–34%, **D chỉ 5–7%
 
 ---
 
+### Tuning (`12_tune.py`) — xong 09/11/2026
+
+Trạm A + D, 1 seed, chọn theo val MSE (thang chuẩn hoá) trung bình 2 trạm. Cấu hình chốt → `results/tuned.json`:
+
+| Mô hình | Cấu hình chốt | val A | val D | Epoch tốt nhất |
+|---|---|---|---|---|
+| Transformer | lr 3e-4, dropout 0.2 | **0.003837** | **0.001905** | 18 / 20 |
+| Mamba | lr 3e-4, dropout 0.1 | 0.003869 | 0.001916 | 10 / 7 |
+| LSTM | lr 1e-3, dropout 0.2 | 0.004188 | 0.002009 | 9 / 7 |
+| RF | max_depth 24 | 0.004297 | 0.002046 | — |
+| PatchTST | lr 3e-4, dropout 0.1, không RevIN | 0.004507 | 0.002079 | 29 / 24 |
+| DLinear | lr 1e-3 | 0.005207 | 0.002088 | 16 / 17 |
+
+- Sau khi sửa weight decay + warmup, Mamba hết dừng sớm (epoch 2–3 → 7–10); lr 3e-4 tốt hơn 1e-3 ở Mamba, Transformer.
+- Transformer và Mamba gần như ngang nhau trên val (lệch < 1%).
+- RevIN làm PatchTST **kém hơn** ở cả 2 trạm (A 0.00495 vs 0.00451) — dữ liệu đã MinMax theo train, chuẩn hoá theo cửa sổ làm mất mức tuyệt đối của gió.
+- **Lệch khỏi lưới định trước:** PatchTST chỉ tune lr × RevIN, giữ dropout 0,1 (19 phút/lượt; ở 3 mô hình kia dropout đổi val < 1%). Phải ghi trong phần phương pháp.
+
+### E1 — đang chạy
+- RF 4 trạm × 5 seed (CPU, max_depth 24) — **xong**, `results/runs_rf.csv`. Bản chưa tune đổi tên `runs_rf_untuned.csv`.
+- Lượt 1 (GPU): Mamba, Transformer, LSTM, DLinear × 4 trạm × 5 seed → `results/runs.csv`.
+- Lượt 2 (GPU): PatchTST (~5,5 h) chạy sau cùng.
+- Giữ runtime Colab: chạy ô tiến độ mỗi 15 phút (runtime từng bị ngắt khi để yên).
+
 ## 5. Cuộc họp agents
 
 *Sau mỗi kết quả hoặc mỗi giai đoạn, các agent (phương pháp/thống kê, chuyên gia năng lượng gió, kỹ sư ML/tính toán) cùng xem kết quả và chốt bước tiếp. Biên bản ghi ở đây.*
