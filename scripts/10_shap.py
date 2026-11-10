@@ -5,9 +5,9 @@ Voi moi tram, nap trong so Mamba da train o 07 (results/models/<tram>_Mamba_<see
 giai thich N cua so test ngau nhien so voi nen la cua so train ngau nhien.
 
 Gia tri SHAP co dang (mau, 96 buoc, 30 dac trung, 3 horizon). Ghi ra:
-    results/shap_importance.csv   mean|SHAP| gop qua thoi gian -> xep hang dac trung
+    results/shap_importance_<model>_<seed>.csv   mean|SHAP| gop qua thoi gian -> xep hang dac trung
                                   theo tram x horizon (+ nhom dac trung vat ly)
-    results/shap_temporal.csv     mean|SHAP| gop qua dac trung -> do quan trong theo
+    results/shap_temporal_<model>_<seed>.csv    mean|SHAP| gop qua dac trung -> do quan trong theo
                                   do tre (buoc 0 = hien tai, 95 = 24 gio truoc)
     results/shap_<tram>.npz       mang day du de ve hinh
 
@@ -68,14 +68,21 @@ def main():
     ap.add_argument("--models-dir", default=os.path.join(RESULTS, "models"))
     ap.add_argument("--out-dir", default=RESULTS)
     ap.add_argument("--device", default=None)
+    ap.add_argument("--data-dir", default=None)
+    ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"))
     args = ap.parse_args()
 
+    import json
     import shap
     import torch
 
     dp = _load("dp", "04_data_pipeline.py")
     mo = _load("mo", "06_models.py")
     dev = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    # cuDNN RNN khong cho backward o eval() -> SHAP cho LSTM can tat cuDNN
+    torch.backends.cudnn.enabled = False
+    cfg = (json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}).get(args.model, {})
+    tag = "{}_{}".format(args.model, args.seed)
     H = len(dp.HORIZONS)
     labs = [l for _, l in dp.HORIZONS]
 
@@ -85,8 +92,8 @@ def main():
         if not os.path.exists(path):
             print(site, "-> thieu", path, ", bo qua")
             continue
-        d = dp.load_site(site)
-        model = mo.build(args.model, d.n_features, H)
+        d = dp.load_site(site, args.data_dir or dp.DATA_DIR)
+        model = mo.build(args.model, d.n_features, H, **cfg)   # revin lam doi cau truc -> phai khop luc train
         model.load_state_dict(torch.load(path, map_location="cpu"))
         model.to(dev).eval()
 
@@ -128,7 +135,7 @@ def main():
             for t in range(d.seq_len):
                 tmp_rows.append(dict(site=site, horizon=lab, lag_steps=d.seq_len - 1 - t,
                                      mean_abs_shap=temporal[t, j]))
-        np.savez_compressed(os.path.join(args.out_dir, "shap_{}.npz".format(site)),
+        np.savez_compressed(os.path.join(args.out_dir, "shap_{}_{}.npz".format(tag, site)),
                             shap=sv.astype(np.float32), x=ex.astype(np.float32),
                             idx=ex_idx, features=np.array(d.features), horizons=np.array(labs))
 
@@ -140,8 +147,8 @@ def main():
 
     imp = pd.DataFrame(imp_rows)
     if len(imp):
-        imp.to_csv(os.path.join(args.out_dir, "shap_importance.csv"), index=False)
-        pd.DataFrame(tmp_rows).to_csv(os.path.join(args.out_dir, "shap_temporal.csv"), index=False)
+        imp.to_csv(os.path.join(args.out_dir, "shap_importance_{}.csv".format(tag)), index=False)
+        pd.DataFrame(tmp_rows).to_csv(os.path.join(args.out_dir, "shap_temporal_{}.csv".format(tag)), index=False)
         print("\nTy trong theo nhom vat ly (tram x horizon):")
         print(imp.pivot_table(index=["site", "horizon"], columns="group", values="share", aggfunc="sum")
               .to_string(float_format=lambda x: "%.0f%%" % (100 * x)))

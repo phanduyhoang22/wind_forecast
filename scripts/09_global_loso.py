@@ -22,6 +22,7 @@ Dung lai nguyen run_nn cua 07: lop Pooled gia lap giao dien SiteData.
 
 import argparse
 import importlib.util
+import json
 import os
 import time
 
@@ -88,6 +89,10 @@ class Pooled:
     def n_features(self):
         return self.X.shape[1]
 
+    def flat(self, idx):
+        """Goc nhin cho RF -- giong SiteData.flat."""
+        return self.X[idx]
+
 
 def folds(site_list):
     yield "global", "ALL", site_list, site_list
@@ -106,14 +111,20 @@ def main():
     ap.add_argument("--out", default=os.path.join(RESULTS, "loso.csv"))
     ap.add_argument("--device", default=None)
     ap.add_argument("--max-batches", type=int, default=0)
+    ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"),
+                    help="cung cau hinh voi E1 (hop #2: ban cu chay lr mac dinh)")
     args = ap.parse_args()
 
+    tuned = json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     pdir = os.path.join(os.path.dirname(args.out), "preds_loso")
+    mdir = os.path.join(os.path.dirname(args.out), "models_loso")
     os.makedirs(pdir, exist_ok=True)
+    os.makedirs(mdir, exist_ok=True)
     site_list = list(dp.SITES)
     sites = {s: dp.load_site(s, args.data_dir) for s in site_list}
     models = [m.strip() for m in args.models.split(",")]
+    print("Cau hinh:", {m: tuned.get(m, "mac dinh") for m in models})
 
     done = set()
     if os.path.exists(args.out):
@@ -122,16 +133,24 @@ def main():
 
     plan = [(st, fold, tr, te, m, seed) for st, fold, tr, te in folds(site_list)
             for m in models for seed in range(args.seeds)]
+    pooled = {}
     for i, (st, fold, tr, te, name, seed) in enumerate(plan, 1):
         tag = "[{}/{}] {} fold={} {} seed={}".format(i, len(plan), st, fold, name, seed)
         if (st, fold, name, seed) in done:
             print(tag, "-> da co, bo qua")
             continue
-        d = Pooled(sites, tr, te)
+        if fold not in pooled:                       # ghep 4 tram mot lan cho moi fold
+            pooled[fold] = Pooled(sites, tr, te)
+        d = pooled[fold]
         t0 = time.time()
-        y_pred, info = bm.run_nn(d, seed, name, epochs=args.epochs, patience=args.patience,
-                                 batch_size=args.batch_size, device=args.device,
-                                 max_batches=args.max_batches)
+        if name == "RF":
+            y_pred, info = bm.run_rf(d, seed, **tuned.get(name, {}))
+        else:
+            y_pred, info = bm.run_nn(d, seed, name, epochs=args.epochs, patience=args.patience,
+                                     batch_size=args.batch_size, device=args.device,
+                                     max_batches=args.max_batches,
+                                     save_path=os.path.join(mdir, "{}_{}_{}_{}.pt".format(st, fold, name, seed)),
+                                     **tuned.get(name, {}))
         rows = []
         for s in te:
             sel = d.test_site == s

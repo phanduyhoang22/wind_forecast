@@ -38,7 +38,7 @@ dp = _load("dp", "04_data_pipeline.py")
 
 # ----------------------------------------------------------------------------
 
-def run_rf(d, seed, n_estimators=500, max_depth=16, **_):
+def run_rf(d, seed, n_estimators=500, max_depth=16, save_path=None, **_):
     from sklearn.ensemble import RandomForestRegressor
 
     # RF nhin dac trung tai buoc cuoi cua cua so -- CUNG bo chi so voi cac
@@ -60,7 +60,11 @@ def run_rf(d, seed, n_estimators=500, max_depth=16, **_):
 
     y_pred = d.scaler_y.inverse(pred.reshape(-1, 1)).reshape(pred.shape)
     n_params = int(sum(e.tree_.node_count for e in m.estimators_))
-    val_best = float(np.mean((m.predict(d.flat(d.idx_val)) - d.y[d.idx_val]) ** 2))
+    pv = m.predict(d.flat(d.idx_val))
+    val_best = float(np.mean((pv - d.y[d.idx_val]) ** 2))
+    if save_path:                                    # 11_conformal hieu chinh tren val
+        np.savez_compressed(save_path[:-3] + "_val.npz",
+                            y_pred=d.scaler_y.inverse(pv.reshape(-1, 1)).reshape(pv.shape))
     # latency_ms o day la thong luong / mau (n_jobs=-1), KHONG phai batch 1 -> dung 13_latency.py
     return y_pred, dict(train_s=train_s, latency_ms=lat_ms, params=n_params,
                         epochs=1, best_epoch=1, val_best=val_best)
@@ -260,7 +264,8 @@ def main():
                     continue
                 t0 = time.time()
                 if name == "RF":
-                    y_pred, info = run_rf(d, seed, **tuned.get(name, {}))
+                    y_pred, info = run_rf(d, seed, **tuned.get(name, {}),
+                                          save_path=os.path.join(mdir, "{}_{}_{}.pt".format(site, name, seed)))
                 else:
                     y_pred, info = run_nn(
                         d, seed, name, epochs=args.epochs, patience=args.patience,

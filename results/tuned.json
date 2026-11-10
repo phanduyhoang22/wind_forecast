@@ -1,5 +1,8 @@
 {
- "RF": {
-  "max_depth": 24
- }
+ "DLinear": {"lr": 0.001},
+ "LSTM": {"dropout": 0.2, "lr": 0.001},
+ "Mamba": {"dropout": 0.1, "lr": 0.0003},
+ "PatchTST": {"dropout": 0.1, "lr": 0.0003, "revin": false},
+ "Transformer": {"dropout": 0.2, "lr": 0.0003},
+ "RF": {"max_depth": 24}
 }

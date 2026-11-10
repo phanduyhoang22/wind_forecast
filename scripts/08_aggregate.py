@@ -110,6 +110,48 @@ def dm_all(runs, pred_dir, dp):
     return df
 
 
+def dm_per_seed(runs, pred_dir, dp):
+    """Tang chinh (hop #2): mo hinh DON. Seed i cua Mamba vs seed i cua X,
+    DM tung cap, Holm tren toan ho phep so; dem k/5 seed thang/thua co y nghia.
+    Kem kiem dinh ghep (t ghep) tren hieu RMSE theo seed."""
+    from scipy import stats
+    rows = []
+    for site in sorted(runs.site.unique()):
+        d = dp.load_site(site)
+        y = d.y_raw[d.idx_test]
+        for other in sorted(set(runs.model) - {REF}):
+            seeds = sorted(set(runs[(runs.site == site) & (runs.model == REF)].seed)
+                           & set(runs[(runs.site == site) & (runs.model == other)].seed))
+            for s in seeds:
+                fa = os.path.join(pred_dir, "{}_{}_{}.npz".format(site, REF, s))
+                fb = os.path.join(pred_dir, "{}_{}_{}.npz".format(site, other, s))
+                if not (os.path.exists(fa) and os.path.exists(fb)):
+                    continue
+                a, b = np.load(fa)["y_pred"], np.load(fb)["y_pred"]
+                for j, (k, lab) in enumerate(dp.HORIZONS):
+                    stat, pv = dm_test(y[:, j] - a[:, j], y[:, j] - b[:, j], k)
+                    rows.append(dict(site=site, horizon=lab, vs=other, seed=s, dm_stat=stat, p_value=pv))
+    df = pd.DataFrame(rows)
+    if not len(df):
+        return df, df
+    df["p_holm"] = holm(df.p_value.to_numpy())
+    df["win"] = (df.dm_stat < 0) & (df.p_holm < 0.05)
+    df["loss"] = (df.dm_stat > 0) & (df.p_holm < 0.05)
+    summ = df.groupby(["site", "horizon", "vs"]).agg(n=("seed", "size"), wins=("win", "sum"),
+                                                    losses=("loss", "sum")).reset_index()
+    # t ghep tren RMSE theo seed (n = so seed chung)
+    pr = []
+    for (site, h, other), _ in summ.groupby(["site", "horizon", "vs"]):
+        ra = runs[(runs.site == site) & (runs.horizon == h) & (runs.model == REF)].set_index("seed").RMSE
+        rb = runs[(runs.site == site) & (runs.horizon == h) & (runs.model == other)].set_index("seed").RMSE
+        c = ra.index.intersection(rb.index)
+        diff = (ra[c] - rb[c]).to_numpy()
+        p = stats.ttest_rel(ra[c], rb[c]).pvalue if len(c) > 1 and diff.std() > 0 else np.nan
+        pr.append(dict(site=site, horizon=h, vs=other, d_rmse=diff.mean(), p_ttest=p))
+    summ = summ.merge(pd.DataFrame(pr), on=["site", "horizon", "vs"])
+    return df, summ
+
+
 def holm(p):
     """Hieu chinh Holm-Bonferroni cho ho phep so (tram x horizon x doi thu)."""
     p = np.nan_to_num(np.asarray(p, float), nan=1.0)
@@ -175,9 +217,19 @@ def main():
 
     dp = _load("dp", "04_data_pipeline.py")
     dm = dm_all(runs, os.path.join(RESULTS, "preds"), dp)
+    seed_dm, seed_sum = dm_per_seed(runs, os.path.join(RESULTS, "preds"), dp)
+    if len(seed_sum):
+        seed_dm.to_csv(os.path.join(RESULTS, "dm_per_seed.csv"), index=False)
+        seed_sum.to_csv(os.path.join(RESULTS, "dm_per_seed_summary.csv"), index=False)
+        print("\nDM MO HINH DON (seed i vs seed i, Holm tren {} phep so): thang/thua tren n seed".format(len(seed_dm)))
+        seed_sum["kq"] = seed_sum.wins.astype(str) + "/" + seed_sum.losses.astype(str) + " of " + seed_sum.n.astype(str)
+        print(seed_sum.pivot_table(index=["site", "horizon"], columns="vs", values="kq", aggfunc="first").to_string())
+        print("\nHieu RMSE Mamba - X (am = Mamba tot hon) | p t ghep:")
+        print(seed_sum.pivot_table(index=["site", "horizon"], columns="vs", values="d_rmse")
+              .to_string(float_format=lambda x: "%+.4f" % x))
     if len(dm):
         dm.to_csv(os.path.join(RESULTS, "dm_tests.csv"), index=False)
-        print("\nDiebold-Mariano (Mamba vs X; stat<0 = Mamba tot hon):")
+        print("\nDM ENSEMBLE 5 seed (phuong phap rieng, chi phi x5; stat<0 = Mamba tot hon):")
         print(dm.pivot_table(index=["site", "horizon"], columns="vs", values="dm_stat")
               .to_string(float_format=lambda x: "%.2f" % x))
     else:
