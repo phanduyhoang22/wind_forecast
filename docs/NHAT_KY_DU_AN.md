@@ -155,6 +155,23 @@ Trạm A + D, 1 seed, chọn theo val MSE (thang chuẩn hoá) trung bình 2 tr�
 
 **Kết quả kiểm tra theo phút** (`13_phase_check.py`, RF + persistence): tỷ số RMSE điểm GAN (:15/:30/:45) / điểm WRF gốc (:00) = **0,97–1,01** ở mọi trạm × horizon. Sai số không dồn vào điểm GAN sinh; đánh giá chỉ trên điểm :00 cho cùng kết luận → lo ngại "dự báo kết cấu GAN" bị loại trừ.
 
+### Họp #2 — 10/11/2026, sau E1 lượt 1 ([brief](meetings/2026-11-10_e1_brief.md))
+
+**Kết quả E1** (5 seed, trung bình 4 trạm, RMSE 1h/3h/6h): Mamba 0.560/1.005/1.243; Transformer 0.564/1.001/1.238; RF 0.562/1.025/1.283; LSTM 0.577/1.032/1.271; DLinear 0.613/1.098/1.369. Ensemble 5 seed: Mamba 0.537/0.981/1.213 (tốt nhất mọi horizon), RF không đổi.
+Tập test xác nhận 03/04–31/12/2021 (thiếu lõi gió mùa ĐB tháng 1–3).
+
+**Chốt:** (1) DM theo từng seed (k/5, Holm) + t ghép là bảng chính; ensemble ×5 là phương pháp riêng, ghi chi phí; (2) Mamba ≈ Transformer, không viết "outperforms"; (3) biến thiên seed là điểm yếu với mô hình đơn — báo min/max; (4) không retune LSTM C (lưới đã khoá; đường cong val bình thường); (5) phân tích theo chế độ, latency riêng, sửa `09`/`10`, LOSO; (6) hạn chế: dữ liệu WRF, test thiếu tháng 1–3, không có NWP. Đã kiểm: E1 chạy đúng cấu hình tuned (log "Cau hinh").
+
+**Latency** (`15_latency.py`, CPU 1 luồng, batch 1, ms): DLinear 0.43; **Mamba-step 1.62** (hồi quy, khớp forward 9e-8); LSTM 2.44; Transformer 2.91; PatchTST 5.68; Mamba full-window 22.4; RF 34.9.
+
+### Họp #3 — 13/11/2026, sau LOSO ([brief](meetings/2026-11-13_loso_brief.md))
+
+**Kết quả:** global (gộp 4 trạm) ≈ local, tốt hơn ở C (0.474 vs 0.496). LOSO zero-shot không vượt persistence: skill trung bình 1h Mamba −1.8%, RF −6.0%, Transformer −11.0%; 6h +0.9 / −2.6 / +3.4%. Transformer sụp ở B (0.847 vs persistence 0.640).
+**Phân rã sai số** (`loso_bias.csv`): Transformer B lệch mức −0.59 m/s = 47% MSE, độ lệch chuẩn sai số bằng Mamba (0.602 vs 0.604) → sụp do **lệch mức**, không phải kiến trúc. C: cả hai lệch +0.23–0.28 m/s.
+
+**Chốt:** (1) LOSO là phát hiện: trạm mới cần dữ liệu tại chỗ; ghi rõ đã dùng thống kê không nhãn của trạm đích (thích nghi không giám sát, không phải zero-shot thuần); (2) Mamba ổn định hơn khi chuyển giao chỉ là "quan sát" (3 seed, p tối thiểu 0.1); (3) delta target y(t+h)−v(t) — RF trên CPU trước, Mamba nếu có tác dụng; (4) few-shot 1/2/4 tuần từ train trạm đích + baseline học từ đầu cùng lượng dữ liệu, ≥2 cửa sổ mùa; (5) SHAP Mamba + RF; (6) giả thuyết "áp suất/mật độ = site ID ngầm" cần ablation.
+**Khung bài:** dữ liệu & kiểm định → benchmark local (Mamba ≈ Transformer, ensemble Mamba tốt nhất) → hiệu quả (Mamba-step) → khả năng dự báo theo chế độ → SHAP → chuyển giao (zero-shot thất bại, few-shot/delta) → hạn chế.
+
 **Để sau:** DM theo từng seed + Friedman/CD diagram; ACF/phổ trạm D vs A–C; kiểm tra lịch tái khởi tạo WRF; SHAP LSTM cần tắt cuDNN; `09` chưa lưu trọng số/val; DataLoader `num_workers=0`.
 
 ---
