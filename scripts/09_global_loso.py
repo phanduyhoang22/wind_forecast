@@ -48,10 +48,12 @@ class RowScaler:
     """Dao chuan hoa theo tung dong test -- moi dong thuoc mot tram khac nhau.
     run_nn goi inverse(p.reshape(-1, 1)) dung mot lan tren du doan test."""
 
-    def __init__(self, lo, span):
-        self.lo, self.span = lo, span
+    def __init__(self, lo, span, base=None):
+        self.lo, self.span, self.base = lo, span, base
 
     def inverse(self, a):
+        if self.base is not None:                    # delta: cong lai v(t) truoc khi doi ve m/s
+            a = a + self.base
         return a * self.span + self.lo
 
 
@@ -59,7 +61,7 @@ class Pooled:
     """Ghep nhieu SiteData thanh mot khoi. Chi so cua moi tram duoc cong offset
     nen cua so khong bao gio vat qua ranh gioi giua hai tram."""
 
-    def __init__(self, sites, train_sites, test_sites):
+    def __init__(self, sites, train_sites, test_sites, delta=False):
         ds = {s: sites[s] for s in sites}
         order = list(ds)
         f0 = ds[order[0]].features
@@ -80,7 +82,14 @@ class Pooled:
         H = len(dp.HORIZONS)
         lo = np.concatenate([np.full(len(ds[s].idx_test) * H, ds[s].scaler_y.lo[0]) for s in test_sites])
         sp = np.concatenate([np.full(len(ds[s].idx_test) * H, ds[s].scaler_y.span[0]) for s in test_sites])
-        self.scaler_y = RowScaler(lo.reshape(-1, 1).astype(np.float32), sp.reshape(-1, 1).astype(np.float32))
+        base = None
+        if delta:
+            # Hop #3: hoc y(t+h) - v(t). Cot wind_speed cua X va y cung thang (deu fit
+            # tren ws[:n_tr] cua tram) -> hieu o thang chuan hoa; du doan 0 = persistence.
+            ws = f0.index(dp.TARGET)
+            self.y = self.y - self.X[:, ws:ws + 1]
+            base = np.repeat(self.X[self.idx_test, ws], H).reshape(-1, 1).astype(np.float32)
+        self.scaler_y = RowScaler(lo.reshape(-1, 1).astype(np.float32), sp.reshape(-1, 1).astype(np.float32), base)
         self.seq_len = dp.SEQ_LEN
         self.horizons = dp.HORIZONS
         self.features = f0
@@ -113,6 +122,7 @@ def main():
     ap.add_argument("--max-batches", type=int, default=0)
     ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"),
                     help="cung cau hinh voi E1 (hop #2: ban cu chay lr mac dinh)")
+    ap.add_argument("--delta", action="store_true", help="hoc y(t+h) - v(t) (hop #3)")
     args = ap.parse_args()
 
     tuned = json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}
@@ -135,12 +145,14 @@ def main():
             for m in models for seed in range(args.seeds)]
     pooled = {}
     for i, (st, fold, tr, te, name, seed) in enumerate(plan, 1):
+        if args.delta:                               # ten rieng -> khong ghi de file ban muc tuyet doi
+            st += "D"
         tag = "[{}/{}] {} fold={} {} seed={}".format(i, len(plan), st, fold, name, seed)
         if (st, fold, name, seed) in done:
             print(tag, "-> da co, bo qua")
             continue
         if fold not in pooled:                       # ghep 4 tram mot lan cho moi fold
-            pooled[fold] = Pooled(sites, tr, te)
+            pooled[fold] = Pooled(sites, tr, te, delta=args.delta)
         d = pooled[fold]
         t0 = time.time()
         if name == "RF":
