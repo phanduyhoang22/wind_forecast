@@ -9,3 +9,6 @@ results/*.log
 results/runs_rf.csv
 # cau hinh may ca nhan
 .mcp.json
+
+# PDF bai bao co ban quyen -- chi doc tai may, khong day len repo public
+tailieu_rieng/
