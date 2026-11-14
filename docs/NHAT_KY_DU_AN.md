@@ -206,3 +206,9 @@ Tập test xác nhận 03/04–31/12/2021 (thiếu lõi gió mùa ĐB tháng 1�
 - [ ] Kiểm tra toàn văn: #7 STS-MambaGPT và #14 có dùng SHAP/shear không; #22 có phải Việt Nam không
 - [ ] Cân nhắc xoá `References/*.pdf` khỏi repo public (bản quyền)
 - [ ] PatchTST chưa có RevIN — thêm nếu kết quả kém bất thường
+
+### Trạng thái khi dừng — 15/11/2026 (03:25 giờ VN)
+Runtime Colab ngắt ~19:41 UTC 14/11 (Drive không còn đồng bộ); máy tự tắt theo yêu cầu.
+**Đã xong:** E1 trạm E–H (mạng nơ-ron + RF); ma trận chấm chéo 8×8 (Mamba, Transformer, RF); chấm 2016 (mạng nơ-ron + RF); E7/E8 RF; PatchTST A–D 6/20 lượt.
+**Kết quả chính:** chấm chéo — cùng chế độ tốt hơn khác chế độ ~16 điểm % skill ở cả 3 mô hình (Mamba 1h: −4.6% vs −20.9%); 2016 — mọi mô hình vượt persistence mọi mùa, Mamba ≈ Transformer ≈ RF (cả năm 1h 0.620 / 0.619 / 0.621 vs persistence 0.736). RF chỉ tốc độ gió + delta: bỏ (hết RAM, delta giúp ít).
+**Chạy tiếp ở phiên Colab sau** (các lượt đã xong tự bỏ qua): (1) `09_global_loso.py --models Mamba --seeds 3 --features wind --out results/loso_wind.csv`; (2) `18_fewshot.py --sites A,B,C,D --models Mamba --seeds 3`; (3) `07_run_benchmark.py --sites A,B,C,D --models PatchTST --seeds 5`.
