@@ -72,7 +72,7 @@ def run_rf(d, seed, n_estimators=500, max_depth=16, save_path=None, **_):
 
 def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
            weight_decay=0.01, device=None, max_batches=0, save_path=None,
-           warmup_epochs=1, **kw):
+           warmup_epochs=1, init_state=None, **kw):
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
@@ -103,7 +103,10 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
     va = DataLoader(W(d.idx_val), batch_size=256, shuffle=False, pin_memory=pin)
     te = DataLoader(W(d.idx_test), batch_size=256, shuffle=False, pin_memory=pin)
 
-    model = mo.build(name, d.n_features, len(d.horizons), **kw).to(dev)
+    model = mo.build(name, d.n_features, len(d.horizons), **kw)
+    if init_state is not None:                       # E9 few-shot: khoi tao tu mo hinh LOSO
+        model.load_state_dict(init_state)
+    model = model.to(dev)
     if dev.type == "cuda" and mo._ss_cuda is None:
         # Selective scan la chuoi phep toan tung phan tu -> compile gop kernel, nhanh ~3.5x tren T4.
         # Khong doi toan hoc, khong doi state_dict; latency CPU van do tren ban eager.
