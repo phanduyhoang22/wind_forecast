@@ -101,6 +101,9 @@ def main():
                                                **tuned.get("RF", {})).fit(r.flat(r.idx_train), r.y[r.idx_train])
                     p = rf.predict(d.flat(d.idx_test))
                     preds[(name, seed)] = d.scaler_y.inverse(p.reshape(-1, 1)).reshape(p.shape)
+                    del rf                                   # RF depth 24 ~ vai GB -> giai phong truoc seed sau
+                    import gc
+                    gc.collect()
                 else:
                     f = os.path.join(RESULTS, "models", "{}_{}_{}.pt".format(site, name, seed))
                     if not os.path.exists(f):
