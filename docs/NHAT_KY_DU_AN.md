@@ -172,6 +172,24 @@ Tập test xác nhận 03/04–31/12/2021 (thiếu lõi gió mùa ĐB tháng 1�
 **Chốt:** (1) LOSO là phát hiện: trạm mới cần dữ liệu tại chỗ; ghi rõ đã dùng thống kê không nhãn của trạm đích (thích nghi không giám sát, không phải zero-shot thuần); (2) Mamba ổn định hơn khi chuyển giao chỉ là "quan sát" (3 seed, p tối thiểu 0.1); (3) delta target y(t+h)−v(t) — RF trên CPU trước, Mamba nếu có tác dụng; (4) few-shot 1/2/4 tuần từ train trạm đích + baseline học từ đầu cùng lượng dữ liệu, ≥2 cửa sổ mùa; (5) SHAP Mamba + RF; (6) giả thuyết "áp suất/mật độ = site ID ngầm" cần ablation.
 **Khung bài:** dữ liệu & kiểm định → benchmark local (Mamba ≈ Transformer, ensemble Mamba tốt nhất) → hiệu quả (Mamba-step) → khả năng dự báo theo chế độ → SHAP → chuyển giao (zero-shot thất bại, few-shot/delta) → hạn chế.
 
+### Họp #4 — 13/11/2026, tìm bài báo gần nhất
+3 agent tìm theo 3 hướng, xác minh qua Crossref; đọc toàn văn 3 bài: PowerMamba (IEEE TPWRS 2026), VMamba-WSP (Energy Reports 2026), Despotovic et al. (IJGE 2026 — thay Sun & Tian vì paywall). Không bài nào kết hợp Mamba + đa chế độ gió + chuyển giao + SHAP vật lý. Kế hoạch cập nhật v2.0 (`docs/Ke_hoach_du_an_v2.docx`, commit `c88cc3f`).
+
+### Họp #5 — 13–14/11/2026, mở rộng dữ liệu ([brief](meetings/2026-11-13_data_brief.md))
+**Chốt (B rút gọn):** giữ dữ liệu 4 trạm, thêm 1 trạm/chế độ cùng giai đoạn và cách chia; so cùng/khác chế độ bằng ma trận chấm chéo (`16_cross_eval.py`) thay vì LOSO 8 trạm (~40 h GPU); bù tháng 1–3 bằng tập test lùi thời gian 2016 (`17_backtest_2016.py`, không huấn luyện lại). Loại phương án làm lại dữ liệu (26–40 h, mất kết quả cũ).
+**Cổng chọn trạm** (định trước): ≥ 70 km, tương quan < 0.8, ven biển mean ≥ 6 m/s. Kết quả: E Thanh Hoá, G Hướng Hoá đạt ngay; Tuy Phong (r = 0.81 với B) và thềm Vũng Tàu (r = 0.95 với D) bị loại → F bờ biển Bình Định (nới ngưỡng mean xuống 5.5 m/s, ghi trong PROVENANCE), H vịnh Bắc Bộ (r = 0.04). Cả 8 trạm đạt `02`; hash 4 trạm cũ không đổi.
+**Sự cố:** API NREL trả 503 (kể cả ví dụ mẫu với DEMO_KEY) ~1 ngày; sau đó trả 302 → S3 (cách mới phát file), script tự theo chuyển hướng.
+
+### E7/E8 — ablation đặc trưng và delta target cho LOSO (RF, 3 seed)
+| Cấu hình | Skill 1h | 3h | 6h | Trạm vượt persistence (1h) |
+|---|---|---|---|---|
+| Đủ 31 đặc trưng | −6.0% | −5.0% | −2.6% | 2/4 |
+| Delta target | −4.4% | −4.6% | −3.4% | 2/4 |
+| Đại lượng tương đối (27) | −3.4% | −3.7% | −2.4% | 2/4 |
+| **Chỉ tốc độ gió (19)** | **+1.4%** | **+0.2%** | **+1.3%** | **3/4** |
+
+→ Biến mức tuyệt đối gắn trạm (áp suất, mật độ, nhiệt độ) là nguyên nhân chính khiến chuyển giao thất bại (D: 0.682 → 0.567; B: 0.674 → 0.633). Delta chỉ giúp ít. Khớp Despotovic et al. và giả thuyết họp #3. Tiếp: Mamba LOSO với bộ chỉ tốc độ gió (Colab, đã xếp hàng); RF chỉ tốc độ gió + delta (CPU).
+
 **Để sau:** DM theo từng seed + Friedman/CD diagram; ACF/phổ trạm D vs A–C; kiểm tra lịch tái khởi tạo WRF; SHAP LSTM cần tắt cuDNN; `09` chưa lưu trọng số/val; DataLoader `num_workers=0`.
 
 ---
