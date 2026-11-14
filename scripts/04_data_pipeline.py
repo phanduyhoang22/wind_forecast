@@ -36,6 +36,11 @@ SITES = {
     "D": "Tram_D_NgoaiKhoi",
 }
 
+# Che do gio cua moi tram (16_cross_eval: cung vs khac che do). E-H them o hop #5,
+# chi dua vao SITES sau khi qua cong kiem tra du lieu.
+REGIME = {"A": "Inland", "B": "Coastal", "C": "Complex", "D": "Offshore",
+          "E": "Inland", "F": "Coastal", "G": "Complex", "H": "Offshore"}
+
 
 class MinMax:
     """MinMaxScaler toi gian, fit CHI tren train. Tu viet de khong phai keo

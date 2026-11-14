@@ -115,12 +115,17 @@ def build(df):
 
 
 def main():
-    if not os.path.isdir(RAW_DIR):
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--raw-dir", default=RAW_DIR)
+    ap.add_argument("--out-dir", default=OUT_DIR)
+    args = ap.parse_args()
+    if not os.path.isdir(args.raw_dir):
         sys.exit("Chua co data_raw/. Chay scripts/01_download_seawtk.py truoc.")
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(args.out_dir, exist_ok=True)
 
     groups = {}
-    for p in sorted(glob.glob(os.path.join(RAW_DIR, "*.csv"))):
+    for p in sorted(glob.glob(os.path.join(args.raw_dir, "*.csv"))):
         groups.setdefault(os.path.basename(p).rsplit("_", 2)[0], []).append(p)
     if not groups:
         sys.exit("data_raw/ rong.")
@@ -142,7 +147,7 @@ def main():
         step = feat.index.to_series().diff().dropna()
         gaps = int((step != pd.Timedelta("15min")).sum())
 
-        dest = os.path.join(OUT_DIR, station + "_15min.csv")
+        dest = os.path.join(args.out_dir, station + "_15min.csv")
         feat.to_csv(dest, index_label="time", float_format="%.6f")
 
         summary.append({
@@ -160,8 +165,8 @@ def main():
     s = pd.DataFrame(summary)
     print("\n--- Thay the cho Table 1 cua ban thao ---")
     print(s.to_string(index=False, float_format=lambda x: "%.4f" % x))
-    s.to_csv(os.path.join(OUT_DIR, "_summary_table1.csv"), index=False)
-    print("\nGhi vao: {}".format(OUT_DIR))
+    s.to_csv(os.path.join(args.out_dir, "_summary_table1.csv"), index=False)
+    print("\nGhi vao: {}".format(args.out_dir))
 
 
 if __name__ == "__main__":

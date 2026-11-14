@@ -44,6 +44,19 @@ dp = _load("dp", "04_data_pipeline.py")
 bm = _load("bm", "07_run_benchmark.py")
 
 
+# E7 (hop #3-#5): bo dac trung cho chuyen giao. Despotovic et al. (2026) chuyen giao
+# duoc voi chi lag toc do gio; gia thuyet: bien muc tuyet doi gan tram (ap suat, mat do,
+# nhiet do) la "site ID ngam" gay lech muc.
+_WIND = {"wind_speed", "ws_10m", "ws_80m", "ws_120m", "ws_200m", "ws_lag_15min", "ws_lag_1h",
+         "ws_lag_3h", "ws_lag_6h", "ws_lag_24h", "ws_rolling_mean_1h", "ws_rolling_std_1h",
+         "ws_rolling_mean_6h", "ws_delta", "ws_delta_1h", "hr_sin", "hr_cos", "month_sin", "month_cos"}
+FEATURE_SETS = {
+    "wind": _WIND,                                                     # W: chi toc do gio + chu ky
+    "relative": _WIND | {"wind_sin", "wind_cos", "u_wind", "v_wind",   # W+P: them dai luong tuong doi
+                         "shear_alpha", "shear_alpha_wide", "veer_120_80", "dT_10_100"},
+}
+
+
 class RowScaler:
     """Dao chuan hoa theo tung dong test -- moi dong thuoc mot tram khac nhau.
     run_nn goi inverse(p.reshape(-1, 1)) dung mot lan tren du doan test."""
@@ -61,16 +74,19 @@ class Pooled:
     """Ghep nhieu SiteData thanh mot khoi. Chi so cua moi tram duoc cong offset
     nen cua so khong bao gio vat qua ranh gioi giua hai tram."""
 
-    def __init__(self, sites, train_sites, test_sites, delta=False):
+    def __init__(self, sites, train_sites, test_sites, delta=False, features="all"):
         ds = {s: sites[s] for s in sites}
         order = list(ds)
         f0 = ds[order[0]].features
         assert all(ds[s].features == f0 for s in order), "dac trung cac tram khong cung thu tu"
+        keep = [i for i, f in enumerate(f0) if f in FEATURE_SETS[features]] if features != "all" \
+            else list(range(len(f0)))
+        f0 = [f0[i] for i in keep]
         off, n = {}, 0
         for s in order:
             off[s] = n
             n += len(ds[s].X)
-        self.X = np.vstack([ds[s].X for s in order])
+        self.X = np.vstack([ds[s].X[:, keep] for s in order])
         self.y = np.vstack([ds[s].y for s in order])
         self.y_raw = np.vstack([ds[s].y_raw for s in order])
 
@@ -123,6 +139,8 @@ def main():
     ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"),
                     help="cung cau hinh voi E1 (hop #2: ban cu chay lr mac dinh)")
     ap.add_argument("--delta", action="store_true", help="hoc y(t+h) - v(t) (hop #3)")
+    ap.add_argument("--sites", default="A,B,C,D", help="tram tham gia global/LOSO")
+    ap.add_argument("--features", default="all", choices=["all", "wind", "relative"], help="E7")
     args = ap.parse_args()
 
     tuned = json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}
@@ -131,7 +149,7 @@ def main():
     mdir = os.path.join(os.path.dirname(args.out), "models_loso")
     os.makedirs(pdir, exist_ok=True)
     os.makedirs(mdir, exist_ok=True)
-    site_list = list(dp.SITES)
+    site_list = [s.strip().upper() for s in args.sites.split(",")]
     sites = {s: dp.load_site(s, args.data_dir) for s in site_list}
     models = [m.strip() for m in args.models.split(",")]
     print("Cau hinh:", {m: tuned.get(m, "mac dinh") for m in models})
@@ -147,12 +165,13 @@ def main():
     for i, (st, fold, tr, te, name, seed) in enumerate(plan, 1):
         if args.delta:                               # ten rieng -> khong ghi de file ban muc tuyet doi
             st += "D"
+        st += {"all": "", "wind": "W", "relative": "R"}[args.features]
         tag = "[{}/{}] {} fold={} {} seed={}".format(i, len(plan), st, fold, name, seed)
         if (st, fold, name, seed) in done:
             print(tag, "-> da co, bo qua")
             continue
         if fold not in pooled:                       # ghep 4 tram mot lan cho moi fold
-            pooled[fold] = Pooled(sites, tr, te, delta=args.delta)
+            pooled[fold] = Pooled(sites, tr, te, delta=args.delta, features=args.features)
         d = pooled[fold]
         t0 = time.time()
         if name == "RF":

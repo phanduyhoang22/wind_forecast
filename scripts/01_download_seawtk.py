@@ -39,6 +39,12 @@ SITES = {
     "B": {"name": "Tram_B_VenBien",   "lat": 11.72, "lon": 109.11, "regime": "Coastal"},
     "C": {"name": "Tram_C_DoiNui",    "lat": 14.0, "lon": 108.0, "regime": "Complex Terrain"},
     "D": {"name": "Tram_D_NgoaiKhoi", "lat": 10.5, "lon": 109.3, "regime": "Offshore"},
+    # Hop #5 (13/11/2026): them 1 tram moi che do -> so chuyen giao cung vs khac che do.
+    # Toa do de xuat, PHAI qua cong kiem tra (mean, khoang cach bo, khong trung dao) truoc khi dung.
+    "E": {"name": "Tram_E_DatLien",   "lat": 19.85, "lon": 105.55, "regime": "Inland"},           # dong bang Thanh Hoa
+    "F": {"name": "Tram_F_VenBien",   "lat": 13.85, "lon": 109.28, "regime": "Coastal"},          # bo bien Binh Dinh. Cong: Tuy Phong tuong quan B 0.81; Bac Lieu/Soc Trang mean < 5.6
+    "G": {"name": "Tram_G_DoiNui",    "lat": 16.65, "lon": 106.65, "regime": "Complex Terrain"},  # Huong Hoa, Quang Tri
+    "H": {"name": "Tram_H_NgoaiKhoi", "lat": 20.30, "lon": 107.20, "regime": "Offshore"},         # vinh Bac Bo (Vung Tau 9.80,108.60 truot cong: tuong quan voi D 0.95)
 }
 
 ATTRIBUTES = [
@@ -125,6 +131,7 @@ def main():
     ap.add_argument("--email", default=os.environ.get("NREL_EMAIL", ""))
     ap.add_argument("--full-name", default=os.environ.get("NREL_NAME", ""))
     ap.add_argument("--affiliation", default=os.environ.get("NREL_AFFILIATION", ""))
+    ap.add_argument("--raw-dir", default=RAW_DIR, help="vd data_raw_2016 cho tap test lui thoi gian")
     ap.add_argument("--sleep", type=float, default=2.0, help="gian cach request (API cho 1/giay)")
     args = ap.parse_args()
 
@@ -137,17 +144,17 @@ def main():
 
     years = parse_years(args.years)
     sites = [s.strip().upper() for s in args.sites.split(",")]
-    os.makedirs(RAW_DIR, exist_ok=True)
+    os.makedirs(args.raw_dir, exist_ok=True)
 
     jobs = [(s, y) for s in sites for y in years]
     print("NREL SEA WTK v3 | {} tram x {} nam = {} request | interval={} phut"
           .format(len(sites), len(years), len(jobs), args.interval))
-    print("Luu vao: {}\n".format(RAW_DIR))
+    print("Luu vao: {}\n".format(args.raw_dir))
 
     failed = []
     for i, (site, year) in enumerate(jobs, 1):
         meta = SITES[site]
-        dest = os.path.join(RAW_DIR, "{}_{}_{}min.csv".format(meta["name"], year, args.interval))
+        dest = os.path.join(args.raw_dir, "{}_{}_{}min.csv".format(meta["name"], year, args.interval))
         tag = "[{}/{}] {} {} ({})".format(i, len(jobs), site, year, meta["regime"])
 
         if os.path.exists(dest) and os.path.getsize(dest) > 10000:
