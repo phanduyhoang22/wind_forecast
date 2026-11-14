@@ -99,3 +99,35 @@ py scripts/01_download_seawtk.py    # cần NREL_API_KEY và NREL_EMAIL
 py scripts/02_verify_raw.py         # cổng kiểm định — không đạt thì dừng
 py scripts/03_build_dataset.py
 ```
+
+## Mở rộng — họp #5 (14/11/2026)
+
+Thêm 1 trạm cho mỗi chế độ để tách "chuyển giao cùng chế độ" với "khác chế độ". Cùng
+nguồn (SEA WTK v3), cùng giai đoạn 2017–2021, cùng cách chia — dữ liệu 4 trạm cũ
+không đổi (đã kiểm hash CSV trước/sau khi dựng lại).
+
+**Cổng kiểm tra định trước** (đặt trước khi nhìn kết quả mô hình), dùng năm 2021 tải thử:
+cách trạm cũ cùng chế độ ≥ 70 km; tương quan chuỗi tốc độ gió 100 m với trạm cũ < 0.8;
+trạm ven biển có mean ≥ 6 m/s; trạm ngoài khơi không trùng/giáp đảo.
+
+| Trạm | Chế độ | Toạ độ yêu cầu | Ô lưới thực nhận | Mean 2017–2021 | Cách trạm cũ | Tương quan |
+|---|---|---|---|---|---|---|
+| E | Inland | 19.85 N, 105.55 E (Thanh Hoá) | 19.8426, 105.5427 | 3.80 | 131 km (A) | 0.54 |
+| F | Coastal | 13.85 N, 109.28 E (Bình Định) | 13.8480, 109.2736 | 5.73 | 237 km (B) | 0.67 |
+| G | Complex Terrain | 16.65 N, 106.65 E (Hướng Hoá, Quảng Trị) | 16.6404, 106.6400 | 7.10 | 328 km (C) | 0.65 |
+| H | Offshore | 20.30 N, 107.20 E (vịnh Bắc Bộ) | 20.3038, 107.1887 | 6.43 | 1114 km (D) | 0.04 |
+
+**Ứng viên bị loại:** Tuy Phong 11.22 N, 108.72 E (tương quan với B 0.81, cách 71 km);
+thềm Bình Thuận–Vũng Tàu 9.80 N, 108.60 E (tương quan với D 0.95); Bạc Liêu, Sóc Trăng
+(mean 5.1–5.6 m/s). **Lệch khỏi cổng:** ngưỡng mean ven biển nới từ 6.0 xuống 5.5 m/s —
+trong WTK chỉ vành đai Ninh Thuận–Bình Thuận vượt 6 m/s, và ứng viên ở đó trùng với trạm B.
+
+Cả 8 trạm đạt `02_verify_raw.py` (không nội suy, không rò rỉ nhãn).
+Persistence R² 1h/3h/6h trạm mới: E 0.83/0.35/−0.16; F 0.91/0.65/0.33; G 0.94/0.77/0.55; H 0.95/0.81/0.67.
+
+## Tập test lùi thời gian 2016
+
+`data_raw_2016/` → `data_2016/` (8 trạm, 35.040 mẫu/trạm). Nằm ngoài hoàn toàn train/val/test
+và không dùng cho tuning; chấm bằng scaler train 2017–2020 của từng trạm, không huấn luyện
+lại (`17_backtest_2016.py`). Mục đích: bù cho tập test chính (04–12/2021) thiếu lõi gió mùa
+Đông Bắc tháng 1–3. Đánh giá ngược chiều thời gian — phải ghi rõ trong bài.

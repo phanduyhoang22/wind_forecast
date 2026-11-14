@@ -12,3 +12,6 @@ results/runs_rf.csv
 
 # PDF bai bao co ban quyen -- chi doc tai may, khong day len repo public
 tailieu_rieng/
+data_2016/*.csv
+data_raw_2016/
+data_raw_gate/

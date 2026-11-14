@@ -20,6 +20,10 @@ DATA_DIR = os.path.join(ROOT, "data_v2")
 
 
 def main():
+    import sys
+    global DATA_DIR
+    if len(sys.argv) > 1:                      # vd: py scripts/05_pack_for_colab.py data_2016
+        DATA_DIR = os.path.join(ROOT, sys.argv[1])
     csvs = sorted(f for f in os.listdir(DATA_DIR) if f.endswith("_15min.csv"))
     if not csvs:
         raise SystemExit("Khong thay file *_15min.csv trong data_v2/")

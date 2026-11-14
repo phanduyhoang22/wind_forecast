@@ -34,6 +34,11 @@ SITES = {
     "B": "Tram_B_VenBien",
     "C": "Tram_C_DoiNui",
     "D": "Tram_D_NgoaiKhoi",
+    # Hop #5: 1 tram moi che do, qua cong kiem tra (xem data_v2/PROVENANCE.md)
+    "E": "Tram_E_DatLien",
+    "F": "Tram_F_VenBien",
+    "G": "Tram_G_DoiNui",
+    "H": "Tram_H_NgoaiKhoi",
 }
 
 # Che do gio cua moi tram (16_cross_eval: cung vs khac che do). E-H them o hop #5,
