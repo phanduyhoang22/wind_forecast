@@ -212,3 +212,23 @@ Runtime Colab ngắt ~19:41 UTC 14/11 (Drive không còn đồng bộ); máy t�
 **Đã xong:** E1 trạm E–H (mạng nơ-ron + RF); ma trận chấm chéo 8×8 (Mamba, Transformer, RF); chấm 2016 (mạng nơ-ron + RF); E7/E8 RF; PatchTST A–D 6/20 lượt.
 **Kết quả chính:** chấm chéo — cùng chế độ tốt hơn khác chế độ ~16 điểm % skill ở cả 3 mô hình (Mamba 1h: −4.6% vs −20.9%); 2016 — mọi mô hình vượt persistence mọi mùa, Mamba ≈ Transformer ≈ RF (cả năm 1h 0.620 / 0.619 / 0.621 vs persistence 0.736). RF chỉ tốc độ gió + delta: bỏ (hết RAM, delta giúp ít).
 **Chạy tiếp ở phiên Colab sau** (các lượt đã xong tự bỏ qua): (1) `09_global_loso.py --models Mamba --seeds 3 --features wind --out results/loso_wind.csv`; (2) `18_fewshot.py --sites A,B,C,D --models Mamba --seeds 3`; (3) `07_run_benchmark.py --sites A,B,C,D --models PatchTST --seeds 5`.
+
+---
+
+## Họp #6 — chuyển giao + xác nhận quyết định (15/11/2026)
+Brief: `docs/meetings/2026-11-15_transfer_brief.md`. Ba agent: phương pháp/thống kê, chuyên gia điện gió, kỹ sư ML.
+
+| Quyết định | Phiếu | Chốt |
+|---|---|---|
+| Q1: bỏ RF chỉ tốc độ gió + delta | 2 xác nhận / 1 bác | **Chạy lại** với `max_depth=16` trên CPU (~0,5 giờ) |
+| Q2: dời PatchTST xuống cuối | 3 xác nhận | Giữ cuối hàng đợi, **bắt buộc đủ 20/20** trước khi chốt bảng |
+| Q3: nới ngưỡng trạm ven biển 6,0 → 5,5 m/s | 3 xác nhận có điều kiện | F phải có cực đại gió buổi chiều + cách bờ ≤ 5 km; **ghi rõ trong bài** ngưỡng nới sau khi xem dữ liệu |
+
+**Hàng đợi GPU:** few-shot (đang chạy) → LOSO-W seed 3–4 cho cả 4 fold → E1-W Mamba 8 trạm + ma trận chéo W → SHAP (Mamba-31, Mamba-W) → PatchTST 14 lượt.
+**CPU:** kiểm tra F; bộ phân loại mã trạm; RF W + delta; `08`/`14` cho 8 trạm; conformal.
+**Thống kê:** đơn vị = trạm đích; Wilcoxon cùng vs khác chế độ; DM so persistence + Holm; báo median + dải seed.
+**Viết bài:** bắt đầu Dữ liệu và Phương pháp ngay.
+
+### Kết quả `19_site_checks.py`
+- Chu kỳ ngày (`results/diurnal_cycle.csv`): F cực đại 14h, giống B (14h) — pha gió biển buổi chiều; khác đất liền A/E (18–19h) và ngoài khơi D/H (18h/23h). **Điều kiện pha của Q3 đạt.** Còn kiểm khoảng cách bờ ≤ 5 km.
+- Bộ phân loại trạm (`results/site_id_classifier.csv`, RF 8 lớp, giá trị gốc): 5 biến khí tượng tuyệt đối → 0,927; 19 biến chỉ tốc độ gió → 0,498 (ngẫu nhiên 0,125). → Biến khí tượng tuyệt đối mang danh tính trạm, ủng hộ giải thích E7.
