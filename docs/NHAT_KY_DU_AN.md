@@ -281,3 +281,16 @@ Median 5 seed, skill so với persistence 1h/3h/6h:
 
 So với 3 seed (+2.2% / −0.4% / +2.2%, trung bình): median 5 seed tốt hơn vì seed lệch ở A (0.939) không kéo kết quả. D (ngoài khơi) vẫn thua persistence — với 3 trạm huấn luyện trên đất liền/ven biển/đồi núi, không có trạm ngoài khơi nào để học. LOSO 8 fold sẽ kiểm tra điều này (D học được từ H).
 - Colab reset lần nữa khoảng 16:50–17:00; đã dựng lại notebook (cell trạng thái mới `IS65_GcsKL95`).
+
+### RF-W LOSO 8 fold (depth 16, 3 seed) — 16/11/2026
+`results/loso8_rf_wind.csv`. Skill median seed so với persistence (%):
+
+| | A | B | C | D | E | F | G | H | TB | Thắng | Wilcoxon 2 phía (Holm) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1h | 9.5 | 3.5 | 8.3 | 0.9 | 9.1 | 6.3 | 8.9 | 3.6 | **6.3** | **8/8** | p = 0.0078 (**0.023**) |
+| 3h | 10.6 | 4.5 | 7.8 | −7.1 | 9.5 | 7.7 | 9.2 | −2.9 | 4.9 | 6/8 | p = 0.055 (0.109) |
+| 6h | 15.8 | 7.0 | 11.3 | −13.0 | 14.4 | 10.8 | 11.7 | −3.1 | 6.9 | 6/8 | p = 0.148 (0.148) |
+
+- Học 7 trạm tốt hơn hẳn học 3 trạm (RF-W 4 fold TB 1h +1.5%). D 1h: 0.565 → 0.533 (persistence 0.538).
+- 1h: vượt persistence ở 8/8 trạm, có ý nghĩa sau Holm. 3h/6h: chưa có ý nghĩa; hai trạm ngoài khơi (D, H) thua → chuyển giao ngoài khơi ở horizon dài vẫn yếu.
+- Diễn đạt theo họp #8: "bằng chứng nhất quán" ở 1h, không phải "tổng quát hoá".
