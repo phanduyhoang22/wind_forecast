@@ -35,7 +35,7 @@ The sites cover four wind regimes, with two sites per regime (Table 1). The firs
 **Deviation from the pre-registered gate.** We lowered the coastal mean threshold from 6.0 to 5.5 m/s after inspecting candidates. In SEA-WTK, only the Ninh Thuan–Binh Thuan belt exceeds 6 m/s, and its only candidate duplicated site B. Two checks confirm that the retained site F (Binh Dinh coast) is genuinely coastal:
 
 - its mean diurnal cycle peaks at 14:00 local time, the afternoon sea-breeze phase, identical to site B. The inland sites peak at 18–19 h and the offshore sites at 18–23 h (Table 2);
-- its distance to the shoreline is **[TODO: confirm ≤ 5 km]**.
+- its grid cell lies about 3 km inland of the shoreline, based on a 1-km land–sea mask (`21_coast_distance.py`). Site B lies about 10 km inland.
 
 **Table 1.** Study sites (SEA-WTK v3, 100 m, 2017–2021).
 
