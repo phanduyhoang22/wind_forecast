@@ -294,3 +294,9 @@ So với 3 seed (+2.2% / −0.4% / +2.2%, trung bình): median 5 seed tốt hơn
 - Học 7 trạm tốt hơn hẳn học 3 trạm (RF-W 4 fold TB 1h +1.5%). D 1h: 0.565 → 0.533 (persistence 0.538).
 - 1h: vượt persistence ở 8/8 trạm, có ý nghĩa sau Holm. 3h/6h: chưa có ý nghĩa; hai trạm ngoài khơi (D, H) thua → chuyển giao ngoài khơi ở horizon dài vẫn yếu.
 - Diễn đạt theo họp #8: "bằng chứng nhất quán" ở 1h, không phải "tổng quát hoá".
+
+### Trạng thái khi dừng — 16/11/2026 (~03:15 giờ VN)
+Colab không phản hồi (2 lần `run_code_cell` treo 30 phút); Drive ngừng đồng bộ từ 19:02 UTC 15/11 → theo quy tắc, push và tự tắt máy.
+**Đã xong phiên này:** họp #6–#8; RF-W + delta và RF-W depth 16; few-shot RF + kiểm tra phủ dải gió; LOSO-W Mamba 5 seed A–D; RF-W LOSO 8 fold (1h vượt persistence 8/8, Holm p = 0.023); khoảng cách bờ (F ~3 km); bản nháp Mục 2; `docs/Tong_quan_du_an.docx`.
+**Đang dở trên Colab:** LOSO 8 fold Mamba-W (`loso8_wind.csv`): 3/27 lượt (global) đã đồng bộ Drive; các lượt sau 19:02 UTC có thể mất.
+**Chạy tiếp:** mở Colab, chạy cell thiết lập `lIYdn1woOS1n` (tự bỏ qua lượt đã xong) — hàng đợi: LOSO-W A–D (đã xong, bỏ qua) → LOSO 8 fold → scratch 2000 bước → E1-W 8 trạm → chéo W → SHAP ×2 → PatchTST. Cell trạng thái `IS65_GcsKL95`.
