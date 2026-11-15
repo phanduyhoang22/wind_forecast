@@ -257,3 +257,12 @@ Brief: `docs/meetings/2026-11-15_fewshot_brief.md`.
   | TN 4 tuần | 0.84 | 1.97 | 1.18 | 2.43 |
 
   Không phải lỗi. Sai số đi theo tỷ lệ gió tập test nằm ngoài khoảng của k tuần train (`scripts/20_fewshot_range.py`): A DB 1 tuần 2% thì RMSE 0.87 ≈ persistence; D DB 1 tuần 57% thì RMSE 3.48. Mô hình học từ đầu (RF hay mạng nơ-ron) không ngoại suy ra ngoài dải gió đã thấy. Mô hình LOSO-W học sẵn mang dải khí hậu của trạm khác nên fine-tune ổn định (0.53–0.66). → Luận điểm cho bài: học sẵn liên trạm giải quyết vấn đề "thiếu phủ dải gió" của trạm mới.
+
+## Họp #8 — rà soát dữ liệu (15/11/2026)
+Brief: `docs/meetings/2026-11-15_data_gaps_brief.md`.
+- **Bắt buộc sửa:** LOSO 8 fold (3/3): với n = 4, Wilcoxon theo trạm đích có p nhỏ nhất 0.125, không bao giờ có ý nghĩa. Khoảng cách trạm F tới bờ (2/3). Báo kết quả 2016 theo mùa.
+- **Nêu là hạn chế:** dữ liệu mô hình hoá (nói rõ trong abstract và Limitations; kiểm định NREL chỉ có tháp ở Bangladesh, không có mast Việt Nam); một độ cao 100 m; few-shot 2 cửa sổ; không có NWP đầu vào (dự báo thuần chuỗi thời gian); 2 trạm/chế độ (không suy luận cấp "chế độ"), 5 năm.
+- **Tải thêm dữ liệu:** không (3/3) — không thêm năm, trạm hay độ cao. Dữ liệu đo ESMAP/World Bank (Phan Rang, Phan Thiết, Pleiku; 12/2008–02/2009, energydata.info) khác thời kỳ, chỉ so định tính được; chỉ 1/3 ủng hộ nên không làm.
+- **LOSO 8 fold:** Mamba-W 3 seed (khoảng 11–16 giờ T4), xếp ngay sau LOSO-W A–D (2/3). RF-W `max_depth=16` chạy tuần tự trên CPU (`loso8_rf_wind.csv`). Thống kê: Wilcoxon theo trạm đích (n = 8, p nhỏ nhất 0.0078), Holm, effect size rank-biserial; diễn đạt "bằng chứng nhất quán", không phải "tổng quát hoá".
+- **Sự cố khi chèn hàng đợi:** chuỗi mới chờ nhầm PID của bash đã kill nên LOSO 8 fold chạy song song vài giây; đã dừng và cho chờ đúng PID python 2347.
+- **Khoảng cách F tới bờ:** cài `global-land-mask` bị chặn vì chưa có quyền → cần người dùng tra Google Maps (13.8480, 109.2736) hoặc cho phép cài gói.
