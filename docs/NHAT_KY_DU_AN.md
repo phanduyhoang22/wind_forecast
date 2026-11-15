@@ -266,3 +266,4 @@ Brief: `docs/meetings/2026-11-15_data_gaps_brief.md`.
 - **LOSO 8 fold:** Mamba-W 3 seed (khoảng 11–16 giờ T4), xếp ngay sau LOSO-W A–D (2/3). RF-W `max_depth=16` chạy tuần tự trên CPU (`loso8_rf_wind.csv`). Thống kê: Wilcoxon theo trạm đích (n = 8, p nhỏ nhất 0.0078), Holm, effect size rank-biserial; diễn đạt "bằng chứng nhất quán", không phải "tổng quát hoá".
 - **Sự cố khi chèn hàng đợi:** chuỗi mới chờ nhầm PID của bash đã kill nên LOSO 8 fold chạy song song vài giây; đã dừng và cho chờ đúng PID python 2347.
 - **Khoảng cách F tới bờ:** cài `global-land-mask` bị chặn vì chưa có quyền → cần người dùng tra Google Maps (13.8480, 109.2736) hoặc cho phép cài gói.
+- **Khoảng cách tới bờ** (`scripts/21_coast_distance.py`, mặt nạ ~1 km): F trên đất liền, cách bờ ~3.0 km → **đạt điều kiện Q3 (≤ 5 km)**. B cách bờ ~9.8 km; A, C, E, G > 16 km; D, H ngoài khơi > 16 km. Điều kiện Q3 họp #6 đã đủ (chu kỳ 14h + ≤ 5 km).
