@@ -237,3 +237,10 @@ Brief: `docs/meetings/2026-11-15_transfer_brief.md`. Ba agent: phương pháp/th
 - **RF chỉ tốc độ gió + delta** (`max_depth=16`, 3 seed; `results/loso_rf_wind_delta_d16.csv`). LOSO RMSE 1h A/B/C/D: 0.804 / 0.636 / 0.588 / 0.569, so với RF-W (depth 24) 0.798 / 0.633 / 0.581 / 0.567. → Delta không thêm lợi ích trên bộ W; cải thiện chuyển giao đến từ việc bỏ biến khí tượng tuyệt đối, không phải từ khử mức. (Hai bộ khác depth: 16 so với 24.)
 - **Code:** `FEATURE_SETS` chuyển sang `04` kèm `select_features()`. `07` và `16` có `--features` (lưu vào `models_<features>/`, `preds_<features>/`). `10_shap.py` có `--pattern` (vd `losoW_{site}_{model}_{seed}.pt`), `--features`, `--tag`.
 - **Few-shot (Colab):** bản học từ đầu với 1–4 tuần dữ liệu có RMSE 1h khoảng 2.5–3.0, tệ hơn persistence nhiều → cần kiểm tra trước khi đưa vào bài (có thể do lr 1e-4 quá nhỏ cho học từ đầu).
+
+## Họp #7 — baseline few-shot + RF depth (15/11/2026)
+Brief: `docs/meetings/2026-11-15_fewshot_brief.md`.
+- **Chẩn đoán (kỹ sư ML):** scratch chưa hội tụ do ngân sách bước, không phải lỗi code. 1 tuần thì 10 batch/epoch, tối đa 300 bước, early stop 5 epoch (~50 bước) kích hoạt ở cao nguyên "dự đoán hằng số".
+- **Q1 (3/3):** kết hợp. Chạy lại scratch với ngân sách cố định 2000 bước, patience 400 bước, warmup 100 bước (`--scratch-steps 2000`, ra `fewshot_scratch2.csv`). Chạy thử 1 lượt trước (A, 1 tuần, 1 seed). Thêm RF học trên đúng k tuần (`--modes rf`, CPU). Persistence trên cùng tập test đã có. Nếu scratch vẫn kém sau khi hội tụ thì báo trung thực.
+- **Q2 (3/3):** chạy RF-W `max_depth=16` để so sánh delta cùng depth. Chênh lệch ~0,005 nên báo kèm dải seed, không kết luận từ điểm.
+- **Q3 (2/3):** hàng đợi GPU: few-shot (cũ) → chạy thử scratch → LOSO-W seed 3–4 → scratch 2000 bước (~3–4 giờ) → E1-W 8 trạm + chéo W → SHAP → PatchTST. Reviewer muốn đưa scratch lên đầu; đa số giữ sau LOSO-W.

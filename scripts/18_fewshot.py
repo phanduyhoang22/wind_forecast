@@ -12,11 +12,17 @@ Scaler cua t fit tren toan bo train cua t -> gia dinh co thong ke khi hau lich s
 (ghi ro trong bai).
 
     py scripts/18_fewshot.py --sites A,B,C,D --models Mamba --seeds 3
+
+Hop #7: scratch cu (30 epoch, patience 5) chua hoi tu (RMSE 1h ~2.7). Chay lai voi ngan sach
+buoc co dinh + baseline RF hoc tren dung k tuan:
+    py scripts/18_fewshot.py --modes scratch --scratch-steps 2000 --out results/fewshot_scratch2.csv
+    py scripts/18_fewshot.py --modes rf --out results/fewshot_rf.csv          (CPU)
 """
 
 import argparse
 import importlib.util
 import json
+import math
 import os
 import time
 
@@ -46,6 +52,10 @@ def main():
     ap.add_argument("--patience", type=int, default=5)
     ap.add_argument("--max-batches", type=int, default=0)
     ap.add_argument("--out", default=os.path.join(RESULTS, "fewshot.csv"))
+    ap.add_argument("--modes", default="finetune,scratch", help="finetune,scratch,rf")
+    ap.add_argument("--scratch-steps", type=int, default=0, help="0 = dung --epochs/--patience nhu cu")
+    ap.add_argument("--scratch-patience-steps", type=int, default=400)
+    ap.add_argument("--scratch-warmup-steps", type=int, default=100)
     args = ap.parse_args()
 
     import torch
@@ -71,7 +81,7 @@ def main():
                 for k in [int(x) for x in args.weeks.split(",")]:
                     sub = full_train[max(0, end_i - k * STEPS_PER_WEEK):end_i]
                     for seed in range(args.seeds):
-                        for mode in ("finetune", "scratch"):
+                        for mode in args.modes.split(","):
                             key = (t, name, mode, win, k, seed)
                             if key in done:
                                 continue
@@ -84,12 +94,21 @@ def main():
                                 init = torch.load(f, map_location="cpu")
                             d.idx_train = sub
                             kw = dict(cfg)
+                            ep, pat = args.epochs, args.patience
                             if mode == "finetune":
                                 kw["lr"] = 1e-4
+                            elif mode == "scratch" and args.scratch_steps:   # ngan sach buoc co dinh (hop #7)
+                                nb = max(1, len(sub) // 64)                  # run_nn drop_last, batch 64
+                                ep = math.ceil(args.scratch_steps / nb)
+                                pat = math.ceil(args.scratch_patience_steps / nb)
+                                kw["warmup_epochs"] = math.ceil(args.scratch_warmup_steps / nb)
                             t0 = time.time()
-                            y_pred, info = bm.run_nn(d, seed, name, epochs=args.epochs, patience=args.patience,
-                                                     batch_size=64, max_batches=args.max_batches,
-                                                     init_state=init, **kw)
+                            if mode == "rf":
+                                y_pred, info = bm.run_rf(d, seed, **tuned.get("RF", {}))
+                            else:
+                                y_pred, info = bm.run_nn(d, seed, name, epochs=ep, patience=pat,
+                                                         batch_size=64, max_batches=args.max_batches,
+                                                         init_state=init, **kw)
                             m = dp.metrics(d.y_raw[d.idx_test], y_pred)
                             rows = [dict(site=t, model=name, mode=mode, window=win, weeks=k, seed=seed,
                                          n_train=len(sub), horizon=h, **r.to_dict()) for h, r in m.iterrows()]
