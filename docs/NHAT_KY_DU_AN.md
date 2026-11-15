@@ -232,3 +232,8 @@ Brief: `docs/meetings/2026-11-15_transfer_brief.md`. Ba agent: phương pháp/th
 ### Kết quả `19_site_checks.py`
 - Chu kỳ ngày (`results/diurnal_cycle.csv`): F cực đại 14h, giống B (14h) — pha gió biển buổi chiều; khác đất liền A/E (18–19h) và ngoài khơi D/H (18h/23h). **Điều kiện pha của Q3 đạt.** Còn kiểm khoảng cách bờ ≤ 5 km.
 - Bộ phân loại trạm (`results/site_id_classifier.csv`, RF 8 lớp, giá trị gốc): 5 biến khí tượng tuyệt đối → 0,927; 19 biến chỉ tốc độ gió → 0,498 (ngẫu nhiên 0,125). → Biến khí tượng tuyệt đối mang danh tính trạm, ủng hộ giải thích E7.
+
+### Sau họp #6 — CPU (15/11/2026)
+- **RF chỉ tốc độ gió + delta** (`max_depth=16`, 3 seed; `results/loso_rf_wind_delta_d16.csv`). LOSO RMSE 1h A/B/C/D: 0.804 / 0.636 / 0.588 / 0.569, so với RF-W (depth 24) 0.798 / 0.633 / 0.581 / 0.567. → Delta không thêm lợi ích trên bộ W; cải thiện chuyển giao đến từ việc bỏ biến khí tượng tuyệt đối, không phải từ khử mức. (Hai bộ khác depth: 16 so với 24.)
+- **Code:** `FEATURE_SETS` chuyển sang `04` kèm `select_features()`. `07` và `16` có `--features` (lưu vào `models_<features>/`, `preds_<features>/`). `10_shap.py` có `--pattern` (vd `losoW_{site}_{model}_{seed}.pt`), `--features`, `--tag`.
+- **Few-shot (Colab):** bản học từ đầu với 1–4 tuần dữ liệu có RMSE 1h khoảng 2.5–3.0, tệ hơn persistence nhiều → cần kiểm tra trước khi đưa vào bài (có thể do lr 1e-4 quá nhỏ cho học từ đầu).

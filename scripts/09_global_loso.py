@@ -44,17 +44,7 @@ dp = _load("dp", "04_data_pipeline.py")
 bm = _load("bm", "07_run_benchmark.py")
 
 
-# E7 (hop #3-#5): bo dac trung cho chuyen giao. Despotovic et al. (2026) chuyen giao
-# duoc voi chi lag toc do gio; gia thuyet: bien muc tuyet doi gan tram (ap suat, mat do,
-# nhiet do) la "site ID ngam" gay lech muc.
-_WIND = {"wind_speed", "ws_10m", "ws_80m", "ws_120m", "ws_200m", "ws_lag_15min", "ws_lag_1h",
-         "ws_lag_3h", "ws_lag_6h", "ws_lag_24h", "ws_rolling_mean_1h", "ws_rolling_std_1h",
-         "ws_rolling_mean_6h", "ws_delta", "ws_delta_1h", "hr_sin", "hr_cos", "month_sin", "month_cos"}
-FEATURE_SETS = {
-    "wind": _WIND,                                                     # W: chi toc do gio + chu ky
-    "relative": _WIND | {"wind_sin", "wind_cos", "u_wind", "v_wind",   # W+P: them dai luong tuong doi
-                         "shear_alpha", "shear_alpha_wide", "veer_120_80", "dT_10_100"},
-}
+FEATURE_SETS = dp.FEATURE_SETS   # E7, dinh nghia trong 04 (07/16 cung dung)
 
 
 class RowScaler:

@@ -70,6 +70,10 @@ def main():
     ap.add_argument("--device", default=None)
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--tuned", default=os.path.join(RESULTS, "tuned.json"))
+    ap.add_argument("--pattern", default="{site}_{model}_{seed}.pt",
+                    help="ten file trong so, vd LOSO-W: losoW_{site}_{model}_{seed}.pt (--models-dir results/models_loso)")
+    ap.add_argument("--features", default="all", choices=["all", "wind", "relative"], help="phai khop luc train")
+    ap.add_argument("--tag", default="", help="tien to ten file ket qua, vd losoW")
     args = ap.parse_args()
 
     import json
@@ -82,17 +86,17 @@ def main():
     # cuDNN RNN khong cho backward o eval() -> SHAP cho LSTM can tat cuDNN
     torch.backends.cudnn.enabled = False
     cfg = (json.load(open(args.tuned)) if os.path.exists(args.tuned) else {}).get(args.model, {})
-    tag = "{}_{}".format(args.model, args.seed)
+    tag = "_".join(x for x in (args.tag, args.model, str(args.seed)) if x)
     H = len(dp.HORIZONS)
     labs = [l for _, l in dp.HORIZONS]
 
     imp_rows, tmp_rows = [], []
     for site in [s.strip().upper() for s in args.sites.split(",")]:
-        path = os.path.join(args.models_dir, "{}_{}_{}.pt".format(site, args.model, args.seed))
+        path = os.path.join(args.models_dir, args.pattern.format(site=site, model=args.model, seed=args.seed))
         if not os.path.exists(path):
             print(site, "-> thieu", path, ", bo qua")
             continue
-        d = dp.load_site(site, args.data_dir or dp.DATA_DIR)
+        d = dp.select_features(dp.load_site(site, args.data_dir or dp.DATA_DIR), args.features)
         model = mo.build(args.model, d.n_features, H, **cfg)   # revin lam doi cau truc -> phai khop luc train
         model.load_state_dict(torch.load(path, map_location="cpu"))
         model.to(dev).eval()

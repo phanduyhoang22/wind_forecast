@@ -53,6 +53,8 @@ def main():
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--out", default=os.path.join(RESULTS, "cross_eval.csv"))
     ap.add_argument("--device", default=None)
+    ap.add_argument("--features", default="all", choices=["all", "wind", "relative"],
+                    help="doc trong so tu results/models_<features>/ (07 --features)")
     args = ap.parse_args()
 
     import torch
@@ -62,7 +64,8 @@ def main():
     tuned = json.load(open(os.path.join(RESULTS, "tuned.json")))
     dev = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
     sites = [s.strip().upper() for s in args.sites.split(",")]
-    data = {s: dp.load_site(s) for s in sites}
+    data = {s: dp.select_features(dp.load_site(s), args.features) for s in sites}
+    mdir = "models" if args.features == "all" else "models_" + args.features
 
     done = set()
     if os.path.exists(args.out):
@@ -87,7 +90,7 @@ def main():
                         p = rf.predict(t.flat(t.idx_test))
                         yp = t.scaler_y.inverse(p.reshape(-1, 1)).reshape(p.shape)
                     else:
-                        f = os.path.join(RESULTS, "models", "{}_{}_{}.pt".format(src, name, seed))
+                        f = os.path.join(RESULTS, mdir, "{}_{}_{}.pt".format(src, name, seed))
                         if not os.path.exists(f):
                             print("thieu", f)
                             break

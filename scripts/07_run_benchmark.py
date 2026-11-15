@@ -234,13 +234,16 @@ def main():
     ap.add_argument("--batch-size", type=int, default=128)
     ap.add_argument("--data-dir", default=dp.DATA_DIR)
     ap.add_argument("--out", default=os.path.join(RESULTS, "runs.csv"))
+    ap.add_argument("--features", default="all", choices=["all", "wind", "relative"],
+                    help="E1-W (hop #6): luu vao models_<features>/, preds_<features>/")
     ap.add_argument("--device", default=None)
     ap.add_argument("--max-batches", type=int, default=0,
                     help="gioi han so batch/epoch -- CHI de chay thu, dat 0 khi chay that")
     args = ap.parse_args()
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    mdir = os.path.join(os.path.dirname(args.out), "models")
+    sfx = "" if args.features == "all" else "_" + args.features
+    mdir = os.path.join(os.path.dirname(args.out), "models" + sfx)
     os.makedirs(mdir, exist_ok=True)
     sites = [s.strip().upper() for s in args.sites.split(",")]
     models = [m.strip() for m in args.models.split(",")]
@@ -257,7 +260,7 @@ def main():
     total = len(sites) * len(models) * args.seeds
     i = 0
     for site in sites:
-        d = dp.load_site(site, args.data_dir)
+        d = dp.select_features(dp.load_site(site, args.data_dir), args.features)
         for name in models:
             for seed in range(args.seeds):
                 i += 1
@@ -279,7 +282,7 @@ def main():
                 m = dp.metrics(d.y_raw[d.idx_test], y_pred)
 
                 # Luu du doan tung mau -> 08 can cho kiem dinh Diebold-Mariano
-                pdir = os.path.join(os.path.dirname(args.out), "preds")
+                pdir = os.path.join(os.path.dirname(args.out), "preds" + sfx)
                 os.makedirs(pdir, exist_ok=True)
                 np.savez_compressed(os.path.join(pdir, "{}_{}_{}.npz".format(site, name, seed)),
                                     y_pred=y_pred.astype(np.float32))
