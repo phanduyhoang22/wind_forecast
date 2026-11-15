@@ -267,3 +267,17 @@ Brief: `docs/meetings/2026-11-15_data_gaps_brief.md`.
 - **Sự cố khi chèn hàng đợi:** chuỗi mới chờ nhầm PID của bash đã kill nên LOSO 8 fold chạy song song vài giây; đã dừng và cho chờ đúng PID python 2347.
 - **Khoảng cách F tới bờ:** cài `global-land-mask` bị chặn vì chưa có quyền → cần người dùng tra Google Maps (13.8480, 109.2736) hoặc cho phép cài gói.
 - **Khoảng cách tới bờ** (`scripts/21_coast_distance.py`, mặt nạ ~1 km): F trên đất liền, cách bờ ~3.0 km → **đạt điều kiện Q3 (≤ 5 km)**. B cách bờ ~9.8 km; A, C, E, G > 16 km; D, H ngoài khơi > 16 km. Điều kiện Q3 họp #6 đã đủ (chu kỳ 14h + ≤ 5 km).
+
+### LOSO-W Mamba đủ 5 seed (A–D) — 16/11/2026
+Median 5 seed, skill so với persistence 1h/3h/6h:
+
+| Trạm | 1h | 3h | 6h | RMSE 1h median (min–max) |
+|---|---|---|---|---|
+| A | +4.4% | −2.4% | +0.1% | 0.808 (0.786–0.939) |
+| B | +3.2% | +5.2% | +7.7% | 0.619 (0.583–0.652) |
+| C | +13.6% | +12.1% | +16.9% | 0.525 (0.515–0.578) |
+| D | −1.7% | −7.7% | −7.3% | 0.547 (0.539–0.582) |
+| **TB** | **+4.9%** | **+1.8%** | **+4.3%** | |
+
+So với 3 seed (+2.2% / −0.4% / +2.2%, trung bình): median 5 seed tốt hơn vì seed lệch ở A (0.939) không kéo kết quả. D (ngoài khơi) vẫn thua persistence — với 3 trạm huấn luyện trên đất liền/ven biển/đồi núi, không có trạm ngoài khơi nào để học. LOSO 8 fold sẽ kiểm tra điều này (D học được từ H).
+- Colab reset lần nữa khoảng 16:50–17:00; đã dựng lại notebook (cell trạng thái mới `IS65_GcsKL95`).
