@@ -247,3 +247,13 @@ Brief: `docs/meetings/2026-11-15_fewshot_brief.md`.
 - **Chạy thử scratch 2000 bước** (A, 1 tuần, seed 0): RMSE 1h 1.72 (DB) / 1.88 (TN), so với persistence 0.845. Train loss ~0.004 nhưng val ~0.016 (fine-tune ~0.003): đã hội tụ trên train nhưng quá khớp 1 tuần dữ liệu. Theo biên bản, vẫn chạy đủ và báo cáo trung thực; RF trên k tuần là baseline so sánh chính.
 - **RF-W depth 16** (`loso_rf_wind_d16.csv`): skill LOSO 1h/3h/6h +1.5% / +0.6% / +1.8%, so với W + delta (depth 16) +0.7% / −0.2% / +1.0%. Cùng depth thì delta làm kém đi chút ít → không dùng delta. Kết quả RF-W không phụ thuộc depth (24: +1.4% / +0.2% / +1.3%).
 - **Colab reset** khoảng 14:20–14:50 (mất VM, GPU vẫn còn). Đã chạy lại cell thiết lập với hàng đợi mới; các lượt đã đồng bộ Drive được bỏ qua.
+- **RF few-shot** (`results/fewshot_rf.csv`, CPU), RMSE 1h theo trạm A/B/C/D:
+
+  | Cửa sổ | A | B | C | D |
+  |---|---|---|---|---|
+  | DB 1 tuần | 0.87 | 2.55 | 1.23 | 3.48 |
+  | DB 4 tuần | 0.82 | 1.31 | 1.04 | 1.57 |
+  | TN 1 tuần | 2.09 | 2.36 | 1.78 | 2.52 |
+  | TN 4 tuần | 0.84 | 1.97 | 1.18 | 2.43 |
+
+  Không phải lỗi. Sai số đi theo tỷ lệ gió tập test nằm ngoài khoảng của k tuần train (`scripts/20_fewshot_range.py`): A DB 1 tuần 2% thì RMSE 0.87 ≈ persistence; D DB 1 tuần 57% thì RMSE 3.48. Mô hình học từ đầu (RF hay mạng nơ-ron) không ngoại suy ra ngoài dải gió đã thấy. Mô hình LOSO-W học sẵn mang dải khí hậu của trạm khác nên fine-tune ổn định (0.53–0.66). → Luận điểm cho bài: học sẵn liên trạm giải quyết vấn đề "thiếu phủ dải gió" của trạm mới.
