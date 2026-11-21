@@ -42,9 +42,9 @@ if not alive and torch.cuda.is_available():
     SYNC = (f'while true; do D={R}; cp {W}/results/*.csv {W}/results/*.log {W}/results/*.npz $D/ 2>/dev/null; '
             f'for s in {" ".join(SUBS)}; do mkdir -p $D/$s; cp -u {W}/results/$s/* $D/$s/ 2>/dev/null; done; sleep 300; done')
     PB = f'{PY} scripts/18_fewshot.py --sites A,B,C,D --models Mamba --seeds 1 --modes scratch --scratch-steps 2000'
-    PILOT = f'{PB} --out results/pilot_free.csv; {PB} --const-calendar --out results/pilot_const.csv; touch {W}/results/pilot.done {R}/pilot.done'   # M12 pilot (val only), parallel, synced
+    PILOT = f'{PB} --out results/pilot2_free.csv; {PB} --const-calendar --out results/pilot2_const.csv; touch {W}/results/pilot2.done {R}/pilot2.done'   # M12 pilot v2 (has val_best, T13), parallel, synced
     subprocess.Popen(['bash', '-c', f'({CHAIN}) >> {W}/results/run.log 2>&1'])
-    if not os.path.exists(f'{R}/pilot.done'):
+    if not os.path.exists(f'{R}/pilot2.done'):
         subprocess.Popen(['bash', '-c', f'({PILOT}) >> {W}/results/pilot.log 2>&1'])
     subprocess.Popen(['bash', '-c', SYNC])
     print('da khoi dong: T01 LOSO 8 fold -> T03 E1-W + cheo W -> T04 SHAP x2 -> T05 PatchTST A-H (+ pilot M12)')

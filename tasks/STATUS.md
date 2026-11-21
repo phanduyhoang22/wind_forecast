@@ -133,6 +133,14 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   - Real NN training was only stubbed; it will be checked by the Colab pilot.
 - last_update: 2026-11-21 (Leader): approved on QA PASS (light task); merged `80f0081`.
 
+## T13 — Record validation score in few-shot rows (M12 pilot) — light task
+- owner: worker | priority: P0 | status: DONE | attempt_count: 1
+- test_evidence: QA PASS 2026-11-22. Ridge `val_best` is 0.008225 (DB) and 0.016977 (TN). A stubbed NN run passes `val_best` and `best_epoch` through. The header gains 2 columns before RMSE, so never append to an old CSV. Merged by the Leader.
+- goal: `18_fewshot.py` output rows carry the selection metric, so the M12 pilot can pick the `month_*` handling on validation only. The first pilot (`pilot_free.csv`, `pilot_const.csv`, 72 + 72 rows, 2026-11-21) has test metrics only, so it cannot be used for selection.
+- acceptance_criteria: rows get `val_best` (validation MSE, normalised; from `info` for NN modes, computed on `d.idx_val` for rf/ridge) and `best_epoch` (NN only, else empty); existing columns unchanged; ridge smoke writes the new columns; diff ≤ ~10 lines.
+- allowed_paths: `scripts/18_fewshot.py`
+- last_update: 2026-11-22 (Leader)
+
 ## T12 — Few-shot A–H with the 8-fold init (M11)
 - owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: TODO | attempt_count: 0
 - scope: `18_fewshot.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --modes finetune,scratch --scratch-steps 2000 --init-tag losoW8 --out results/fewshot8.csv`; RF: `--modes rf --out results/fewshot8_rf.csv` (CPU).
