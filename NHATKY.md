@@ -1,5 +1,23 @@
 # NHATKY
 
+## 2026-11-21 13:30 — leader — Họp M09–M12, chạy lại Colab, sửa code few-shot
+- Làm được:
+  - Họp M09 (trùng tên file LOSO 4/8 fold) → T10 sửa `09` (`losoW8_*`, `globalW8_*`), merge `e124620`.
+  - Colab chạy lại lúc 12:2x UTC, chain T01 → T03 → T04 → T05; đã đổi tên 42 file 8 fold trên Drive; snapshot `models_loso_4fold/`, `preds_loso_4fold/`.
+  - T02 xong 72/72 nhưng qa FAIL (mốc học từ đầu không công bằng) → họp M12 → T11 sửa `07` + `18`, merge `80f0081`; push `91b5e6e`.
+- Quyết định (Director, User uỷ quyền):
+  - M10: PatchTST chạy đủ A–H.
+  - M11: few-shot mở rộng A–H, khởi tạo từ `losoW8`.
+  - M12: bộ giảm lr tính theo bước; đặc trưng tháng chọn trên val; thêm Ridge làm mốc.
+  - Chi tiết các quyết định ở `tasks/MEETINGS.md`.
+- User: được toàn quyền, không cần duyệt lệnh; muốn chạy một mạch thì mở `claude --continue --dangerously-skip-permissions` (`settings.local.json` đã có bypass).
+- Dở dang / bước tiếp:
+  1. Giữ runtime Colab.
+  2. Bản chạy thử M12 (`/content/pilot`): chọn cách xử lý `month_*` theo `val_best`, ghi vào MEETINGS M12.
+  3. Khi T01 xong: chạy T12 (few-shot A–H, `--init-tag losoW8`, CSV `fewshot8*.csv`) và chạy Ridge/RF trên CPU.
+  4. Hàng đợi chi tiết: STATUS "Colab queue".
+- Mở chat tiếp: /role leader T01
+
 ## 2026-11-21 — leader — Quy tắc mức suy luận
 - Làm được: thêm quy tắc "mỗi chat tự chọn mức suy luận theo việc, cả worker/qa" vào `CLAUDE.md` mục 8 (thay đổi nhỏ, chưa commit).
 - Quyết định (User): chat tự chọn mức suy luận; làm tiếp trong chat hiện tại đến khi User bảo chuyển.

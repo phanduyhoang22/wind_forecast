@@ -24,9 +24,18 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-21 (M11, Director under User delegation): few-shot E9 extended to A–H with the 8-fold `losoW8` init (finetune, scratch, RF); the 8-site table is the main one, the 4-fold A–D run a disclosed sensitivity check; conditional on the T02 QA clearing the scratch path and on T01 finishing.
 - 2026-11-21 (M12, Director under User delegation): few-shot scratch baseline fixed post hoc (disclosed): LR-scheduler patience scaled to steps for finetune and scratch; `month_*` handling picked on validation in a pilot and frozen before test; Ridge on k weeks added; main claim = finetune vs best of scratch NN / Ridge / RF; R18 kept as an invalid-baseline row.
 
-## Colab queue (as of last Drive sync 2026-11-16 18:58 UTC — nothing ran after)
-T01 → T02 → T03 → T04 → T05. Runner: `notebooks/colab_resume.py` (paste the setup cell into the empty MCP notebook; it re-clones, restores results from Drive, skips finished keys, starts the chain + Drive sync). Estimated GPU left: T01 ~10 h, T02 ~3–4 h, T03 ~4–5 h, T04 ~1.5 h, T05 ~4.4 h (≈ 24 h).
-How to resume in a new chat: `open_colab_browser_connection` → paste setup cell → run → add status cell → keep-alive every ~15 min (background `sleep 840` timer) → on GPU loss or `all.done`: commit + push, `shutdown /s /t 600`.
+## Colab queue (2026-11-21 ~13:30 UTC, live)
+- Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
+- Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
+- Side job: the M12 pilot runs in `/content/pilot` (clone at 91b5e6e, NOT synced to Drive). It runs `18_fewshot.py --sites A,B,C,D --seeds 1 --modes scratch --scratch-steps 2000`, writing `results/pilot_free.csv` and then `results/pilot_const.csv` (`--const-calendar`), with `/content/pilot/pilot.done` when finished. Compare `val_best` only, pick the `month_*` handling, then copy both CSVs to Drive `results/` for the record.
+- Runner: `notebooks/colab_resume.py`. Paste the setup cell into the empty MCP notebook; it re-clones, restores results from Drive, skips finished keys, and starts the chain plus the Drive sync. The runner still lists T02; it is skipped because all its keys are done.
+- Resume in a new chat:
+  1. `open_colab_browser_connection`, then `get_cells`.
+  2. If the cells still exist, run the status cell. If the notebook is empty, paste the setup cell and run it.
+  3. Keep the runtime alive every ~15 min (background `sleep 840` timer, then run the status cell).
+  4. On GPU loss or `all.done`: commit + push, then `shutdown /s /t 600`.
+  - Stale-output check: if the printed time does not change, check the Drive `results/run.log` modifiedTime.
+- Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
 - owner: Leader (Colab) | priority: P0 | status: IN_PROGRESS | attempt_count: 1
