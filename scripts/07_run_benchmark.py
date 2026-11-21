@@ -72,7 +72,7 @@ def run_rf(d, seed, n_estimators=500, max_depth=16, save_path=None, **_):
 
 def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
            weight_decay=0.01, device=None, max_batches=0, save_path=None,
-           warmup_epochs=1, init_state=None, **kw):
+           warmup_epochs=1, init_state=None, sched_patience=3, **kw):
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
@@ -114,7 +114,7 @@ def run_nn(d, seed, name, epochs=50, patience=10, batch_size=64, lr=1e-3,
             if hasattr(blk, "ssm"):
                 blk.ssm = torch.compile(blk.ssm)
     opt = torch.optim.AdamW(mo.param_groups(model, weight_decay), lr=lr)
-    sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", patience=3, factor=0.5)
+    sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", patience=sched_patience, factor=0.5)
     lossf = nn.MSELoss()
 
     # Mixed precision: cac lop tuyen tinh chay fp16, rieng selective scan van
