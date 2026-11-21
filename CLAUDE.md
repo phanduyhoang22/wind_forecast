@@ -6,7 +6,7 @@
 - Current phase: transfer experiments + writing (Section 2 drafted). Success = significant, honest claims vs persistence and baselines (DM/Wilcoxon + Holm).
 
 ## 2. Stack & environment
-- Python: this project has so far run with `py` (Python 3.12 user install, `C:\Users\User\AppData\Local\Programs\Python\Python312`), NOT the shared `D:\Project\.venv` (3.10.11). Switching: TBD (ask User).
+- Python: `py` (Python 3.12 user install, `C:\Users\User\AppData\Local\Programs\Python\Python312\python.exe`). OVERRIDE of the kit rule "use `D:\Project\.venv`": User decided 2026-11-21 to keep `py` 3.12 for this project (all results so far were produced with it). Do not switch.
 - Key libs: torch (CPU locally; Colab torch 2.14.1+cu130), scikit-learn, pandas, numpy, scipy, shap, python-docx, pypdf, global-land-mask.
 - Mamba uses the official `mamba-ssm` `selective_scan_cuda` kernel built for T4 (sm_75): `MyDrive/WIND_FORECAST_DATA/kernels/selective_scan_cuda_sm75_torch2.14.1.so`; falls back to a PyTorch scan on CPU.
 - Env vars (names only): `NREL_API_KEY`, `NREL_EMAIL` (User environment; never write values anywhere).
@@ -26,7 +26,7 @@
 - `data_v2/` — processed 8-site dataset (`.npz` committed, `.csv` git-ignored) + `PROVENANCE.md`. Read-only.
 - `data_2016/` — 2016 back-test set. `data_raw*/` — raw NREL downloads (git-ignored, read-only). `data/` — OLD ERA5 set, rejected (do not use).
 - `results/` — CSV results, `tuned.json`; `preds*/`, `models*/` (large, mostly git-ignored).
-- `notebooks/benchmark_colab.ipynb` — Colab runner. `docs/` — plan, journal, meetings, paper drafts. `References/`, `tailieu_rieng/` (copyrighted PDFs, git-ignored).
+- `notebooks/colab_resume.py` — current Colab runner (setup + keep-alive cells); `notebooks/benchmark_colab.ipynb` — older runner. `docs/` — plan, journal, meetings, paper drafts. `References/`, `tailieu_rieng/` (copyrighted PDFs, git-ignored).
 
 ## 5. Data
 - Source: NREL Southeast Asia Wind Toolkit v3 (WRF 9 km/60 min → sup3r GAN 3 km/15 min). MODELLED data, never "measurements".
@@ -49,7 +49,9 @@ Current stage: **transfer** (Mamba 8-fold LOSO running) with writing started. De
 - Same tuning grid for all models, selected on validation only (`results/tuned.json`); 5 seeds per config (LOSO 8-fold: 3 seeds, meeting #8).
 - Post-hoc deviations must be disclosed in the paper (coastal threshold 6.0→5.5 m/s; scratch step budget).
 - Project decisions go through an agent meeting first (now `/meeting`, minutes in `tasks/MEETINGS.md`).
-- Override: User allowed installing needed packages without asking (2026-11-15) — still list what was installed.
+- OVERRIDE of the kit rule "ask before `pip install`": User allows installing any package a task needs without asking (2026-11-15, re-confirmed 2026-11-21). Install with `py -m pip install <pkg>`, then name what was installed in the reply and in NHATKY.md. Installed so far beyond the base stack: `global-land-mask` (local), `shap` (Colab, each session).
+- ROADMAP target dates stay TBD by User decision (2026-11-21); work proceeds stage by stage.
+- Colab runner: `notebooks/colab_resume.py` (setup cell + keep-alive cell). The MCP notebook opens empty after each reset — paste the setup cell, run it, then add the status cell.
 - Commits: no Claude attribution (User request).
 
 ## 9. Boundaries

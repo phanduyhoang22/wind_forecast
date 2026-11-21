@@ -18,9 +18,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-15 (M07): few-shot scratch baseline re-run with fixed budget 2000 steps / patience 400 / warm-up 100; add RF-on-k-weeks baseline; report honestly if scratch stays poor.
 - 2026-11-15 (M08): no extra data (years/sites/heights/masts); LOSO must be 8-fold (n = 4 cannot reach p < 0.125); Mamba-W 3 seeds, RF-W depth 16; modelled-data, single height, no NWP, 2 sites/regime = stated limitations.
 - 2026-11-15 (User): install needed packages without asking; commits without Claude attribution; keep Colab alive every 15 min; shutdown PC when GPU/Colab is lost or queue done.
+- 2026-11-21 (User): keep everything as done so far — Python stays `py` 3.12 (not `D:\Project\.venv`); ROADMAP target dates stay TBD; auto-install of packages allowed (override of `.claude/rules/code.md`). Pre-kit history is accepted as-is (no re-run through worker/qa).
 
 ## Colab queue (as of last Drive sync 2026-11-16 18:58 UTC — nothing ran after)
-T01 → T02 → T03 → T04 → T05. Setup cell restarts the chain; finished keys are skipped.
+T01 → T02 → T03 → T04 → T05. Runner: `notebooks/colab_resume.py` (paste the setup cell into the empty MCP notebook; it re-clones, restores results from Drive, skips finished keys, starts the chain + Drive sync). Estimated GPU left: T01 ~10 h, T02 ~3–4 h, T03 ~4–5 h, T04 ~1.5 h, T05 ~4.4 h (≈ 24 h).
+How to resume in a new chat: `open_colab_browser_connection` → paste setup cell → run → add status cell → keep-alive every ~15 min (background `sleep 840` timer) → on GPU loss or `all.done`: commit + push, `shutdown /s /t 600`.
 
 ## T01 — Mamba-W LOSO 8-fold
 - owner: Leader (Colab) | priority: P0 | status: IN_PROGRESS | attempt_count: 1

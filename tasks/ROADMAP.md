@@ -1,6 +1,6 @@
 # ROADMAP — wind_forecast
 
-Target dates: TBD (ask User). Submission needs User approval.
+Target dates: none fixed (User decision 2026-11-21: keep working stage by stage). Submission needs User approval.
 
 ## S1 — Data — DONE (2026-11-14)
 - goal: verified 15-min, 100 m series for 8 sites (2 per regime) + 2016 back-test year.
