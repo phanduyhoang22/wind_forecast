@@ -31,7 +31,7 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RESULTS = os.path.join(os.path.dirname(HERE), "results")
-WINDOWS = {"DB": "2020-03-31 23:45", "TN": "2020-07-01 00:00"}
+WINDOWS = {"DB": "2020-03-31 23:45", "TN": "2020-06-30 23:45"}
 STEPS_PER_WEEK = 7 * 96
 
 
@@ -70,7 +70,7 @@ def main():
     done = set()
     if os.path.exists(args.out):
         prev = pd.read_csv(args.out)
-        done = set(zip(prev.site, prev.model, prev.mode, prev.window, prev.weeks, prev.seed))
+        done = set(zip(prev["site"], prev["model"], prev["mode"], prev["window"], prev["weeks"], prev["seed"]))  # prev.mode la method DataFrame
 
     for t in sites:
         d = g.Pooled({t: data[t]}, [t], [t], features="wind")   # chi toc do gio, nhu LOSO-W
@@ -88,6 +88,7 @@ def main():
                         for mode in args.modes.split(","):
                             key = (t, name, mode, win, k, seed)
                             if key in done:
+                                print("bo qua (da co)", key)
                                 continue
                             init = None
                             if mode == "finetune":
