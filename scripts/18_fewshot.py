@@ -52,10 +52,12 @@ def main():
     ap.add_argument("--patience", type=int, default=5)
     ap.add_argument("--max-batches", type=int, default=0)
     ap.add_argument("--out", default=os.path.join(RESULTS, "fewshot.csv"))
-    ap.add_argument("--modes", default="finetune,scratch", help="finetune,scratch,rf")
+    ap.add_argument("--modes", default="finetune,scratch", help="finetune,scratch,rf,ridge")
     ap.add_argument("--scratch-steps", type=int, default=0, help="0 = dung --epochs/--patience nhu cu")
     ap.add_argument("--scratch-patience-steps", type=int, default=400)
     ap.add_argument("--scratch-warmup-steps", type=int, default=100)
+    ap.add_argument("--init-tag", default="losoW", help="mo hinh khoi tao: models_loso/<tag>_<t>_<model>_<seed>.pt")
+    ap.add_argument("--const-calendar", action="store_true", help="giu month_sin/cos co dinh (hop #12)")
     args = ap.parse_args()
 
     import torch
@@ -73,11 +75,13 @@ def main():
     for t in sites:
         d = g.Pooled({t: data[t]}, [t], [t], features="wind")   # chi toc do gio, nhu LOSO-W
         full_train = d.idx_train.copy()
+        X0 = d.X
+        cal = [d.features.index(c) for c in ("month_sin", "month_cos")]
         times = data[t].time
         for name in [m.strip() for m in args.models.split(",")]:
             cfg = dict(tuned.get(name, {}))
             for win, end in WINDOWS.items():
-                end_i = int(np.searchsorted(times[full_train], pd.Timestamp(end)))
+                end_i = int(np.searchsorted(times[full_train], pd.Timestamp(end), side="right"))  # gom ca mau cuoi (QA-T02-02)
                 for k in [int(x) for x in args.weeks.split(",")]:
                     sub = full_train[max(0, end_i - k * STEPS_PER_WEEK):end_i]
                     for seed in range(args.seeds):
@@ -87,28 +91,37 @@ def main():
                                 continue
                             init = None
                             if mode == "finetune":
-                                f = os.path.join(RESULTS, "models_loso", "losoW_{}_{}_{}.pt".format(t, name, seed))
+                                f = os.path.join(RESULTS, "models_loso", "{}_{}_{}_{}.pt".format(args.init_tag, t, name, seed))
                                 if not os.path.exists(f):
                                     print("thieu", f)
                                     continue
                                 init = torch.load(f, map_location="cpu")
                             d.idx_train = sub
+                            if args.const_calendar:   # k tuan nam trong 1 thang -> month_* hang trong train; giu hang ca val/test
+                                d.X = X0.copy()
+                                d.X[:, cal] = X0[sub[-1], cal]
                             kw = dict(cfg)
                             ep, pat = args.epochs, args.patience
+                            nb = max(1, len(sub) // 64)                      # run_nn drop_last, batch 64
+                            kw["sched_patience"] = math.ceil(args.scratch_patience_steps / nb)   # hop #12: theo buoc
                             if mode == "finetune":
                                 kw["lr"] = 1e-4
                             elif mode == "scratch" and args.scratch_steps:   # ngan sach buoc co dinh (hop #7)
-                                nb = max(1, len(sub) // 64)                  # run_nn drop_last, batch 64
                                 ep = math.ceil(args.scratch_steps / nb)
                                 pat = math.ceil(args.scratch_patience_steps / nb)
                                 kw["warmup_epochs"] = math.ceil(args.scratch_warmup_steps / nb)
                             t0 = time.time()
                             if mode == "rf":
                                 y_pred, info = bm.run_rf(d, seed, **tuned.get("RF", {}))
+                            elif mode == "ridge":   # tham chieu tuyen tinh tren dung k tuan (hop #12)
+                                from sklearn.linear_model import Ridge
+                                p = Ridge().fit(d.flat(sub), d.y[sub]).predict(d.flat(d.idx_test))
+                                y_pred = d.scaler_y.inverse(p.reshape(-1, 1)).reshape(p.shape)
                             else:
                                 y_pred, info = bm.run_nn(d, seed, name, epochs=ep, patience=pat,
                                                          batch_size=64, max_batches=args.max_batches,
                                                          init_state=init, **kw)
+                            d.X = X0
                             m = dp.metrics(d.y_raw[d.idx_test], y_pred)
                             rows = [dict(site=t, model=name, mode=mode, window=win, weeks=k, seed=seed,
                                          n_train=len(sub), horizon=h, **r.to_dict()) for h, r in m.iterrows()]
