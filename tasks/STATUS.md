@@ -22,6 +22,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-21 (M09, User): option A. LOSO runs on a non-default site set write files tagged with the site count (`losoW8_*`, `globalW8_*`); the CSV `strategy` key is unchanged. Before T01 resumes, snapshot Drive `models_loso/` and `preds_loso/` to `*_4fold/` and rename T01's 8-fold files. T04b SHAP uses the 8-fold models A–H. Lost 4-fold artifacts (Mamba-W A seeds 0–2, B seed 0, globalW seeds 0–2; all 4-fold RF-W preds) are disclosed, not re-trained.
 - 2026-11-21 (M10, Director under User delegation): PatchTST E1 extended to all 8 sites (40 runs), run in site order; fallback = A–D with a common-site average + disclosure.
 - 2026-11-21 (M11, Director under User delegation): few-shot E9 extended to A–H with the 8-fold `losoW8` init (finetune, scratch, RF); the 8-site table is the main one, the 4-fold A–D run a disclosed sensitivity check; conditional on the T02 QA clearing the scratch path and on T01 finishing.
+- 2026-11-21 (M12, Director under User delegation): few-shot scratch baseline fixed post hoc (disclosed): LR-scheduler patience scaled to steps for finetune and scratch; `month_*` handling picked on validation in a pilot and frozen before test; Ridge on k weeks added; main claim = finetune vs best of scratch NN / Ridge / RF; R18 kept as an invalid-baseline row.
 
 ## Colab queue (as of last Drive sync 2026-11-16 18:58 UTC — nothing ran after)
 T01 → T02 → T03 → T04 → T05. Runner: `notebooks/colab_resume.py` (paste the setup cell into the empty MCP notebook; it re-clones, restores results from Drive, skips finished keys, starts the chain + Drive sync). Estimated GPU left: T01 ~10 h, T02 ~3–4 h, T03 ~4–5 h, T04 ~1.5 h, T05 ~4.4 h (≈ 24 h).
@@ -36,7 +37,7 @@ How to resume in a new chat: `open_colab_browser_connection` → paste setup cel
 - dependencies: Colab T4 | allowed_paths: `results/`
 - test_evidence: 7/27 runs on Drive. Fold A median RMSE 1h 0.749 (persistence 0.845, RF-8 0.765); fold B seed 0 0.672 (persistence 0.640) — watch.
 - risks: Colab resets (3 so far); ~28 min/run, ~10 h left.
-- last_update: 2026-11-21
+- last_update: 2026-11-21 (Leader): resumed on Colab with T10 code (3a4ad2b); 42 earlier 8-fold files renamed on Drive to `globalW8_*`/`losoW8_*`; Drive snapshot `*_4fold/` taken first.
 
 ## T10 — LOSO file names tagged by site set (M09) — light task
 - owner: worker | priority: P0 | status: DONE | attempt_count: 1
@@ -48,10 +49,11 @@ How to resume in a new chat: `open_colab_browser_connection` → paste setup cel
 - last_update: 2026-11-21 (Leader): approved on QA PASS (light task), merged `e124620` from 2be4970; worktree removed.
 
 ## T02 — Few-shot scratch, fixed step budget
-- owner: Leader (Colab) | priority: P1 | status: READY_FOR_QA | attempt_count: 1
+- owner: Leader (Colab) | priority: P1 | status: IN_PROGRESS (QA FAIL round 1) | attempt_count: 1
 - goal: fair from-scratch baseline for E9 (M07).
 - scope: `scripts/18_fewshot.py --sites A,B,C,D --models Mamba --seeds 3 --modes scratch --scratch-steps 2000 --out results/fewshot_scratch2.csv`
 - acceptance_criteria: 72 runs (4 sites × 2 windows × 3 weeks × 3 seeds); table vs finetune (`fewshot.csv`), RF (`fewshot_rf.csv`), persistence.
+- qa: FAIL 2026-11-21 (QA-T02-01 high: scratch 1.4–3.3 m/s vs Ridge 0.61–0.83 on the same k weeks, not explained by range coverage; suspects constant month_* and unscaled LR patience; QA-T02-02 low: window drops the 23:45 sample) -> meeting M12.
 - test_evidence: pilot A/1 week: RMSE 1h 1.72 (DB) / 1.88 (TN) — overfits, not under-trained.
 - last_update: 2026-11-21 (Leader): 72/72 runs done on Colab 10:4x UTC, Drive `results/fewshot_scratch2.csv`; run log RMSE 1h 1.2–3.4 (still far above persistence). Next: comparison table vs finetune/RF/persistence + qa.
 
@@ -98,12 +100,27 @@ How to resume in a new chat: `open_colab_browser_connection` → paste setup cel
 - allowed_paths: `README.md`
 - last_update: 2026-11-21
 
-## T11 — `--init-tag` for few-shot (M11) — light task
-- owner: worker | priority: P1 | status: TODO | attempt_count: 0
-- goal: `18_fewshot.py` can load the finetune init from `models_loso/{init_tag}_{t}_{model}_{seed}.pt` (default `losoW`, unchanged behaviour).
-- acceptance_criteria: default run gives the same file path as now; `--init-tag losoW8` loads `losoW8_*`; diff ≤ ~10 lines.
-- allowed_paths: `scripts/18_fewshot.py`
-- dependencies: T02 QA verdict | last_update: 2026-11-21
+## T11 — Few-shot code fixes (M11 + M12) — light task
+- owner: worker | priority: P0 | status: DONE | attempt_count: 2
+- goal: fair few-shot baselines plus an 8-fold init option.
+- scope:
+  - (a) `run_nn` gets `sched_patience=3`; the default keeps E1/LOSO identical. `18_fewshot.py` passes the step-scaled value (`ceil(patience_steps / steps_per_epoch)`) for both finetune and scratch.
+  - (b) `--init-tag` (default `losoW`) selects the finetune init file.
+  - (c) `--const-calendar` holds `month_sin`/`month_cos` at their window value in a copy of `X`; the input dimension is unchanged.
+  - (d) `--modes ridge`: sklearn Ridge on `d.flat`, same k weeks.
+  - (e) the k-week window includes its end sample (23:45, QA-T02-02).
+- acceptance_criteria:
+  - defaults reproduce the current behaviour (same file names; scheduler patience 3 in E1/LOSO);
+  - the CPU smoke `py scripts/18_fewshot.py --sites A --models Mamba --seeds 1 --weeks 1 --modes ridge,scratch --scratch-steps 50 --out <scratch>/fs.csv` (check `-h` first) runs and writes rows;
+  - Ridge RMSE 1h at A DB 1w ≈ 0.83;
+  - diff ≤ ~50 lines in 2 files.
+- allowed_paths: `scripts/07_run_benchmark.py`, `scripts/18_fewshot.py`
+- test_evidence:
+  - round 1 QA PASS (c0e2a0d): defaults unchanged; stubbed NN run got `sched_patience` 40 (1w) / 10 (4w); Ridge A DB 1w RMSE 1h 0.8206; const-calendar copies and restores X; diff 19+/6− in 2 files.
+  - QA found two more bugs: QA-T11-02 (high, pre-existing: resume crashed on `prev.mode`) and QA-T11-01 (low: TN window ended on Jul 1 00:00). Both fixed in e54f35d.
+  - round 2 QA PASS: re-runs print skips; DB and TN windows each hold 672 samples ending at 23:45.
+  - Real NN training was only stubbed; it will be checked by the Colab pilot.
+- last_update: 2026-11-21 (Leader): approved on QA PASS (light task); merged `80f0081`.
 
 ## T12 — Few-shot A–H with the 8-fold init (M11)
 - owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: TODO | attempt_count: 0

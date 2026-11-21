@@ -14,7 +14,7 @@ alive = subprocess.run('ps aux | grep -E "[0]7_run|[0]9_global|[1]8_few|[1]6_cro
 print('job dang song:', 'CO' if alive else 'khong')
 SUBS = ('preds', 'models', 'preds_loso', 'models_loso', 'preds_wind', 'models_wind')
 if not alive and torch.cuda.is_available():
-    shutil.rmtree(W, ignore_errors=True)
+    os.chdir('/content'); shutil.rmtree(W, ignore_errors=True)   # re-run safe: cwd may be inside W
     subprocess.run(['git', 'clone', '-q', '--depth', '1', 'https://github.com/phanduyhoang22/wind_forecast.git', W], check=True)
     for f in glob.glob(f'{R}/*.csv'):   # CPU-side CSVs are authoritative in git, do not overwrite them
         if not os.path.basename(f).startswith(('baselines', 'tune', 'runs_rf', 'loso_rf', 'loso8_rf', 'cross_eval_rf', 'backtest_2016_rf', 'fewshot_rf', 'coast', 'diurnal', 'site_id')):
