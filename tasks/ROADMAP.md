@@ -10,7 +10,7 @@ Target dates: none fixed (User decision 2026-11-21: keep working stage by stage)
 ## S2 — Per-site benchmark (E1) — MOSTLY DONE
 - goal: 6 models × 8 sites × 5 seeds with one tuning grid; latency on CPU.
 - milestones: tuning (2026-11-09); E1 A–D NNs + RF (2026-11-10); E1 E–H (2026-11-14); latency `15`; GAN-phase check `13`.
-- open: PatchTST 14/20 runs (T05); E1-W Mamba 8 sites (T03).
+- open: PatchTST 7/40 runs at A–H (T05, M10); E1-W Mamba 8 sites (T03).
 - done-criteria: all E1 runs present; DM/Holm tables for 8 sites (T06).
 
 ## S3 — Transfer — CURRENT

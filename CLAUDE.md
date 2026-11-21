@@ -53,6 +53,7 @@ Current stage: **transfer** (Mamba 8-fold LOSO running) with writing started. De
 - ROADMAP target dates stay TBD by User decision (2026-11-21); work proceeds stage by stage.
 - Colab runner: `notebooks/colab_resume.py` (setup cell + keep-alive cell). The MCP notebook opens empty after each reset — paste the setup cell, run it, then add the status cell.
 - Commits: no Claude attribution (User request).
+- Reasoning effort (User, 2026-11-21): every chat chooses the effort itself, per task, including the `effort` of worker/qa subagents, without asking: low for keep-alives and bookkeeping, higher for meetings, QA, statistics and writing.
 
 ## 9. Boundaries
 - Never write the NREL API key or emails into files, logs or commits.
