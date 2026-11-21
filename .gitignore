@@ -15,3 +15,7 @@ tailieu_rieng/
 data_2016/*.csv
 data_raw_2016/
 data_raw_gate/
+
+# kit Claude
+.claude/worktrees/
+.claude/hooks/.turns/

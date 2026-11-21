@@ -1,0 +1,23 @@
+# RESULTS — wind_forecast
+
+Back-filled on 2026-11-21 from `docs/NHAT_KY_DU_AN.md`: one row per experiment batch (each CSV holds the individual runs). From now on, one row per run or batch as it lands. RMSE in m/s on the test split (Apr–Dec 2021) unless noted; skill = 1 − RMSE/RMSE_persistence.
+
+| date | run_id | task_id | commit | config / seed | data split | metrics | artifacts path | note |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-08 | R01 | — | see git log | persistence + climatology, 8 sites | test | persistence RMSE 1h/3h/6h mean A–D 0.658/1.257/1.681 | `results/baselines.csv` | skill reference |
+| 2026-11-09 | R02 | — | ef77872 | tuning grid on A+D, 1 seed | val | selected: Mamba lr 3e-4 do 0.1; Transformer 3e-4/0.2; LSTM 1e-3/0.2; PatchTST 3e-4 RevIN off; DLinear 1e-3; RF depth 24 | `results/tune.csv`, `results/tuned.json` | |
+| 2026-11-10 | R03 | — | see git log | E1, 6 models × A–D × 5 seeds, 31 feat | test | RMSE 1h/3h/6h mean A–D: Mamba 0.560/1.005/1.243; Transformer 0.564/1.001/1.238; RF 0.562/1.025/1.283; LSTM 0.577/1.032/1.271; DLinear 0.613/1.098/1.369; Mamba 5-seed ensemble 0.537/0.981/1.213 | Drive `results/runs.csv`, `results/runs_rf.csv`, `preds/` | PatchTST 6/20 only |
+| 2026-11-10 | R04 | — | see git log | CPU latency, 1 thread, batch 1 | — | ms: DLinear 0.43, Mamba-step 1.62, LSTM 2.44, Transformer 2.91, PatchTST 5.68, Mamba full 22.4, RF 34.9 | `results/latency.csv` | |
+| 2026-11-09 | R05 | — | see git log | GAN-phase check, RF + persistence | test | RMSE ratio GAN steps / WRF steps 0.97–1.01 | `results/phase_check.csv` | |
+| 2026-11-13 | R06 | — | see git log | global/LOSO A–D, 31 feat, 3 seeds | test | LOSO skill 1h: Mamba −1.8%, RF −6.0%, Transformer −11.0% | Drive `results/loso.csv`, `results/loso_rf.csv` | zero-shot fails |
+| 2026-11-14 | R07 | — | 0fe3d82 | E7/E8 RF LOSO A–D, 3 seeds: 31 / delta / relative / W | test | skill 1h: −6.0% / −4.4% / −3.4% / +1.4% | `results/loso_rf*.csv`, `results/e7e8_rf_summary.csv` | W fixes transfer |
+| 2026-11-14 | R08 | — | 0fe3d82 | Mamba LOSO-W A–D, 3 seeds | test | skill 1h/3h/6h +2.2% / −0.4% / +2.2% | Drive `results/loso_wind.csv` | superseded by R13 |
+| 2026-11-14 | R09 | — | ddc982f, 07dcda2 | E1 E–H; 8×8 cross-site (Mamba, Transformer, RF, 31 feat) | test | skill 1h own/same-regime/cross-regime: Mamba +16.0/−4.6/−20.9%; Transformer +15.3/−5.3/−23.3%; RF +15.5/−3.0/−17.9% | `results/cross_eval_rf.csv`, Drive `cross_eval_nn.csv` | |
+| 2026-11-14 | R10 | — | ddc982f | 2016 back-test, 8 sites, no retraining | 2016 | full-year RMSE 1h: Mamba 0.620, Transformer 0.619, RF 0.621, LSTM 0.638, DLinear 0.679, persistence 0.736 | `results/backtest_2016_rf.csv`, Drive `backtest_2016_nn.csv` | all models beat persistence every season |
+| 2026-11-15 | R11 | — | a72e97b | few-shot Mamba finetune vs scratch (30 ep), A–D, 1/2/4 w, 3 seeds | test | finetune RMSE 1h 0.53–0.66; scratch 2.5–3.0 | Drive `results/fewshot.csv` | scratch under-trained → T02 |
+| 2026-11-15 | R12 | — | 95b6a6f, c04a89c | RF LOSO A–D W+delta (d16) and W (d16) | test | skill 1h/3h/6h: W+delta +0.7/−0.2/+1.0%; W +1.5/+0.6/+1.8% | `results/loso_rf_wind_delta_d16.csv`, `results/loso_rf_wind_d16.csv` | delta adds nothing |
+| 2026-11-15 | R13 | — | 80fc669 | few-shot RF on k weeks, A–D | test | RMSE 1h 0.82–3.48; tracks share of test wind outside train range (2%→57%) | `results/fewshot_rf.csv` | range-coverage effect |
+| 2026-11-15 | R14 | — | bd71f42 | site checks | full series | diurnal peak B, F 14 h; site-ID classifier acc: 5 meteo vars 0.927, 19 W vars 0.498 (chance 0.125) | `results/diurnal_cycle.csv`, `results/site_id_classifier.csv` | |
+| 2026-11-16 | R15 | — | 68e5724 | Mamba LOSO-W A–D, 5 seeds (median) | test | skill 1h/3h/6h +4.9% / +1.8% / +4.3%; D still < 0 | Drive `results/loso_wind.csv` | supersedes R08 |
+| 2026-11-16 | R16 | — | 420baba | RF LOSO-W 8-fold, d16, 3 seeds (median) | test | skill 1h/3h/6h +6.3/+4.9/+6.9%; beats persistence 8/8, 6/8, 6/8; Wilcoxon 2-sided Holm p 0.023 / 0.109 / 0.148 | `results/loso8_rf_wind.csv` | |
+| 2026-11-16 | R17 | T01 | 14e5fbf | Mamba LOSO-W 8-fold, 3 seeds — PARTIAL 7/27 | test | fold A RMSE 1h 0.751/0.749/0.738 (persistence 0.845); fold B seed 0 0.672 (persistence 0.640) | Drive `results/loso8_wind.csv` | Colab stopped after 2026-11-16 18:58 UTC |
