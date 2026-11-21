@@ -116,7 +116,9 @@ def main():
                                 y_pred, info = bm.run_rf(d, seed, **tuned.get("RF", {}))
                             elif mode == "ridge":   # tham chieu tuyen tinh tren dung k tuan (hop #12)
                                 from sklearn.linear_model import Ridge
-                                p = Ridge().fit(d.flat(sub), d.y[sub]).predict(d.flat(d.idx_test))
+                                rg = Ridge().fit(d.flat(sub), d.y[sub])
+                                p = rg.predict(d.flat(d.idx_test))
+                                info = {"val_best": float(np.mean((rg.predict(d.flat(d.idx_val)) - d.y[d.idx_val]) ** 2))}
                                 y_pred = d.scaler_y.inverse(p.reshape(-1, 1)).reshape(p.shape)
                             else:
                                 y_pred, info = bm.run_nn(d, seed, name, epochs=ep, patience=pat,
@@ -125,7 +127,8 @@ def main():
                             d.X = X0
                             m = dp.metrics(d.y_raw[d.idx_test], y_pred)
                             rows = [dict(site=t, model=name, mode=mode, window=win, weeks=k, seed=seed,
-                                         n_train=len(sub), horizon=h, **r.to_dict()) for h, r in m.iterrows()]
+                                         n_train=len(sub), horizon=h, val_best=info.get("val_best", np.nan),
+                                         best_epoch=np.nan if mode in ("rf", "ridge") else info["best_epoch"], **r.to_dict()) for h, r in m.iterrows()]
                             pd.DataFrame(rows).to_csv(args.out, mode="a" if os.path.exists(args.out) else "w",
                                                       header=not os.path.exists(args.out), index=False)
                             print("{} {} {:<8} {} {}w seed={}  {:.0f}s  1h RMSE={:.4f}".format(
