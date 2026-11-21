@@ -156,6 +156,7 @@ def main():
         if args.delta:                               # ten rieng -> khong ghi de file ban muc tuyet doi
             st += "D"
         st += {"all": "", "wind": "W", "relative": "R"}[args.features]
+        fst = st + ("8" if len(site_list) == 8 else "")  # hop M09: ten file 8 tram khong ghi de 4 tram; CSV giu st
         tag = "[{}/{}] {} fold={} {} seed={}".format(i, len(plan), st, fold, name, seed)
         if (st, fold, name, seed) in done:
             print(tag, "-> da co, bo qua")
@@ -170,13 +171,13 @@ def main():
             y_pred, info = bm.run_nn(d, seed, name, epochs=args.epochs, patience=args.patience,
                                      batch_size=args.batch_size, device=args.device,
                                      max_batches=args.max_batches,
-                                     save_path=os.path.join(mdir, "{}_{}_{}_{}.pt".format(st, fold, name, seed)),
+                                     save_path=os.path.join(mdir, "{}_{}_{}_{}.pt".format(fst, fold, name, seed)),
                                      **tuned.get(name, {}))
         rows = []
         for s in te:
             sel = d.test_site == s
             m = dp.metrics(d.y_raw[d.idx_test][sel], y_pred[sel])
-            np.savez_compressed(os.path.join(pdir, "{}_{}_{}_{}.npz".format(st, s, name, seed)),
+            np.savez_compressed(os.path.join(pdir, "{}_{}_{}_{}.npz".format(fst, s, name, seed)),
                                 y_pred=y_pred[sel].astype(np.float32))
             for h, r in m.iterrows():
                 rows.append(dict(strategy=st, fold=fold, test_site=s, model=name, seed=seed,

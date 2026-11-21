@@ -36,7 +36,7 @@ if not alive and torch.cuda.is_available():
         f'{PY} scripts/07_run_benchmark.py --sites {S8} --models Mamba --seeds 5 --features wind --out results/runs_wind.csv',          # T03a
         f'{PY} scripts/16_cross_eval.py --sites {S8} --models Mamba --seeds 3 --features wind --out results/cross_eval_wind.csv',       # T03b
         f'{PY} scripts/10_shap.py --sites {S8} --model Mamba --seed 0',                                                                # T04a
-        f'{PY} scripts/10_shap.py --sites A,B,C,D --model Mamba --seed 0 --models-dir results/models_loso --pattern losoW_{{site}}_{{model}}_{{seed}}.pt --features wind --tag losoW',  # T04b
+        f'{PY} scripts/10_shap.py --sites {S8} --model Mamba --seed 0 --models-dir results/models_loso --pattern losoW8_{{site}}_{{model}}_{{seed}}.pt --features wind --tag losoW8',  # T04b
         f'{PY} scripts/07_run_benchmark.py --sites A,B,C,D --models PatchTST --seeds 5 --out results/runs.csv',                         # T05
     ]) + f'; touch {W}/results/all.done'
     SYNC = (f'while true; do D={R}; cp {W}/results/*.csv {W}/results/*.log {W}/results/*.npz $D/ 2>/dev/null; '
