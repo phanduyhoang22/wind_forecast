@@ -27,7 +27,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
 - Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
-- Side job: the M12 pilot runs in `/content/pilot` (clone at 91b5e6e, NOT synced to Drive). It runs `18_fewshot.py --sites A,B,C,D --seeds 1 --modes scratch --scratch-steps 2000`, writing `results/pilot_free.csv` and then `results/pilot_const.csv` (`--const-calendar`), with `/content/pilot/pilot.done` when finished. Compare `val_best` only, pick the `month_*` handling, then copy both CSVs to Drive `results/` for the record.
+- Runtime reset between 14:42 and 14:54 UTC: the unsynced pilot in `/content/pilot` was lost. Restarted at ~14:56 UTC (commit d7a94c2) with T01 at 12/27.
+- Side job: the M12 pilot now runs in the main clone and is synced to Drive. It runs `18_fewshot.py --sites A,B,C,D --seeds 1 --modes scratch --scratch-steps 2000`, writing `results/pilot_free.csv` and then `results/pilot_const.csv` (`--const-calendar`), with `results/pilot.done` and `results/pilot.log`. Compare `val_best` only and pick the `month_*` handling. Partial test RMSE seen before the reset (not for selection): free A 1.14–1.51, B 2.0–2.9, C 1.6–2.0, D 2.0–2.7; const A 0.82–1.15, B 0.83–1.72.
+- The setup cell must also restart the pilot until `pilot.done` exists (see the cell in the MCP notebook; the runner file has no pilot).
 - Runner: `notebooks/colab_resume.py`. Paste the setup cell into the empty MCP notebook; it re-clones, restores results from Drive, skips finished keys, and starts the chain plus the Drive sync. The runner still lists T02; it is skipped because all its keys are done.
 - Resume in a new chat:
   1. `open_colab_browser_connection`, then `get_cells`.
