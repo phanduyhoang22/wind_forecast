@@ -1,5 +1,13 @@
 # NHATKY
 
+## 2026-11-25 06:00 — leader — T03 DONE, M14/M15, mất runtime Colab
+- Làm được:
+  - T03 DONE (R22–R24); T15 DONE (`scripts/23_fewshot_stats.py`, qa PASS); code T16 `--inner-val` merge.
+  - Push `1dcf2f2` và các commit trước; T12 `fewshot8_cc.csv` đủ 864/864, `fewshot8_ft_free.csv` 180/432 (chỉ trên Drive).
+- Quyết định (Director được User uỷ quyền): M14 chốt thống kê few-shot; M15 dùng val nội bộ cho T16. User cho phép họp agents rồi duyệt, merge thay.
+- Dở dang / bước tiếp: Colab không phản hồi từ 22:49 UTC (sync cuối 22:34); chạy lại cell thiết lập, rồi cell T16. Xong T12 thì chạy `23_fewshot_stats.py` (lần đầu trên dữ liệu thật, từng bị bộ lọc chặn) rồi qa.
+- Mở chat tiếp: /role leader T12
+
 ## 2026-11-25 00:50 — leader — T01 qa PASS (chờ Director duyệt), họp M13, chạy lại Colab
 - Làm được:
   - Colab chết từ ~14:08 UTC 24/11; chạy lại 17:36 UTC: T03a 22/40, T12 129 dòng, chạy song song.
