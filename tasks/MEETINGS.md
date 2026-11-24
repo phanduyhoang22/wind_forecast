@@ -2,6 +2,18 @@
 
 Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with three standing agents (methods/statistics reviewer, wind-energy domain expert, ML engineer) and Claude deciding by majority. Full minutes (Vietnamese): `docs/NHAT_KY_DU_AN.md` §5 and later sections; briefs: `docs/meetings/`. From now on, meetings follow `/meeting` (qa, worker, Leader, Director, User decides).
 
+## M14 — 2026-11-25 — Pre-specify the T12 few-shot statistics
+- trigger: T12 acceptance says only "Wilcoxon (n = 8, Holm)"; the family decides the conclusion, and `fewshot8_cc.csv` is still incomplete (~45 %).
+- evidence: code of `18_fewshot.py`, `22_transfer_stats.py`; M11, M12. Disclosure: the Leader saw some rows/log lines of `fewshot8_cc.csv` (site A DB, a few B and D finetune values) and R11 is known; qa and worker were told not to read test results.
+- question: which tests are run on the few-shot results?
+- options: A) mean per-site skill over the 6 window x week cells, Holm over 3 horizons, by-week secondary; B) Holm over all 18 cells (floor 0.141); C) keep current plan (unspecified).
+- qa: A SOLID with changes, B WEAK, C INVALID. Holm-9 floor is 0.070, so weeks must be descriptive. `val_best` is comparable across modes. The NN modes use the full target validation set (~39 weeks) for early stopping and the LR schedule; Ridge/RF do not; the scaler uses the full train slice. Not test leakage, but "k weeks only" wording is INVALID. Free finetune is the main variant per M12.
+- worker: A feasible, ~80–100 lines in a new `23_fewshot_stats.py`, 0 GPU; join on `mode`; reuse `22` helpers.
+- leader: 0 GPU for the statistics. STATUS T12 calls the free finetune the ablation, which contradicts M12; M12 prevails.
+- director recommendation: A with: (1) median-seed RMSE per cell, skill per cell, mean over 6 cells per site, exact two-sided Wilcoxon n = 8, Holm over 3 horizons; d_RMSE secondary; (2) the one primary comparison = finetune free vs best-of {scratch const, Ridge const, RF const}, best-of = lowest median-seed test RMSE per site/cell/horizon (oracle, conservative against finetune); (3) secondary, each its own Holm-3, not adjusted across comparisons: vs persistence, vs zero-shot losoW, vs each reference, vs best-of chosen by `val_best`, finetune const vs free, Ridge/RF free as sensitivity; (4) by-week and per-cell numbers descriptive, no significance claims; (5) wording "k weeks for fitting, target validation set for early stopping, target-climatology scaling"; (6) sensitivity without target validation (fixed-step finetune) as a separate task T16 before the few-shot claim is written; (7) disclose the different step budgets (finetune 30 epochs / patience 5 vs scratch 2000 steps). Dissent: worker would allow Holm-3 within weeks as secondary; settled as descriptive.
+- decision: A with conditions (1)–(7), 2026-11-25. Taken by the Director under the User's delegation; the User is informed in chat. | status: DECIDED
+- action items: T15 (script), T16 (no-validation sensitivity).
+
 ## M13 — 2026-11-25 — LOSO 8-fold result changes the transfer claim
 - trigger: R21 contradicts the M03 framing ("LOSO failure is a finding", 4-fold) and has a higher mean skill than RF-W (R16).
 - evidence: R21 + R21c, R16; qa T01 report (PASS, e8b19dd); `results/loso8_wind.csv`.

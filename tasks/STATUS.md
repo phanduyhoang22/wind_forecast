@@ -28,6 +28,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 
 - 2026-11-25 (User): agents meet and approve on the User's behalf: the Leader records the Director approval after QA PASS and merges without waiting. Paid, public (beyond the usual repo push) or irreversible actions still need the User. The chat continues until the User asks for a handoff.
 
+- 2026-11-25 (M14, Director under User delegation): few-shot statistics frozen before completion: primary = finetune FREE vs oracle best-of {scratch, Ridge, RF, all const-calendar}, mean skill over 6 cells, Wilcoxon n = 8, Holm over 3 horizons; the rest secondary or descriptive (MEETINGS M14). Per M12, finetune free is main and const is the ablation. No "k weeks only" wording.
+
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
 - Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
@@ -177,3 +179,17 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - allowed_paths: `scripts/22_transfer_stats.py`, `results/transfer_stats.csv`, `results/transfer_per_site.csv`
 - last_update: 2026-11-25 (Leader)
 - 2026-11-25 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Merged `d71d29d`.
+
+## T15 — Few-shot statistics script (M14)
+- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1
+- goal: reproducible T12 statistics exactly per M14 conditions (1)–(4).
+- scope: new `scripts/23_fewshot_stats.py` (CPU), reusing helpers of `22_transfer_stats.py`/`08_aggregate.py`. Inputs: `results/fewshot8_cc.csv` (finetune const, scratch const), `fewshot8_ft_free.csv` (finetune free), `fewshot8_cpu_cc.csv`, `fewshot8_cpu_free.csv` (ridge, rf), `loso8_wind.csv` (zero-shot), `baselines.csv`. Outputs: `results/fewshot8_stats.csv`, `results/fewshot8_per_site.csv`, `results/fewshot8_cells.csv` (descriptive).
+- acceptance_criteria: `--selftest` on synthetic data (known winner, oracle choice, val choice, Holm, loud failure on missing/duplicate/extra keys, unexpected seeds, deterministic ridge tolerated); the run on incomplete inputs fails loudly and writes nothing; the real run is done later by the Leader when T12 completes; existing files unchanged.
+- allowed_paths: `scripts/23_fewshot_stats.py`
+- last_update: 2026-11-25 (Leader)
+
+## T16 — Few-shot finetune without target validation (M14 condition 6)
+- owner: worker + Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
+- goal: sensitivity check that the finetune gain does not depend on the ~39 target validation weeks; fixed step budget chosen without target data, frozen before test scores are read.
+- scope: design + small option in `18_fewshot.py`, after T12 finishes on Colab.
+- last_update: 2026-11-25 (Leader)
