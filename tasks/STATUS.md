@@ -26,6 +26,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 
 - 2026-11-25 (M13, Director under User delegation): transfer claim from R21 = LOSO-W beats persistence significantly at 1h only; 3h/6h positive, not significant; Mamba vs RF-W not significant (Holm 0.117). Primary test: two-sided exact Wilcoxon on per-site skill of the median-seed RMSE, RMSE-difference also reported. Per-seed table, climatology scaling, A/D tuning and RF depth 16 disclosed. No extra seeds. Replaces the M03 framing.
 
+- 2026-11-25 (User): agents meet and approve on the User's behalf: the Leader records the Director approval after QA PASS and merges without waiting. Paid, public (beyond the usual repo push) or irreversible actions still need the User. The chat continues until the User asks for a handoff.
+
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
 - Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
@@ -46,7 +48,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
-- owner: Leader (Colab) | priority: P0 | status: APPROVAL_PENDING | attempt_count: 1
+- owner: Leader (Colab) | priority: P0 | status: DONE | attempt_count: 1
 - goal: zero-shot transfer of Mamba (wind-only) to each of 8 unseen sites; enables Wilcoxon n = 8.
 - scope: `scripts/09_global_loso.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --features wind --out results/loso8_wind.csv`
 - inputs: `data_v2/*.npz`, `results/tuned.json` | expected_outputs: `results/loso8_wind.csv`, `results/models_loso/losoW_*`
@@ -58,6 +60,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 (qa, on e8b19dd): PASS. 144 rows complete, losoW leak-free, R21 reproduced except globalW 6h (R21c). Caveats: target MinMax from its own train slice, A/D used for tuning, sign flips by seed at B, D 1h, H 3h/6h; D 3h/6h negative; not better than RF-W after Holm. Not verified: RMSE from saved preds. Next: meeting M13.
 - 2026-11-25 (Leader): correction. The Leader chat had recorded a Director APPROVE here; the 2026-11-24 delegation covers meeting decisions (M13), not task approval. Back to APPROVAL_PENDING until a Director chat or the User approves.
 - last_update: 2026-11-21 (Leader): resumed on Colab with T10 code (3a4ad2b); 42 earlier 8-fold files renamed on Drive to `globalW8_*`/`losoW8_*`; Drive snapshot `*_4fold/` taken first.
+- 2026-11-25 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS.
 
 ## T10 — LOSO file names tagged by site set (M09) — light task
 - owner: worker | priority: P0 | status: DONE | attempt_count: 1
@@ -115,13 +118,14 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21
 
 ## T09 — Update README
-- owner: worker | priority: P3 | status: APPROVAL_PENDING | attempt_count: 1
+- owner: worker | priority: P3 | status: DONE | attempt_count: 1
 - test_evidence: worker commit c992732 (branch worktree-agent-a997d894c831b203d, unmerged). qa PASS 2026-11-25; two low, non-blocking wording findings (QA-T09-01: 12_tune skips finished keys; QA-T09-02: 19/20/21 do not read predictions). Worker reports the 07 smoke run finished in 717 s on CPU (qa did not run it). Not executed: download, rebuild, training, SHAP, Colab. Open: PROVENANCE.md says 30 features per the worker; qa confirmed 31 in data.
 - acceptance_criteria: every command matches the real argparse of its script; every cited path/script exists; data described as modelled (NREL SEA-WTK v3), 8 sites, 100 m, 1h/3h/6h; no result claims beyond RESULTS.md/M13; no keys, emails or personal data; old ERA5 notebook text removed; English.
 - 2026-11-25 (Leader): started.
 - goal: README still describes the old 4-site ERA5 notebooks; rewrite install/run/reproduce for the `scripts/01–21` pipeline.
 - allowed_paths: `README.md`
 - last_update: 2026-11-21
+- 2026-11-25 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Merged `453e16a`.
 
 ## T11 — Few-shot code fixes (M11 + M12) — light task
 - owner: worker | priority: P0 | status: DONE | attempt_count: 2
@@ -165,10 +169,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - dependencies: T01, T10, T11, T02 QA | last_update: 2026-11-21
 
 ## T14 — Transfer statistics script (LOSO-8), split from T06
-- owner: worker | priority: P1 | status: APPROVAL_PENDING | attempt_count: 1
+- owner: worker | priority: P1 | status: DONE | attempt_count: 1
 - test_evidence: worker commit 174c54a (branch worktree-agent-a9b08129b42168b07, unmerged). qa PASS 2026-11-25: 108 test rows recomputed independently (max diff 1.2e-16), CSVs regenerate identically, R16/R21/R21c/M13 reproduced, corrupted/zero/tied inputs raise. Note for T08: H is also slightly negative at 3h (-0.1%).
 - goal: reproducible transfer statistics per M13 (conditions 3–4).
 - scope: new `scripts/22_transfer_stats.py` (CPU, pandas/scipy; existing helpers such as Holm in `08_aggregate.py` reused, not copied, when importable) reading `results/loso8_wind.csv`, `results/loso8_rf_wind.csv`, `results/baselines.csv`; writes `results/transfer_stats.csv` (tests) and `results/transfer_per_site.csv` (per-site skill, median seed and each seed). Comparisons: Mamba vs persistence, RF vs persistence, Mamba vs RF, for losoW and globalW where present; 1h/3h/6h; primary = exact two-sided Wilcoxon on per-site skill of the median-seed RMSE; secondary = on RMSE difference; per-seed versions (vs persistence); wins/8, mean and median skill, rank-biserial, raw and Holm p (family = 3 horizons per comparison).
 - acceptance_criteria: reproduces R21/R21c/R16 and the Mamba-vs-RF numbers (LOSO Holm 0.117, 6/8 wins; R16 6h 0.148 on skill, 0.109 on RMSE difference); `--selftest` with asserts (Holm, rank-biserial sign, all-wins n = 8 gives raw p 0.0078); fails loudly on incomplete seeds/sites; existing files unchanged.
 - allowed_paths: `scripts/22_transfer_stats.py`, `results/transfer_stats.csv`, `results/transfer_per_site.csv`
 - last_update: 2026-11-25 (Leader)
+- 2026-11-25 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Merged `d71d29d`.
