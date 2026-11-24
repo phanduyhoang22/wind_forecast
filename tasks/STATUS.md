@@ -40,10 +40,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   4. On GPU loss or `all.done`: commit + push, then `shutdown /s /t 600`.
   - Stale-output check: if the printed time does not change, check the Drive `results/run.log` modifiedTime.
 - 2026-11-24 ~13:05 UTC: T01 finished; chain on T03a (14/40). T12 GPU side job started in parallel (cell 3): finetune+scratch `--const-calendar` -> `fewshot8_cc.csv`, then finetune free -> `fewshot8_ft_free.csv`, then `t12.done` (also on Drive). Restart it if lost (skips finished keys).
+- 2026-11-24 17:36 UTC (2026-11-25 local): runtime was dead since ~14:08 UTC, restarted on e8b19dd: T03a at 22/40, T12 `fewshot8_cc.csv` at 129 rows, both resumed (T4, 84 %). MCP notebook: cell 1 clones the repo to `/content/_runner` and exec-s `notebooks/colab_resume.py`, then starts T12; cell 2 = status.
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
-- owner: Leader (Colab) | priority: P0 | status: READY_FOR_QA | attempt_count: 1
+- owner: Leader (Colab) | priority: P0 | status: QA_PASSED | attempt_count: 1
 - goal: zero-shot transfer of Mamba (wind-only) to each of 8 unseen sites; enables Wilcoxon n = 8.
 - scope: `scripts/09_global_loso.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --features wind --out results/loso8_wind.csv`
 - inputs: `data_v2/*.npz`, `results/tuned.json` | expected_outputs: `results/loso8_wind.csv`, `results/models_loso/losoW_*`
@@ -52,6 +53,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - test_evidence: 7/27 runs on Drive. Fold A median RMSE 1h 0.749 (persistence 0.845, RF-8 0.765); fold B seed 0 0.672 (persistence 0.640) — watch.
 - risks: Colab resets (3 so far); ~28 min/run, ~10 h left.
 - 2026-11-24 (Leader): 27/27 runs done 13:0x UTC (144 rows on Drive). Run R21: LOSO beats persistence 8/8 at 1h (Holm p 0.023); 3h/6h p 0.078. Next: qa recomputes the table from the CSV; then meeting (result beats RF-W R16 and changes the transfer claim).
+- 2026-11-25 (qa, on e8b19dd): PASS. 144 rows complete, losoW leak-free, R21 reproduced except globalW 6h (R21c). Caveats: target MinMax from its own train slice, A/D used for tuning, sign flips by seed at B, D 1h, H 3h/6h; D 3h/6h negative; not better than RF-W after Holm. Not verified: RMSE from saved preds. Next: meeting M13.
 - last_update: 2026-11-21 (Leader): resumed on Colab with T10 code (3a4ad2b); 42 earlier 8-fold files renamed on Drive to `globalW8_*`/`losoW8_*`; Drive snapshot `*_4fold/` taken first.
 
 ## T10 — LOSO file names tagged by site set (M09) — light task
