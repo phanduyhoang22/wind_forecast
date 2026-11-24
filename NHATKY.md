@@ -1,5 +1,19 @@
 # NHATKY
 
+## 2026-11-24 13:10 — leader — T01 xong, chạy T12, giữ Colab
+- Làm được:
+  - Colab chết từ 22/11; dán lại cell thiết lập (commit `1644c64`), chuỗi chạy tiếp.
+  - T01 xong 27/27 (R21): LOSO-W thắng persistence 8/8 ở 1h, Holm p 0.023; 3h/6h p 0.078. Tốt hơn RF-W (R16). Bảng tính nhanh trong cell Colab, chưa qa; CSV mới chỉ có trên Drive.
+  - T12 CPU: Ridge + RF A–H có/không `--const-calendar` xong (R19, R20, `da02b41`). T12 GPU (`fewshot8_cc.csv`, `fewshot8_ft_free.csv`) chạy song song trên Colab từ ~13:05 UTC.
+  - T03a 15/40 lúc 13:07 UTC. Push `2075484`.
+- Quyết định (User): có vấn đề thì tự họp agents, Director quyết thay User (đã lưu memory).
+- Dở dang / bước tiếp:
+  1. Giữ runtime Colab ngay (hẹn giờ cũ bị Claude Code tắt do máy thiếu RAM lúc 13:07).
+  2. Lấy `loso8_wind.csv` từ Drive về repo, spawn qa tính lại bảng R21 → T01 QA.
+  3. Họp `/meeting` về R21 (Mamba vượt RF-W, đổi kết luận transfer).
+  4. Khi `t12.done`: bảng few-shot A–H + Wilcoxon (T12).
+- Mở chat tiếp: /role leader T01
+
 ## 2026-11-21 13:30 — leader — Họp M09–M12, chạy lại Colab, sửa code few-shot
 - Làm được:
   - Họp M09 (trùng tên file LOSO 4/8 fold) → T10 sửa `09` (`losoW8_*`, `globalW8_*`), merge `e124620`.
