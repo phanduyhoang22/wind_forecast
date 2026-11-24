@@ -198,3 +198,5 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - goal: sensitivity check that the finetune gain does not depend on the ~39 target validation weeks; fixed step budget chosen without target data, frozen before test scores are read.
 - scope: design + small option in `18_fewshot.py`, after T12 finishes on Colab.
 - last_update: 2026-11-25 (Leader)
+- test_evidence: code commit f3bae74, qa PASS 2026-11-25 (default path identical to 85248fb; fit/val/gap 418/134/120, 956/268/120, 2031/537/120; idx_val restored; real 2-batch CPU smoke). Light-task code approved and merged `dde7fbc`. The task stays IN_PROGRESS until the Colab runs finish.
+- Colab: use full flags (`--sites A,B,C,D,E,F,G,H --seeds 3 --init-tag losoW8 --scratch-steps 2000 --inner-val`, both modes); file copied to `scripts/18_fewshot_iv.py` in the clone so T12 is not touched; waits for `t12.done`; ends with `t16.done`. MCP cell 3; re-run it after a reset (setup cell does not start it).
