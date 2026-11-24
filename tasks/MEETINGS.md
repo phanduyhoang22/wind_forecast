@@ -2,6 +2,18 @@
 
 Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with three standing agents (methods/statistics reviewer, wind-energy domain expert, ML engineer) and Claude deciding by majority. Full minutes (Vietnamese): `docs/NHAT_KY_DU_AN.md` §5 and later sections; briefs: `docs/meetings/`. From now on, meetings follow `/meeting` (qa, worker, Leader, Director, User decides).
 
+## M15 — 2026-11-25 — T16 design (amends M14 condition 6)
+- trigger: "fixed-step finetune" needs a step count with no source-only basis and a change in `run_nn`.
+- evidence: code of `18_fewshot.py`, `07_run_benchmark.py`; no test scores read.
+- question: how to run the few-shot sensitivity without target validation?
+- options: A) inner validation: last 20 % of the k-week window, 120-sample gap, fit on the rest; B) fixed steps chosen on source data; C) keep current plan / disclose only.
+- qa: A SOLID (conditional), B WEAK, C INVALID. Risks: at 1 week val is 1.4 days and 384 fit samples/epoch; 20 % data loss biases against the NNs; const-calendar choice, tuning and full-train MinMax still used target data.
+- worker: not consulted (small option in one file; the Leader read the code). Deviation from the meeting format, recorded.
+- leader: ~1–2 h T4 after T12; no change in `07`.
+- director recommendation: A, frozen as: contiguous last int(0.2 n), gap 120, no refit; `nb` and `n_train` from the fit subset; finetune free + scratch const, A–H, `losoW8`, DB/TN, 1/2/4 weeks, 3 seeds, new `--out`; M14 metric and primary comparison with the existing Ridge/RF const rows (full k weeks); `best_val` dropped; T12 stays primary and T16 is reported whatever its result (a sign flip limits the claim). Wording: "no target-validation early stopping".
+- decision: A as frozen, 2026-11-25. Taken by the Director under the User's delegation; the User is informed in chat. | status: DECIDED
+- action items: T16.
+
 ## M14 — 2026-11-25 — Pre-specify the T12 few-shot statistics
 - trigger: T12 acceptance says only "Wilcoxon (n = 8, Holm)"; the family decides the conclusion, and `fewshot8_cc.csv` is still incomplete (~45 %).
 - evidence: code of `18_fewshot.py`, `22_transfer_stats.py`; M11, M12. Disclosure: the Leader saw some rows/log lines of `fewshot8_cc.csv` (site A DB, a few B and D finetune values) and R11 is known; qa and worker were told not to read test results.

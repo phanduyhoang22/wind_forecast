@@ -190,8 +190,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - test_evidence: commit 5fed951; qa PASS 2026-11-25 (independent recompute on synthetic data, 20 Holm-3 families, 0 mismatches). NOT_VERIFIED: default run on the real results/ (the worker call was denied by the auto-mode classifier; not retried). Low: QA-T15-01 primary family = role primary AND metric skill; QA-T15-02/03: before the real run check that the CSVs end with a newline and that cc/free files are not copies.
 - 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `db66134`.
 
-## T16 — Few-shot finetune without target validation (M14 condition 6)
-- owner: worker + Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
+## T16 — Few-shot finetune without target validation (M15) — code part is a light task
+- owner: worker + Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 1
+- design: M15. Code: `--inner-val` flag in `18_fewshot.py` (NN modes only). Then Colab after T12: `--inner-val --modes finetune` -> `results/fewshot8_iv_ft_free.csv`; `--inner-val --modes scratch --const-calendar --scratch-steps 2000` -> `results/fewshot8_iv_scratch_cc.csv`.
+- acceptance_criteria (code): default behaviour unchanged; fit/val inside the k-week window, contiguous, gap >= 120, val = int(0.2 n); `nb`/`n_train` from the fit subset; `idx_val` restored after every run (other modes/sites keep the target val); rf/ridge unaffected; inner-val smoke on CPU works (stubbed NN allowed); diff <= ~15 lines in 1 file.
+- allowed_paths: `scripts/18_fewshot.py`
 - goal: sensitivity check that the finetune gain does not depend on the ~39 target validation weeks; fixed step budget chosen without target data, frozen before test scores are read.
 - scope: design + small option in `18_fewshot.py`, after T12 finishes on Colab.
 - last_update: 2026-11-25 (Leader)
