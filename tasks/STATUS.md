@@ -115,7 +115,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21
 
 ## T09 — Update README
-- owner: worker | priority: P3 | status: IN_PROGRESS | attempt_count: 1
+- owner: worker | priority: P3 | status: APPROVAL_PENDING | attempt_count: 1
+- test_evidence: worker commit c992732 (branch worktree-agent-a997d894c831b203d, unmerged). qa PASS 2026-11-25; two low, non-blocking wording findings (QA-T09-01: 12_tune skips finished keys; QA-T09-02: 19/20/21 do not read predictions). Worker reports the 07 smoke run finished in 717 s on CPU (qa did not run it). Not executed: download, rebuild, training, SHAP, Colab. Open: PROVENANCE.md says 30 features per the worker; qa confirmed 31 in data.
 - acceptance_criteria: every command matches the real argparse of its script; every cited path/script exists; data described as modelled (NREL SEA-WTK v3), 8 sites, 100 m, 1h/3h/6h; no result claims beyond RESULTS.md/M13; no keys, emails or personal data; old ERA5 notebook text removed; English.
 - 2026-11-25 (Leader): started.
 - goal: README still describes the old 4-site ERA5 notebooks; rewrite install/run/reproduce for the `scripts/01–21` pipeline.

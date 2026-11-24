@@ -5,7 +5,7 @@
   - Colab chết từ ~14:08 UTC 24/11; chạy lại 17:36 UTC: T03a 22/40, T12 129 dòng, chạy song song.
   - `loso8_wind.csv` về repo (`e8b19dd`). qa T01 PASS; sửa R21 bằng dòng R21c (globalW 6h là 24.0%).
 - Quyết định (M13, Director được User uỷ quyền): phương án A. Chỉ nói thắng persistence có ý nghĩa ở 1h; 3h/6h dương nhưng không ý nghĩa; không nói Mamba hơn RF-W (Holm p 0.117). Không chạy thêm seed.
-- Chờ Director duyệt: T01, T14 (`174c54a`, qa PASS, chưa merge). Leader từng ghi nhầm Director duyệt T01, đã sửa.
+- Chờ Director duyệt: T01, T14 (`174c54a`) và T09 README (`c992732`), đều qa PASS; T14, T09 chưa merge. Leader từng ghi nhầm Director duyệt T01, đã sửa.
 - Dở dang / bước tiếp: giữ Colab; khi `t12.done` thì lập bảng few-shot + qa; sau T03/T05 thì làm T06.
 - Mở chat tiếp: /role leader T12
 
