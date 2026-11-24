@@ -1,5 +1,13 @@
 # NHATKY
 
+## 2026-11-25 00:50 — leader — T01 DONE, họp M13, chạy lại Colab
+- Làm được:
+  - Colab chết từ ~14:08 UTC 24/11; chạy lại 17:36 UTC: T03a 22/40, T12 129 dòng, chạy song song.
+  - `loso8_wind.csv` về repo (`e8b19dd`). qa T01 PASS; sửa R21 bằng dòng R21c (globalW 6h là 24.0%).
+- Quyết định (M13, Director được User uỷ quyền): phương án A. Chỉ nói thắng persistence có ý nghĩa ở 1h; 3h/6h dương nhưng không ý nghĩa; không nói Mamba hơn RF-W (Holm p 0.117). Không chạy thêm seed.
+- Dở dang / bước tiếp: giữ Colab; khi `t12.done` thì lập bảng few-shot + qa; sau T03/T05 thì làm T06.
+- Mở chat tiếp: /role leader T12
+
 ## 2026-11-24 13:10 — leader — T01 xong, chạy T12, giữ Colab
 - Làm được:
   - Colab chết từ 22/11; dán lại cell thiết lập (commit `1644c64`), chuỗi chạy tiếp.

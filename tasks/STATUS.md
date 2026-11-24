@@ -24,6 +24,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-21 (M11, Director under User delegation): few-shot E9 extended to A–H with the 8-fold `losoW8` init (finetune, scratch, RF); the 8-site table is the main one, the 4-fold A–D run a disclosed sensitivity check; conditional on the T02 QA clearing the scratch path and on T01 finishing.
 - 2026-11-21 (M12, Director under User delegation): few-shot scratch baseline fixed post hoc (disclosed): LR-scheduler patience scaled to steps for finetune and scratch; `month_*` handling picked on validation in a pilot and frozen before test; Ridge on k weeks added; main claim = finetune vs best of scratch NN / Ridge / RF; R18 kept as an invalid-baseline row.
 
+- 2026-11-25 (M13, Director under User delegation): transfer claim from R21 = LOSO-W beats persistence significantly at 1h only; 3h/6h positive, not significant; Mamba vs RF-W not significant (Holm 0.117). Primary test: two-sided exact Wilcoxon on per-site skill of the median-seed RMSE, RMSE-difference also reported. Per-seed table, climatology scaling, A/D tuning and RF depth 16 disclosed. No extra seeds. Replaces the M03 framing.
+
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
 - Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
@@ -44,7 +46,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
-- owner: Leader (Colab) | priority: P0 | status: QA_PASSED | attempt_count: 1
+- owner: Leader (Colab) | priority: P0 | status: DONE | attempt_count: 1
 - goal: zero-shot transfer of Mamba (wind-only) to each of 8 unseen sites; enables Wilcoxon n = 8.
 - scope: `scripts/09_global_loso.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --features wind --out results/loso8_wind.csv`
 - inputs: `data_v2/*.npz`, `results/tuned.json` | expected_outputs: `results/loso8_wind.csv`, `results/models_loso/losoW_*`
@@ -54,6 +56,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - risks: Colab resets (3 so far); ~28 min/run, ~10 h left.
 - 2026-11-24 (Leader): 27/27 runs done 13:0x UTC (144 rows on Drive). Run R21: LOSO beats persistence 8/8 at 1h (Holm p 0.023); 3h/6h p 0.078. Next: qa recomputes the table from the CSV; then meeting (result beats RF-W R16 and changes the transfer claim).
 - 2026-11-25 (qa, on e8b19dd): PASS. 144 rows complete, losoW leak-free, R21 reproduced except globalW 6h (R21c). Caveats: target MinMax from its own train slice, A/D used for tuning, sign flips by seed at B, D 1h, H 3h/6h; D 3h/6h negative; not better than RF-W after Holm. Not verified: RMSE from saved preds. Next: meeting M13.
+- 2026-11-25 (Director, under User delegation): APPROVE, on QA PASS and M13.
 - last_update: 2026-11-21 (Leader): resumed on Colab with T10 code (3a4ad2b); 42 earlier 8-fold files renamed on Drive to `globalW8_*`/`losoW8_*`; Drive snapshot `*_4fold/` taken first.
 
 ## T10 — LOSO file names tagged by site set (M09) — light task

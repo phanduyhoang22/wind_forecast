@@ -2,6 +2,18 @@
 
 Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with three standing agents (methods/statistics reviewer, wind-energy domain expert, ML engineer) and Claude deciding by majority. Full minutes (Vietnamese): `docs/NHAT_KY_DU_AN.md` §5 and later sections; briefs: `docs/meetings/`. From now on, meetings follow `/meeting` (qa, worker, Leader, Director, User decides).
 
+## M13 — 2026-11-25 — LOSO 8-fold result changes the transfer claim
+- trigger: R21 contradicts the M03 framing ("LOSO failure is a finding", 4-fold) and has a higher mean skill than RF-W (R16).
+- evidence: R21 + R21c, R16; qa T01 report (PASS, e8b19dd); `results/loso8_wind.csv`.
+- question: which transfer claim does the paper make, and is more compute needed?
+- options: A) claim from the current 3 seeds with full disclosure, no new runs; B) A + extend LOSO from 3 to 5 seeds (18 runs, ~7.5 h T4); C) keep current plan (M03/M08 wording).
+- qa: SOLID for 1h on the seed median; WEAK for 3h/6h and for Mamba vs RF-W. Per-seed 1h p depends on the convention (seed 0: 0.117 on skill, 0.078 on RMSE difference). n = 8 gives a Holm floor of 0.023. LOSO keeps the regime partner in training, so no regime-level transfer claim. Reject C; recommends A.
+- worker: A ~2–3 h, 0 GPU. B needs no code change (resume with `--seeds 5`) but cannot raise n = 8, and adding seeds after seeing p = .078 is optional stopping. Reject C; recommends A.
+- leader: A has no GPU or schedule impact; B would delay the queue behind T05. T06 needs a transfer statistics script in any case.
+- director recommendation: A. Conditions: (1) significant only at 1h vs persistence (Holm 0.023); 3h/6h described as positive on average, not significant; (2) Mamba vs RF-W "consistent direction, not significant" (Holm 0.117), RF depth 16 disclosed; (3) two-sided exact Wilcoxon on per-site skill of the median-seed RMSE is primary, RMSE-difference version also reported, post-hoc choice disclosed; (4) per-seed table, with seed 0 at 1h 6/8; D negative at 3h/6h; (5) wording "zero-shot with target climatology scaling" plus A/D tuning caveat; no regime-level transfer claim. Dissent: none.
+- decision: A with conditions (1)–(5), 2026-11-25. Taken by the Director under the User's delegation (2026-11-24); the User is informed in chat. | status: DECIDED
+- action items: T06 (transfer statistics per (3)–(4)); T08 (wording).
+
 ## M12 — 2026-11-21 — T02 QA FAIL: scratch baseline is not fair
 - trigger: QA finding that invalidates an earlier interpretation (M07: "scratch fails because of range coverage").
 - evidence: R18 (`fewshot_scratch2.csv`, 72/72 runs). QA T02 report 2026-11-21: no line-level bug in the scratch path (steps→epochs, patience, warm-up, best-state restore, val = target's own); but a Ridge on the same 19 W features and the same k weeks gives RMSE 1h A DB 0.830/0.807/0.772 and B DB 0.704/0.616/0.608 (1/2/4 w), versus scratch 2.70 (A DB 1w, only 2 % of test out of range) and 2.76→3.30 (B DB, worse as coverage improves). Each k-week window lies in one month, so `month_sin/cos` are constant in training while the test spans 0–0.93; ReduceLROnPlateau patience stays at 3 epochs (with 1 w, lr halves every ~40 steps). QA-T02-02 (low): the window excludes the 23:45 sample.
