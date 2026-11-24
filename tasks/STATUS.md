@@ -181,12 +181,14 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Merged `d71d29d`.
 
 ## T15 — Few-shot statistics script (M14)
-- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1
+- owner: worker | priority: P1 | status: DONE | attempt_count: 1
 - goal: reproducible T12 statistics exactly per M14 conditions (1)–(4).
 - scope: new `scripts/23_fewshot_stats.py` (CPU), reusing helpers of `22_transfer_stats.py`/`08_aggregate.py`. Inputs: `results/fewshot8_cc.csv` (finetune const, scratch const), `fewshot8_ft_free.csv` (finetune free), `fewshot8_cpu_cc.csv`, `fewshot8_cpu_free.csv` (ridge, rf), `loso8_wind.csv` (zero-shot), `baselines.csv`. Outputs: `results/fewshot8_stats.csv`, `results/fewshot8_per_site.csv`, `results/fewshot8_cells.csv` (descriptive).
 - acceptance_criteria: `--selftest` on synthetic data (known winner, oracle choice, val choice, Holm, loud failure on missing/duplicate/extra keys, unexpected seeds, deterministic ridge tolerated); the run on incomplete inputs fails loudly and writes nothing; the real run is done later by the Leader when T12 completes; existing files unchanged.
 - allowed_paths: `scripts/23_fewshot_stats.py`
 - last_update: 2026-11-25 (Leader)
+- test_evidence: commit 5fed951; qa PASS 2026-11-25 (independent recompute on synthetic data, 20 Holm-3 families, 0 mismatches). NOT_VERIFIED: default run on the real results/ (the worker call was denied by the auto-mode classifier; not retried). Low: QA-T15-01 primary family = role primary AND metric skill; QA-T15-02/03: before the real run check that the CSVs end with a newline and that cc/free files are not copies.
+- 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `db66134`.
 
 ## T16 — Few-shot finetune without target validation (M14 condition 6)
 - owner: worker + Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
