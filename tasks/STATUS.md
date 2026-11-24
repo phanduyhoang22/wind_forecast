@@ -115,7 +115,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21
 
 ## T09 — Update README
-- owner: worker | priority: P3 | status: TODO | attempt_count: 0
+- owner: worker | priority: P3 | status: IN_PROGRESS | attempt_count: 1
+- acceptance_criteria: every command matches the real argparse of its script; every cited path/script exists; data described as modelled (NREL SEA-WTK v3), 8 sites, 100 m, 1h/3h/6h; no result claims beyond RESULTS.md/M13; no keys, emails or personal data; old ERA5 notebook text removed; English.
+- 2026-11-25 (Leader): started.
 - goal: README still describes the old 4-site ERA5 notebooks; rewrite install/run/reproduce for the `scripts/01–21` pipeline.
 - allowed_paths: `README.md`
 - last_update: 2026-11-21
@@ -160,3 +162,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - scope: `18_fewshot.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --modes finetune,scratch --scratch-steps 2000 --init-tag losoW8 --out results/fewshot8.csv`; RF: `--modes rf --out results/fewshot8_rf.csv` (CPU).
 - acceptance_criteria: 144 runs per mode; median-seed table vs persistence; Wilcoxon (n = 8, Holm) finetune vs persistence and vs scratch/RF.
 - dependencies: T01, T10, T11, T02 QA | last_update: 2026-11-21
+
+## T14 — Transfer statistics script (LOSO-8), split from T06
+- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1
+- goal: reproducible transfer statistics per M13 (conditions 3–4).
+- scope: new `scripts/22_transfer_stats.py` (CPU, pandas/scipy; existing helpers such as Holm in `08_aggregate.py` reused, not copied, when importable) reading `results/loso8_wind.csv`, `results/loso8_rf_wind.csv`, `results/baselines.csv`; writes `results/transfer_stats.csv` (tests) and `results/transfer_per_site.csv` (per-site skill, median seed and each seed). Comparisons: Mamba vs persistence, RF vs persistence, Mamba vs RF, for losoW and globalW where present; 1h/3h/6h; primary = exact two-sided Wilcoxon on per-site skill of the median-seed RMSE; secondary = on RMSE difference; per-seed versions (vs persistence); wins/8, mean and median skill, rank-biserial, raw and Holm p (family = 3 horizons per comparison).
+- acceptance_criteria: reproduces R21/R21c/R16 and the Mamba-vs-RF numbers (LOSO Holm 0.117, 6/8 wins; R16 6h 0.148 on skill, 0.109 on RMSE difference); `--selftest` with asserts (Holm, rank-biserial sign, all-wins n = 8 gives raw p 0.0078); fails loudly on incomplete seeds/sites; existing files unchanged.
+- allowed_paths: `scripts/22_transfer_stats.py`, `results/transfer_stats.csv`, `results/transfer_per_site.csv`
+- last_update: 2026-11-25 (Leader)
