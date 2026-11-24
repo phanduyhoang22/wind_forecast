@@ -58,6 +58,7 @@ def main():
     ap.add_argument("--scratch-warmup-steps", type=int, default=100)
     ap.add_argument("--init-tag", default="losoW", help="mo hinh khoi tao: models_loso/<tag>_<t>_<model>_<seed>.pt")
     ap.add_argument("--const-calendar", action="store_true", help="giu month_sin/cos co dinh (hop #12)")
+    ap.add_argument("--inner-val", action="store_true", help="NN: val = 20%% cuoi cua k tuan, cach 120 mau (hop M15)")
     args = ap.parse_args()
 
     import torch
@@ -75,6 +76,7 @@ def main():
     for t in sites:
         d = g.Pooled({t: data[t]}, [t], [t], features="wind")   # chi toc do gio, nhu LOSO-W
         full_train = d.idx_train.copy()
+        full_val = d.idx_val.copy()
         X0 = d.X
         cal = [d.features.index(c) for c in ("month_sin", "month_cos")]
         times = data[t].time
@@ -97,13 +99,17 @@ def main():
                                     print("thieu", f)
                                     continue
                                 init = torch.load(f, map_location="cpu")
-                            d.idx_train = sub
+                            fit = sub
+                            if args.inner_val and mode not in ("rf", "ridge"):   # dung som khong dung val cua tram dich
+                                nv = int(0.2 * len(sub))
+                                fit, d.idx_val = sub[:-(nv + 120)], sub[-nv:]   # 120 = cua so 96 + tam du bao 24: khong chong lan
+                            d.idx_train = fit
                             if args.const_calendar:   # k tuan nam trong 1 thang -> month_* hang trong train; giu hang ca val/test
                                 d.X = X0.copy()
                                 d.X[:, cal] = X0[sub[-1], cal]
                             kw = dict(cfg)
                             ep, pat = args.epochs, args.patience
-                            nb = max(1, len(sub) // 64)                      # run_nn drop_last, batch 64
+                            nb = max(1, len(fit) // 64)                      # run_nn drop_last, batch 64
                             kw["sched_patience"] = math.ceil(args.scratch_patience_steps / nb)   # hop #12: theo buoc
                             if mode == "finetune":
                                 kw["lr"] = 1e-4
@@ -124,10 +130,10 @@ def main():
                                 y_pred, info = bm.run_nn(d, seed, name, epochs=ep, patience=pat,
                                                          batch_size=64, max_batches=args.max_batches,
                                                          init_state=init, **kw)
-                            d.X = X0
+                            d.X, d.idx_val = X0, full_val
                             m = dp.metrics(d.y_raw[d.idx_test], y_pred)
                             rows = [dict(site=t, model=name, mode=mode, window=win, weeks=k, seed=seed,
-                                         n_train=len(sub), horizon=h, val_best=info.get("val_best", np.nan),
+                                         n_train=len(fit), horizon=h, val_best=info.get("val_best", np.nan),
                                          best_epoch=np.nan if mode in ("rf", "ridge") else info["best_epoch"], **r.to_dict()) for h, r in m.iterrows()]
                             pd.DataFrame(rows).to_csv(args.out, mode="a" if os.path.exists(args.out) else "w",
                                                       header=not os.path.exists(args.out), index=False)
