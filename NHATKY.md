@@ -6,6 +6,7 @@
   - `loso8_wind.csv` về repo (`e8b19dd`). qa T01 PASS; sửa R21 bằng dòng R21c (globalW 6h là 24.0%).
 - Quyết định (M13, Director được User uỷ quyền): phương án A. Chỉ nói thắng persistence có ý nghĩa ở 1h; 3h/6h dương nhưng không ý nghĩa; không nói Mamba hơn RF-W (Holm p 0.117). Không chạy thêm seed.
 - T01, T14 (`d71d29d`), T09 (`453e16a`) DONE: User uỷ quyền họp agents rồi duyệt thay (25/11). Leader từng ghi nhầm Director duyệt T01 trước đó, đã sửa.
+- T03 DONE (R22–R24). M14 chốt thống kê few-shot trước khi có đủ kết quả (T15 DONE, `scripts/23_fewshot_stats.py`); M15: T16 (val nội bộ) đã merge code, chờ `t12.done` trên Colab (cell 3).
 - Dở dang / bước tiếp: giữ Colab; khi `t12.done` thì lập bảng few-shot + qa; sau T03/T05 thì làm T06.
 - Mở chat tiếp: /role leader T12
 

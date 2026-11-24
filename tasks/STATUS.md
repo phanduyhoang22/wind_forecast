@@ -83,11 +83,12 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21 (Leader): 72/72 runs done on Colab 10:4x UTC, Drive `results/fewshot_scratch2.csv`; run log RMSE 1h 1.2–3.4 (still far above persistence). Next: comparison table vs finetune/RF/persistence + qa.
 
 ## T03 — E1-W Mamba 8 sites + cross-site 8×8 (W)
-- owner: Leader (Colab) | priority: P1 | status: READY_FOR_QA | attempt_count: 0
+- owner: Leader (Colab) | priority: P1 | status: DONE | attempt_count: 0
 - scope: `07_run_benchmark.py --sites A..H --models Mamba --seeds 5 --features wind --out results/runs_wind.csv`; then `16_cross_eval.py --sites A..H --models Mamba --seeds 3 --features wind --out results/cross_eval_wind.csv`
 - acceptance_criteria: 40 E1-W runs; 8×8 W matrix with same-/cross-regime split; compare to 31-feature versions.
 - last_update: 2026-11-21
 - 2026-11-25 (Leader): T03a 40/40 and T03b finished ~20:17 UTC on Colab; `runs_wind.csv`, `cross_eval_wind.csv` (and `cross_eval_nn.csv`, R09) copied from Drive to the repo. qa next.
+- 2026-11-25: qa PASS on c4dffed (R22–R24). Claims allowed: W costs 1.9–3.9 pp at the own site (1h depends on seed aggregation); W gains 9–11 pp cross-regime; same-regime gain n.s.; W transfer n.s. vs persistence. Not verified: per-sample DM for E1-W (T06), GPU re-run. Director APPROVE under User delegation.
 
 ## T04 — SHAP (Mamba-31 per site, Mamba-W LOSO)
 - owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
