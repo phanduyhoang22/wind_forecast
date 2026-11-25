@@ -12,6 +12,7 @@ Language: project docs (`tasks/*.md`, `README.md`, `CLAUDE.md`) in English. Only
 | `tasks/ARCHIVE.md` | Finished tasks from past stages, moved out of STATUS.md. | Leader |
 | `README.md` | How to install, run, reproduce; outputs. | Worker (inside a task) |
 | `NHATKY.md` | Per-chat journal (see `rules/sessions.md`). | Any chat role |
+| `tasks/HANDOFF.md` | Detailed handoff to the next chat, overwritten by `/handoff` (template `.claude/references/handoff-template.md`); loaded by the SessionStart hook. | Any chat role |
 | `tasks/NHATKY-ARCHIVE.md` | NHATKY entries older than 30 days, moved when NHATKY passes ~300 lines. | Any chat role |
 
 ## Rules

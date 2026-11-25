@@ -14,7 +14,7 @@ Act as Director + Project Leader (the one allowed exception to one-chat-per-role
 4. Spawn `worker` per task (max 2 in parallel, only for independent files). Set `IN_PROGRESS`.
    Spawn with `isolation: "worktree"`. Harness refuses it: the chat was likely opened at lowercase `d:`; reopen it at `D:\...` (uppercase) and retry.
 5. Pre-check the Worker Report (scope respected, self-check ran). Set `READY_FOR_QA`.
-6. Spawn `qa` with the task contract and the worker's branch/commit; qa runs `git checkout --detach <commit>` in its own worktree first (prompts tell qa to `cd` into it; `git -C` is blocked). Record the QA Report in STATUS.md.
+6. Spawn `qa` with the task contract (incl. any `tasks/HANDOFF.md` mandatory checks) and the worker's branch/commit; qa runs `git checkout --detach <commit>` in its own worktree first (prompts tell qa to `cd` into it; `git -C` is blocked). Record the QA Report in STATUS.md.
 7. FAIL: assign the fix to a worker, re-run qa. Max 3 rounds, then `BLOCKED` and report options.
 8. PASS: set `APPROVAL_PENDING`, give the Leader Report, then the Director Decision. Ask the User for anything that needs owner approval.
    Light task: on PASS the Leader records the approval and goes to step 9; contract, evidence and merge in one docs commit.
