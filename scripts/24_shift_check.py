@@ -89,9 +89,10 @@ HEADLINE = [
 
 
 def git(root, *args):
-    # --no-optional-locks: git status khong ghi lai index
+    # --no-optional-locks: git status khong ghi lai index; CEILING: khong nhan nham repo o thu muc cha
+    env = dict(os.environ, GIT_CEILING_DIRECTORIES=os.path.dirname(root))
     return subprocess.run(["git", "--no-optional-locks", "-C", root, *args], capture_output=True, check=True,
-                          timeout=30, encoding="utf-8", errors="replace").stdout.rstrip("\n")
+                          timeout=30, env=env, encoding="utf-8", errors="replace").stdout.rstrip("\n")
 
 
 def read_text(path):
@@ -350,6 +351,7 @@ def _selftest():
         commit("a", 1700007300)
         s, ev = check_handoff(repo)
         assert s == "WARN" and "2.0 gio" in ev
+        assert guard(check_dirty, os.path.join(repo, "tasks"))[0][0] == "NOT_VERIFIED"   # khong phai goc repo
         with open(os.path.join(repo, "tasks", "HANDOFF.md"), "w") as f:
             f.write("moi")
         assert check_handoff(repo)[0] == "PASS" and check_dirty(repo)[0] == "WARN"
