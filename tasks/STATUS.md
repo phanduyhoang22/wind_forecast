@@ -49,6 +49,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-24 17:36 UTC (2026-11-25 local): runtime was dead since ~14:08 UTC, restarted on e8b19dd: T03a at 22/40, T12 `fewshot8_cc.csv` at 129 rows, both resumed (T4, 84 %). MCP notebook: cell 1 clones the repo to `/content/_runner` and exec-s `notebooks/colab_resume.py`, then starts T12; cell 2 = status.
 - 2026-11-24 22:34 UTC: last Drive sync; at 22:49–22:59 UTC the status cell and a ping cell hung, no new sync, re-running the setup cell had no effect. Treated as runtime lost (not proven: MCP cells gave no output). State at the last live check (22:32 UTC): T04 SHAP running, `fewshot8_cc.csv` 864/864, `fewshot8_ft_free.csv` 180/432 rows, T16 waiting for `t12.done`, PatchTST (T05) not started. Resume: reconnect MCP, new runtime + Drive consent, run cell 1 (setup + T12), then cell 3 (T16, source below in HANDOFF), then cell 2. Handoff + shutdown per the User rule.
 - 2026-11-25 03:35 UTC: reconnected (empty notebook, T4, commit eb4e17c). Restarted: chain at T04a SHAP, T12 `fewshot8_ft_free.csv` 195/432, T16 waiting for `t12.done`. Cells: 1 = setup + T12, 2 = T16, 3 = status.
+- 2026-11-25 13:55 UTC: runtime was lost after the 05:06 UTC Drive sync; reconnected (empty notebook, T4, commit 4eb5f54). T16 runs complete (432/432 both files). T04a skipped (both CSVs on Drive have 8 sites); restarted: T04b from A, then T05 (PatchTST 7/40). Cells: 1 = setup, 2 = status.
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
@@ -224,3 +225,10 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 qa FAIL on 96b57ab: QA-T17-01 (blocking, false PASS on empty RESULTS.md), -02, -03, -04 low/medium; -05 info (missing committed files are NOT_VERIFIED with exit 0, as contract). Scope, runs, expected values and merge check PASS. Sent back to worker (attempt 2).
 - 2026-11-25 qa PASS on 54e5150 (attempt 2): QA-T17-01..04 fixed, 15/18 reverts killed, 132 headline mutations 0 missed, no file change. Open LOW findings of the re-QA: blank run_id row skipped, literal 'not yet QA'd' matching, `### T` headings dropped, two guards without assert. Exit 0 does not mean all verified (empty STATUS.md gives NOT_VERIFIED, exit 0).
 - 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `2597ac7`.
+
+## T18 — Statistics of T16 (M15) — light task
+- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | last_update: 2026-11-25 (Leader)
+- goal: `23_fewshot_stats.py --inner-val` computes the M14 statistics with the inner-validation NN runs, per M15 (frozen before the test scores are read).
+- scope: finetune free from `fewshot8_iv_ft_free.csv`, scratch const from `fewshot8_iv_scratch_cc.csv`; Ridge/RF, zero-shot and persistence inputs unchanged. The `best_val` pair/reference and the finetune const vs free pair are dropped. Outputs `results/fewshot8_iv_{stats,per_site,cells}.csv`.
+- acceptance_criteria: without the flag the output is unchanged (regenerated CSVs identical); incomplete, duplicate or extra iv rows fail loudly and write nothing; `--selftest` covers the iv mode (known winner, dropped pairs, files written, missing file); primary = finetune free vs oracle best of {scratch, Ridge, RF const}, Holm over 3 horizons; diff <= ~50 lines in 1 file; `--inner-val` on the real results is run once and its numbers are reported; existing CSVs unchanged.
+- allowed_paths: `scripts/23_fewshot_stats.py`, `results/fewshot8_iv_stats.csv`, `results/fewshot8_iv_per_site.csv`, `results/fewshot8_iv_cells.csv`
