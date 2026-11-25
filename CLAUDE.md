@@ -54,6 +54,7 @@ Current stage: **transfer** (Mamba 8-fold LOSO running) with writing started. De
 - Colab runner: `notebooks/colab_resume.py` (setup cell + keep-alive cell). The MCP notebook opens empty after each reset — paste the setup cell, run it, then add the status cell.
 - Commits: no Claude attribution (User request).
 - Reasoning effort (User, 2026-11-21): every chat chooses the effort itself, per task, including the `effort` of worker/qa subagents, without asking: low for keep-alives and bookkeeping, higher for meetings, QA, statistics and writing.
+- Start of every Leader shift (User, 2026-11-25), before taking work: (1) read `tasks/HANDOFF.md`; (2) run `py scripts/24_shift_check.py --full` and read every WARN / FAIL / NOT_VERIFIED line (exit 0 does not mean all verified; it compares stats CSVs with RESULTS.md, not raw runs); (3) run the Colab status cell; (4) look around the next task: the code it touches and its callers, stated assumptions, open QA findings, what the previous shift did NOT verify (`docs/limitations_and_improvements.md` too). Report the result in the first reply.
 
 ## 9. Boundaries
 - Never write the NREL API key or emails into files, logs or commits.

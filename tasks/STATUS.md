@@ -209,7 +209,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - Colab: use full flags (`--sites A,B,C,D,E,F,G,H --seeds 3 --init-tag losoW8 --scratch-steps 2000 --inner-val`, both modes); file copied to `scripts/18_fewshot_iv.py` in the clone so T12 is not touched; waits for `t12.done`; ends with `t16.done`. MCP cell 3; re-run it after a reset (setup cell does not start it).
 
 ## T17 — Shift harness: read-only start-of-shift check (User request)
-- owner: worker | priority: P2 | status: IN_PROGRESS | attempt_count: 1
+- owner: worker | priority: P2 | status: DONE | attempt_count: 2
 - goal: a new chat verifies the real state of the project before working, instead of trusting the handoff or running ad hoc tests.
 - scope: new `scripts/24_shift_check.py` (CPU, stdlib + pandas, read-only, < ~60 s without `--full`), prints one line per check `PASS|WARN|FAIL|NOT_VERIFIED <group> <check> - <evidence>` and a summary; exit code 1 if any FAIL. Groups:
   - git: branch, HEAD vs origin/main (no fetch; say the ref may be old), uncommitted tracked files, extra worktrees, HANDOFF.md older than HEAD (WARN).
@@ -221,3 +221,6 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - acceptance_criteria: `--selftest` with asserts on temp data (missing key, duplicate, NaN, no newline, wrong row count, stale handoff each detected; clean data passes); real run on the repo writes nothing (git status identical before/after, no file mtimes changed in results/); every FAIL/WARN on the real repo explained; a check that cannot run prints NOT_VERIFIED, never PASS; no network call; existing files unchanged; existing style (comments in Vietnamese).
 - allowed_paths: `scripts/24_shift_check.py`
 - last_update: 2026-11-25 (Leader)
+- 2026-11-25 qa FAIL on 96b57ab: QA-T17-01 (blocking, false PASS on empty RESULTS.md), -02, -03, -04 low/medium; -05 info (missing committed files are NOT_VERIFIED with exit 0, as contract). Scope, runs, expected values and merge check PASS. Sent back to worker (attempt 2).
+- 2026-11-25 qa PASS on 54e5150 (attempt 2): QA-T17-01..04 fixed, 15/18 reverts killed, 132 headline mutations 0 missed, no file change. Open LOW findings of the re-QA: blank run_id row skipped, literal 'not yet QA'd' matching, `### T` headings dropped, two guards without assert. Exit 0 does not mean all verified (empty STATUS.md gives NOT_VERIFIED, exit 0).
+- 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `2597ac7`.

@@ -1,5 +1,10 @@
 # NHATKY
 
+## 2026-11-25 11:49 — leader — T17 DONE (harness đầu ca)
+- Làm được: `scripts/24_shift_check.py` (qa FAIL vòng 1 vì PASS giả, PASS vòng 2 trên `54e5150`), merge `2597ac7`; quy trình đầu ca ghi ở `CLAUDE.md` mục 8.
+- Dở dang / bước tiếp: T16 scratch và T04 SHAP chạy trên Colab; còn 4 lỗi LOW của script, chưa sửa.
+- Mở chat tiếp: /role leader T16
+
 ## 2026-11-25 11:35 — leader — Đồng bộ kit, harness đầu ca (T17)
 - Làm được: chép từ kit `commands/{handoff,role,task}.md`, `rules/{sessions,docs}.md`, `references/handoff-template.md`, `hooks/session_start.py`, `settings.json` (thêm SessionStart); selftest hook OK. `docs/limitations_and_improvements.md` ghi điểm yếu và bài báo.
 - Bỏ qua: `setup-project.md`, `README.md`, `templates` (chỉ có ở kit).
