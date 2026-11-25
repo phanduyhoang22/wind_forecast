@@ -7,7 +7,7 @@
 - In VS Code: keep the editor, but run `claude` in its integrated terminal from `D:\...` (same token cost); one chat per role at a time, never the extension chat and a terminal chat together. Worktree refused there too: say so and fall back to an outside terminal.
 - Kit-maintenance chats at `D:\Project` (no CLAUDE.md, no STATUS.md) have no role: label NHATKY entries `kit`, and "Mở chat tiếp" gives the opening prompt instead of `/role`.
 - Target 10-15 User messages per chat. The hook `hooks/turn_counter.py` warns from message 12. At the warning, finish the current step, then propose `/handoff`.
-- Never rely on chat history across chats: everything the next chat needs goes into `NHATKY.md` and `tasks/STATUS.md`.
+- Never rely on chat history across chats: everything the next chat needs goes into `NHATKY.md`, `tasks/STATUS.md` and `tasks/HANDOFF.md` (written by `/handoff`, loaded into the next chat by the SessionStart hook).
 
 ## NHATKY.md (project root)
 - Journal of what got done, written in Vietnamese for the User. Newest entry on top.

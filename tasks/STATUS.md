@@ -207,3 +207,17 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-25 (Leader)
 - test_evidence: code commit f3bae74, qa PASS 2026-11-25 (default path identical to 85248fb; fit/val/gap 418/134/120, 956/268/120, 2031/537/120; idx_val restored; real 2-batch CPU smoke). Light-task code approved and merged `dde7fbc`. The task stays IN_PROGRESS until the Colab runs finish.
 - Colab: use full flags (`--sites A,B,C,D,E,F,G,H --seeds 3 --init-tag losoW8 --scratch-steps 2000 --inner-val`, both modes); file copied to `scripts/18_fewshot_iv.py` in the clone so T12 is not touched; waits for `t12.done`; ends with `t16.done`. MCP cell 3; re-run it after a reset (setup cell does not start it).
+
+## T17 — Shift harness: read-only start-of-shift check (User request)
+- owner: worker | priority: P2 | status: IN_PROGRESS | attempt_count: 1
+- goal: a new chat verifies the real state of the project before working, instead of trusting the handoff or running ad hoc tests.
+- scope: new `scripts/24_shift_check.py` (CPU, stdlib + pandas, read-only, < ~60 s without `--full`), prints one line per check `PASS|WARN|FAIL|NOT_VERIFIED <group> <check> - <evidence>` and a summary; exit code 1 if any FAIL. Groups:
+  - git: branch, HEAD vs origin/main (no fetch; say the ref may be old), uncommitted tracked files, extra worktrees, HANDOFF.md older than HEAD (WARN).
+  - results: a table in code of the key CSVs (runs_wind 120, cross_eval_wind 576, loso8_wind 144, loso8_rf_wind 144, fewshot8_cc 864, fewshot8_ft_free 432, fewshot8_cpu_cc 864, fewshot8_cpu_free 864, baselines 48) with key columns and expected rows: rows, missing/duplicate keys, NaN/inf in RMSE, RMSE > 0, trailing newline. PatchTST runs.csv and T16 iv files absent locally -> NOT_VERIFIED.
+  - docs: open tasks in STATUS.md (not DONE/CANCELLED) with state; RESULTS.md run ids unique and rows mentioning "not yet QA'd" without a later `R..c`/QA PASS row -> WARN; CSV paths in backticks in RESULTS.md that do not exist locally (Drive-only rows -> NOT_VERIFIED).
+  - recompute: fewshot8 and transfer headline numbers re-derived from the stats CSVs (R21/R25 values in code as expected constants) -> FAIL when they differ by more than rounding.
+  - selftests with `--full`: run `--selftest` of 08, 11, 22, 23, report exit code and last line.
+  - colab/drive: always one NOT_VERIFIED line naming the status cell.
+- acceptance_criteria: `--selftest` with asserts on temp data (missing key, duplicate, NaN, no newline, wrong row count, stale handoff each detected; clean data passes); real run on the repo writes nothing (git status identical before/after, no file mtimes changed in results/); every FAIL/WARN on the real repo explained; a check that cannot run prints NOT_VERIFIED, never PASS; no network call; existing files unchanged; existing style (comments in Vietnamese).
+- allowed_paths: `scripts/24_shift_check.py`
+- last_update: 2026-11-25 (Leader)
