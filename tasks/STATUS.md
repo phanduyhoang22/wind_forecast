@@ -96,10 +96,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25: qa PASS on c4dffed (R22–R24). Claims allowed: W costs 1.9–3.9 pp at the own site (1h depends on seed aggregation); W gains 9–11 pp cross-regime; same-regime gain n.s.; W transfer n.s. vs persistence. Not verified: per-sample DM for E1-W (T06), GPU re-run. Director APPROVE under User delegation.
 
 ## T04 — SHAP (Mamba-31 per site, Mamba-W LOSO)
-- owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
+- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 0
 - scope: `10_shap.py --sites A..H --model Mamba --seed 0`; `10_shap.py --sites A,B,C,D --models-dir results/models_loso --pattern losoW_{site}_{model}_{seed}.pt --features wind --tag losoW`
 - acceptance_criteria: `shap_importance_*.csv`, `shap_temporal_*.csv`; completeness error reported.
 - last_update: 2026-11-21
+- 2026-11-25 14:36 UTC (Leader): T04a and T04b runs finished on Colab (8/8 sites each). `shap_{importance,temporal}_Mamba_0.csv` copied from Drive; the losoW8 CSVs are on Colab, not yet copied. Not QA'd.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
 - owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
