@@ -46,10 +46,12 @@ TABLES = {
     "fewshot8_ft_free.csv": _few(["finetune"], 432),
     "fewshot8_cpu_cc.csv": _few(["ridge", "rf"], 864),
     "fewshot8_cpu_free.csv": _few(["ridge", "rf"], 864),
+    "fewshot8_iv_ft_free.csv": _few(["finetune"], 432),
+    "fewshot8_iv_scratch_cc.csv": _few(["scratch"], 432),
     "baselines.csv": (48, dict(site=SITES, model=["persistence", "climatology"], horizon=HORIZONS)),
 }
 # chay tren Colab, chua co bang khoa o day
-REMOTE = ["runs.csv", "fewshot8_iv_ft_free.csv", "fewshot8_iv_scratch_cc.csv"]
+REMOTE = ["runs.csv"]
 
 _L = ("transfer_stats.csv", dict(strategy="losoW", model="Mamba", ref="persistence", seed="median", metric="skill"))
 _G = (_L[0], dict(_L[1], strategy="globalW"))
