@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-25 11:09 — leader — T12 DONE (qa PASS), Colab chạy lại
+- Làm được: nối lại Colab 03:35 UTC (T4); T12 xong, chạy `23_fewshot_stats.py` lần đầu trên dữ liệu thật (R25, R25c, `c25db4c`); qa tính lại khớp.
+- Kết quả: finetune thắng baseline tốt nhất 8/8 site (p 0.023), nhưng baseline đó còn kém persistence; so với zero-shot lợi ích nhỏ (chỉ 6h có ý nghĩa, phụ thuộc cách gộp seed).
+- Dở dang / bước tiếp: T16 và T04 SHAP đang chạy, sau đó T05 PatchTST; giữ Colab. T16 xong thì thống kê + qa, rồi họp chốt câu kết luận few-shot.
+- Mở chat tiếp: /role leader T16
+
 ## 2026-11-25 06:00 — leader — T03 DONE, M14/M15, mất runtime Colab
 - Làm được:
   - T03 DONE (R22–R24); T15 DONE (`scripts/23_fewshot_stats.py`, qa PASS); code T16 `--inner-val` merge.

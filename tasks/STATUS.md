@@ -169,11 +169,13 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   - finetune + scratch with `--const-calendar` → `results/fewshot8_cc.csv`;
   - finetune without the flag (ablation) → `results/fewshot8_ft_free.csv`;
   - ridge + rf with and without the flag on CPU → `results/fewshot8_cpu_cc.csv`, `results/fewshot8_cpu_free.csv`.
-- owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: READY_FOR_QA | attempt_count: 1
+- owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: DONE | attempt_count: 1
 - scope: `18_fewshot.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --modes finetune,scratch --scratch-steps 2000 --init-tag losoW8 --out results/fewshot8.csv`; RF: `--modes rf --out results/fewshot8_rf.csv` (CPU).
 - acceptance_criteria: 144 runs per mode; median-seed table vs persistence; Wilcoxon (n = 8, Holm) finetune vs persistence and vs scratch/RF.
 - dependencies: T01, T10, T11, T02 QA | last_update: 2026-11-25 (Leader)
-- test_evidence: 2026-11-25 (Leader) t12.done; `fewshot8_cc.csv` 864, `fewshot8_ft_free.csv` 432 rows (md5 equal clone/Drive/repo); `py scripts/23_fewshot_stats.py` ran on real data -> R25. Awaiting qa.
+- test_evidence: 2026-11-25 (Leader) t12.done; `fewshot8_cc.csv` 864, `fewshot8_ft_free.csv` 432 rows (md5 equal clone/Drive/repo); `py scripts/23_fewshot_stats.py` ran on real data -> R25.
+- 2026-11-25 qa PASS on c25db4c (R25c; independent recompute, ridge re-run 48/48 cells, RF 20/48 seed 0). Findings QA-T12-01, -02 Medium (weak reference; small gain over zero-shot), -03 to -07 Low: claim limits for T08. NOT_VERIFIED: GPU re-run, losoW8 checkpoints on Drive. Const/free: M14 supersedes 'ablation' above (free is main).
+- 2026-11-25 (Director, under User delegation): APPROVE on QA PASS, results only. The paper claim wording waits for T16 (M14 condition 6).
 
 ## T14 — Transfer statistics script (LOSO-8), split from T06
 - owner: worker | priority: P1 | status: DONE | attempt_count: 1
