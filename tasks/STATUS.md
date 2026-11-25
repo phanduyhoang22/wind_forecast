@@ -48,6 +48,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-24 ~13:05 UTC: T01 finished; chain on T03a (14/40). T12 GPU side job started in parallel (cell 3): finetune+scratch `--const-calendar` -> `fewshot8_cc.csv`, then finetune free -> `fewshot8_ft_free.csv`, then `t12.done` (also on Drive). Restart it if lost (skips finished keys).
 - 2026-11-24 17:36 UTC (2026-11-25 local): runtime was dead since ~14:08 UTC, restarted on e8b19dd: T03a at 22/40, T12 `fewshot8_cc.csv` at 129 rows, both resumed (T4, 84 %). MCP notebook: cell 1 clones the repo to `/content/_runner` and exec-s `notebooks/colab_resume.py`, then starts T12; cell 2 = status.
 - 2026-11-24 22:34 UTC: last Drive sync; at 22:49–22:59 UTC the status cell and a ping cell hung, no new sync, re-running the setup cell had no effect. Treated as runtime lost (not proven: MCP cells gave no output). State at the last live check (22:32 UTC): T04 SHAP running, `fewshot8_cc.csv` 864/864, `fewshot8_ft_free.csv` 180/432 rows, T16 waiting for `t12.done`, PatchTST (T05) not started. Resume: reconnect MCP, new runtime + Drive consent, run cell 1 (setup + T12), then cell 3 (T16, source below in HANDOFF), then cell 2. Handoff + shutdown per the User rule.
+- 2026-11-25 03:35 UTC: reconnected (empty notebook, T4, commit eb4e17c). Restarted: chain at T04a SHAP, T12 `fewshot8_ft_free.csv` 195/432, T16 waiting for `t12.done`. Cells: 1 = setup + T12, 2 = T16, 3 = status.
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
@@ -168,10 +169,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   - finetune + scratch with `--const-calendar` → `results/fewshot8_cc.csv`;
   - finetune without the flag (ablation) → `results/fewshot8_ft_free.csv`;
   - ridge + rf with and without the flag on CPU → `results/fewshot8_cpu_cc.csv`, `results/fewshot8_cpu_free.csv`.
-- owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: TODO | attempt_count: 0
+- owner: Leader (Colab) + worker (RF, CPU) | priority: P1 | status: READY_FOR_QA | attempt_count: 1
 - scope: `18_fewshot.py --sites A,B,C,D,E,F,G,H --models Mamba --seeds 3 --modes finetune,scratch --scratch-steps 2000 --init-tag losoW8 --out results/fewshot8.csv`; RF: `--modes rf --out results/fewshot8_rf.csv` (CPU).
 - acceptance_criteria: 144 runs per mode; median-seed table vs persistence; Wilcoxon (n = 8, Holm) finetune vs persistence and vs scratch/RF.
-- dependencies: T01, T10, T11, T02 QA | last_update: 2026-11-21
+- dependencies: T01, T10, T11, T02 QA | last_update: 2026-11-25 (Leader)
+- test_evidence: 2026-11-25 (Leader) t12.done; `fewshot8_cc.csv` 864, `fewshot8_ft_free.csv` 432 rows (md5 equal clone/Drive/repo); `py scripts/23_fewshot_stats.py` ran on real data -> R25. Awaiting qa.
 
 ## T14 — Transfer statistics script (LOSO-8), split from T06
 - owner: worker | priority: P1 | status: DONE | attempt_count: 1
