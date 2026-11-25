@@ -1,0 +1,2 @@
+model,params_mean,params_std,train_s_mean,train_s_std,latency_ms_mean,latency_ms_std,best_epoch_mean,best_epoch_std
+RF,10444804.1,1028726.6124145348,42.678262937068936,14.558355888565366,0.020817525844035133,0.007125719562376659,1.0,0.0

@@ -100,7 +100,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - scope: `10_shap.py --sites A..H --model Mamba --seed 0`; `10_shap.py --sites A,B,C,D --models-dir results/models_loso --pattern losoW_{site}_{model}_{seed}.pt --features wind --tag losoW`
 - acceptance_criteria: `shap_importance_*.csv`, `shap_temporal_*.csv`; completeness error reported.
 - last_update: 2026-11-21
-- 2026-11-25 14:36 UTC (Leader): T04a and T04b runs finished on Colab (8/8 sites each). `shap_{importance,temporal}_Mamba_0.csv` copied from Drive; the losoW8 CSVs are on Colab, not yet copied. Not QA'd.
+- 2026-11-25 14:36 UTC (Leader): T04a and T04b runs finished on Colab (8/8 sites each). `shap_{importance,temporal}_Mamba_0.csv` copied from Drive; losoW8 CSVs copied too. Not QA'd. `results/runs.csv` in git is a snapshot (PatchTST 7/40); the live file is on Drive.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
 - owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
