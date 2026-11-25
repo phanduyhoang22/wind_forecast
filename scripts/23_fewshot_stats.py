@@ -13,7 +13,10 @@ d_rmse (phu) = RMSE_ref - RMSE_model (m/s), cung trung binh 6 o. > 0 nghia la mo
 best_test: doi chung co RMSE test thap nhat moi tram/o/horizon (oracle, bat loi cho finetune).
 best_val:  doi chung co val_best (trung vi seed) thap nhat moi tram/o, chung cho 3 horizon.
 
-    py scripts/23_fewshot_stats.py
+--inner-val (hop M15): finetune free va scratch const lay tu fewshot8_iv_*.csv, bo best_val va
+finetune_cc; ghi results/fewshot8_iv_{stats,per_site,cells}.csv.
+
+    py scripts/23_fewshot_stats.py [--inner-val]
     py scripts/23_fewshot_stats.py --selftest
 """
 
@@ -41,6 +44,8 @@ RESULTS, SITES, SEEDS, HORIZONS = ts.RESULTS, ts.SITES, ts.SEEDS, ts.HORIZONS
 WINDOWS, WEEKS = ["DB", "TN"], [1, 2, 4]
 FILES = {"fewshot8_cc.csv": ("cc", ["finetune", "scratch"]), "fewshot8_ft_free.csv": ("free", ["finetune"]),
          "fewshot8_cpu_cc.csv": ("cc", ["ridge", "rf"]), "fewshot8_cpu_free.csv": ("free", ["ridge", "rf"])}
+IV_FILES = {"fewshot8_iv_scratch_cc.csv": ("cc", ["scratch"]), "fewshot8_iv_ft_free.csv": ("free", ["finetune"]),
+            **{f: v for f, v in FILES.items() if "_cpu_" in f}}
 REFS = ["scratch_cc", "ridge_cc", "rf_cc"]
 CELL = ["site", "window", "weeks"]
 # dong dau la phep so chinh duy nhat; khong hieu chinh giua cac phep so
@@ -48,12 +53,13 @@ PAIRS = ([("finetune_free", "best_test", "primary")]
          + [("finetune_free", r, "secondary") for r in ["persistence", "zero_shot"] + REFS + ["best_val"]]
          + [("finetune_cc", "finetune_free", "secondary")]
          + [("finetune_free", r, "sensitivity") for r in ("ridge_free", "rf_free")])
+IV_PAIRS = [p for p in PAIRS if p[0] != "finetune_cc" and p[1] != "best_val"]
 
 
-def read_runs(frames):
+def read_runs(frames, files):
     """Kiem tra tung file roi gop; variant = mode + cach xu ly lich (cc = month_* co dinh)."""
     out = []
-    for f, (cal, modes) in FILES.items():
+    for f, (cal, modes) in files.items():
         d = frames[f]
         ts.check(d, ["model", "mode"] + CELL + ["seed", "horizon"],
                  [["Mamba"], modes, SITES, WINDOWS, WEEKS, SEEDS, HORIZONS], f)
@@ -82,8 +88,8 @@ def compare(a, b):
     return pd.concat([s[s.metric == "skill"], d[d.metric == "d_rmse"]])
 
 
-def analyze(frames, loso, base):
-    runs = read_runs(frames)
+def analyze(frames, loso, base, iv=False):
+    runs = read_runs(frames, IV_FILES if iv else FILES)
     base = base[base.model == "persistence"]
     ts.check(base, ["site", "horizon"], [SITES, HORIZONS], "persistence")
     pers = base.set_index(["site", "horizon"]).RMSE
@@ -96,14 +102,15 @@ def analyze(frames, loso, base):
     idx = CELL + ["horizon"]
     med = add_refs(runs.groupby(idx + ["variant"]).RMSE.median().unstack(),
                    loso.groupby(["site", "horizon"]).RMSE.median(), pers)
-    val = runs[runs.variant.isin(REFS)].groupby(CELL + ["variant"]).val_best.median().unstack()[REFS]
     # oracle chon theo tung horizon, best_val chon mot lan moi o
     chosen = pd.DataFrame({"best_test": med[REFS].idxmin(axis=1)})
-    chosen["best_val"] = val.idxmin(axis=1).loc[list(med.index.droplevel("horizon"))].to_numpy()
+    if not iv:   # M15: val trong cua NN khong so duoc voi val cua Ridge/RF
+        val = runs[runs.variant.isin(REFS)].groupby(CELL + ["variant"]).val_best.median().unstack()[REFS]
+        chosen["best_val"] = val.idxmin(axis=1).loc[list(med.index.droplevel("horizon"))].to_numpy()
     for c in chosen:
         med[c] = [med.at[i, r] for i, r in chosen[c].items()]
 
-    tests = pd.concat([compare(med[m], med[r]).assign(model=m, ref=r, role=role) for m, r, role in PAIRS])
+    tests = pd.concat([compare(med[m], med[r]).assign(model=m, ref=r, role=role) for m, r, role in (IV_PAIRS if iv else PAIRS)])
     tables = [("median", med)] + [
         (str(s), add_refs(runs[runs.seed == s].pivot(index=idx, columns="variant", values="RMSE"),
                           loso[loso.seed == s].set_index(["site", "horizon"]).RMSE, pers)) for s in SEEDS]
@@ -185,14 +192,29 @@ def _selftest():
         d = d.copy()
         d.loc[d.index[0], col] = val
         return d
+    # iv: scratch thang moi o; chi dung neu doc dung file iv
+    scr = frames["fewshot8_cc.csv"].query("mode == 'scratch'").reset_index(drop=True)
+    ft = frames["fewshot8_ft_free.csv"]
+    ivf = {**frames, "fewshot8_iv_scratch_cc.csv": scr.assign(RMSE=scr.RMSE - 0.9),
+           "fewshot8_iv_ft_free.csv": ft.assign(RMSE=ft.RMSE - 0.1)}
+    ivf = {f: ivf[f] for f in IV_FILES}
+    it, _, ic = analyze(ivf, loso, base, True)
+    assert len(it) == len(PAIRS) * 6 - 12 and (it.model == "finetune_free").all() and not (it.ref == "best_val").any()
+    assert not ic.variant.isin(["best_val", "finetune_cc"]).any() and (ic.chosen.dropna() == "scratch_cc").all()
+    assert (it.wins == np.where(it.ref.isin(["best_test", "scratch_cc"]), 0, 8)).all()
+    q = it[it.role == "primary"]
+    assert len(q) == 6 and (q.ref == "best_test").all() and np.allclose(q.p_holm, 6 / 2 ** 8)
+    assert (ic[ic.variant == "finetune_free"].RMSE < 1).all()
+
     bad = [(frames, edit(loso, "fold", "H"), base), (frames, loso.drop(0), base), (frames, loso, base[1:]),
            (frames, pd.concat([loso, loso[:1]]), base), (frames, loso, pd.concat([base, base[:1]]))]
-    for f, d in frames.items():
+    for f, fr, iv in [(f, frames, False) for f in FILES] + [(f, ivf, True) for f in IV_FILES]:
+        d = fr[f]
         for x in (d.drop(0), pd.concat([d, d[:1]]), d[d.site != "H"], d[d.seed != 2],
                   pd.concat([d, d[d.seed == 0].assign(seed=3)]), pd.concat([d, d[:3].assign(weeks=8)]),
                   pd.concat([d, d[:3].assign(mode="khac")]), edit(d, "model", "LSTM"), edit(d, "RMSE", np.nan),
                   edit(d, "val_best", np.nan), edit(d, "val_best", 9.0)):
-            bad.append(({**frames, f: x}, loso, base))
+            bad.append(({**fr, f: x}, loso, base, iv))
     for b in bad:
         try:
             analyze(*b)
@@ -201,40 +223,45 @@ def _selftest():
         raise AssertionError("du lieu thieu/hong ma khong bao loi")
 
     # dau vao thieu (dong hoac ca file) -> bao loi va khong ghi gi; du thi ghi dung 3 file
-    cc = frames["fewshot8_cc.csv"]
-    with tempfile.TemporaryDirectory() as tmp:
-        for name, d in {**frames, "loso8_wind.csv": loso, "baselines.csv": base}.items():
-            if name != "fewshot8_cc.csv":
-                d.to_csv(os.path.join(tmp, name), index=False)
-        for part, n_in in ((None, 5), (cc[:400], 6), (cc, 6)):
-            if part is not None:
-                part.to_csv(os.path.join(tmp, "fewshot8_cc.csv"), index=False)
-            try:
-                run(tmp)
-                assert part is cc
-            except (ValueError, FileNotFoundError):
-                assert part is not cc
-            assert len(os.listdir(tmp)) == n_in + 3 * (part is cc)
+    for fr, f, iv in ((frames, "fewshot8_cc.csv", False), (ivf, "fewshot8_iv_scratch_cc.csv", True),
+                      (ivf, "fewshot8_iv_ft_free.csv", True)):
+        with tempfile.TemporaryDirectory() as tmp:
+            inputs = {**fr, "loso8_wind.csv": loso, "baselines.csv": base}
+            for name in set(inputs) - {f}:
+                inputs[name].to_csv(os.path.join(tmp, name), index=False)
+            for part in (None, fr[f][:400], fr[f]):
+                if part is not None:
+                    part.to_csv(os.path.join(tmp, f), index=False)
+                try:
+                    run(tmp, iv)
+                    assert part is fr[f]
+                except (ValueError, FileNotFoundError):
+                    assert part is not fr[f]
+                want = {"fewshot8_%s%s.csv" % ("iv_" * iv, n) for n in ("stats", "per_site", "cells")}
+                assert set(os.listdir(tmp)) - set(inputs) == (want if part is fr[f] else set())
     print("selftest: dat")
 
 
-def run(folder):
+def run(folder, iv=False):
     """Phan tich xong het roi moi ghi."""
     def read(f):
         return pd.read_csv(os.path.join(folder, f))
-    tests, sites, cells = analyze({f: read(f) for f in FILES}, read("loso8_wind.csv"), read("baselines.csv"))
+    tests, sites, cells = analyze({f: read(f) for f in (IV_FILES if iv else FILES)},
+                                  read("loso8_wind.csv"), read("baselines.csv"), iv)
     for name, df in (("stats", tests), ("per_site", sites), ("cells", cells)):
-        df.to_csv(os.path.join(folder, "fewshot8_{}.csv".format(name)), index=False)
+        df.to_csv(os.path.join(folder, "fewshot8_{}{}.csv".format("iv_" * iv, name)), index=False)
     return tests
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
-    if ap.parse_args().selftest:
+    ap.add_argument("--inner-val", action="store_true")
+    args = ap.parse_args()
+    if args.selftest:
         _selftest()
         return
-    print(run(RESULTS).to_string(index=False, float_format=lambda x: "%.4f" % x))
+    print(run(RESULTS, args.inner_val).to_string(index=False, float_format=lambda x: "%.4f" % x))
 
 
 if __name__ == "__main__":
