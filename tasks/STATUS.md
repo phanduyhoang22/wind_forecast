@@ -96,11 +96,16 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25: qa PASS on c4dffed (R22–R24). Claims allowed: W costs 1.9–3.9 pp at the own site (1h depends on seed aggregation); W gains 9–11 pp cross-regime; same-regime gain n.s.; W transfer n.s. vs persistence. Not verified: per-sample DM for E1-W (T06), GPU re-run. Director APPROVE under User delegation.
 
 ## T04 — SHAP (Mamba-31 per site, Mamba-W LOSO)
-- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 0
+- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 1
 - scope: `10_shap.py --sites A..H --model Mamba --seed 0`; `10_shap.py --sites A,B,C,D --models-dir results/models_loso --pattern losoW_{site}_{model}_{seed}.pt --features wind --tag losoW`
 - acceptance_criteria: `shap_importance_*.csv`, `shap_temporal_*.csv`; completeness error reported.
 - last_update: 2026-11-21
 - 2026-11-25 14:36 UTC (Leader): T04a and T04b runs finished on Colab (8/8 sites each). `shap_{importance,temporal}_Mamba_0.csv` copied from Drive; losoW8 CSVs copied too. Not QA'd. `results/runs.csv` in git is a snapshot (PatchTST 7/40); the live file is on Drive.
+- scope correction: T04b = `losoW8`, A–H (M09); the A–D / `losoW_` line above is superseded.
+- Leader-reported (Colab, 2026-11-25 14:44 UTC): 16/16 npz finite, CSV vs npz max relative gap 2.6e-04; completeness error T04b A–H 0.085 0.079 0.076 0.069 0.079 0.073 0.066 0.072.
+- 2026-11-25 qa FAIL on d656f18: QA-T04-01 HIGH (T04a completeness missing for A, E, F, G, H). CSVs, splits, method, LOSO code PASS. Claim limits: -03 cancellation (sum |phi| 4–13x the target deviation), -04 correlated heights/grouping artefact, -05 preregistered RF TreeSHAP and air_density control not done / not valid, -06 calendar share; -02 checkpoint provenance unverified; -07 docs. One seed only: no stability claim.
+- round 2 (worker): new `scripts/25_shap_check.py`, no SHAP re-run. From npz + checkpoints, forward passes only: rebuild the seed-0 background exactly as `10_shap.py`; write `results/shap_completeness.csv` (tag, site, horizon incl. pooled "all", completeness_error, n) for both tags and 8 sites; `results/shap_net_importance.csv` (tag, site, horizon, feature, mean |sum over t of phi|, share, rank); compare fx (inverse-scaled) with the stored prediction files of E1 and losoW8 seed 0 at the same test positions (max and mean abs diff, m/s) into `results/shap_provenance.csv`.
+- acceptance (round 2): `--selftest` with asserts (known attribution gives ~0 error, perturbed attribution gives the expected error, missing npz/checkpoint fails loudly and writes nothing); pooled definition identical to `10_shap.py`; CPU only; existing files unchanged; runs on Colab with `--results <dir>`; allowed_paths: `scripts/25_shap_check.py`, the three CSVs. Then Leader runs on Colab, qa.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
 - owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
