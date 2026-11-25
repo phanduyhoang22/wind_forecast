@@ -30,6 +30,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 
 - 2026-11-25 (M14, Director under User delegation): few-shot statistics frozen before completion: primary = finetune FREE vs oracle best-of {scratch, Ridge, RF, all const-calendar}, mean skill over 6 cells, Wilcoxon n = 8, Holm over 3 horizons; the rest secondary or descriptive (MEETINGS M14). Per M12, finetune free is main and const is the ablation. No "k weeks only" wording.
 
+- 2026-11-25 (M16, under User delegation): few-shot claim from R25 + R26, no new runs: beats k-week from-scratch references (below persistence) in both protocols; no consistent gain over zero-shot; vs persistence significant only with target validation. Conditions (1)–(6) in MEETINGS M16 bind T08. The confound-control run stays in the backlog.
+
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
 - Estimated GPU left: T01 ~8.5 h, T03 ~3.5 h, T04 ~1.5 h, T05 ~9 h.
@@ -199,7 +201,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `db66134`.
 
 ## T16 — Few-shot finetune without target validation (M15) — code part is a light task
-- owner: worker + Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 1
+- owner: worker + Leader (Colab) | priority: P2 | status: DONE | attempt_count: 1
 - design: M15. Code: `--inner-val` flag in `18_fewshot.py` (NN modes only). Then Colab after T12: `--inner-val --modes finetune` -> `results/fewshot8_iv_ft_free.csv`; `--inner-val --modes scratch --const-calendar --scratch-steps 2000` -> `results/fewshot8_iv_scratch_cc.csv`.
 - acceptance_criteria (code): default behaviour unchanged; fit/val inside the k-week window, contiguous, gap >= 120, val = int(0.2 n); `nb`/`n_train` from the fit subset; `idx_val` restored after every run (other modes/sites keep the target val); rf/ridge unaffected; inner-val smoke on CPU works (stubbed NN allowed); diff <= ~15 lines in 1 file.
 - allowed_paths: `scripts/18_fewshot.py`
@@ -208,6 +210,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-25 (Leader)
 - test_evidence: code commit f3bae74, qa PASS 2026-11-25 (default path identical to 85248fb; fit/val/gap 418/134/120, 956/268/120, 2031/537/120; idx_val restored; real 2-batch CPU smoke). Light-task code approved and merged `dde7fbc`. The task stays IN_PROGRESS until the Colab runs finish.
 - Colab: use full flags (`--sites A,B,C,D,E,F,G,H --seeds 3 --init-tag losoW8 --scratch-steps 2000 --inner-val`, both modes); file copied to `scripts/18_fewshot_iv.py` in the clone so T12 is not touched; waits for `t12.done`; ends with `t16.done`. MCP cell 3; re-run it after a reset (setup cell does not start it).
+- 2026-11-25: t16.done; both files 432/432 (62ae847); R26; qa PASS on data and statistics (QA-T16-01 High, -02/-03 Medium are claim limits -> M16). NOT_VERIFIED: GPU re-run, RF re-run, Colab code version beyond n_train. APPROVE under User delegation.
 
 ## T17 — Shift harness: read-only start-of-shift check (User request)
 - owner: worker | priority: P2 | status: DONE | attempt_count: 2
@@ -227,8 +230,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 (Director, under User delegation): APPROVE on QA PASS. Merged `2597ac7`.
 
 ## T18 — Statistics of T16 (M15) — light task
-- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | last_update: 2026-11-25 (Leader)
+- owner: worker | priority: P1 | status: DONE | attempt_count: 1 | last_update: 2026-11-25 (Leader)
 - goal: `23_fewshot_stats.py --inner-val` computes the M14 statistics with the inner-validation NN runs, per M15 (frozen before the test scores are read).
 - scope: finetune free from `fewshot8_iv_ft_free.csv`, scratch const from `fewshot8_iv_scratch_cc.csv`; Ridge/RF, zero-shot and persistence inputs unchanged. The `best_val` pair/reference and the finetune const vs free pair are dropped. Outputs `results/fewshot8_iv_{stats,per_site,cells}.csv`.
 - acceptance_criteria: without the flag the output is unchanged (regenerated CSVs identical); incomplete, duplicate or extra iv rows fail loudly and write nothing; `--selftest` covers the iv mode (known winner, dropped pairs, files written, missing file); primary = finetune free vs oracle best of {scratch, Ridge, RF const}, Holm over 3 horizons; diff <= ~50 lines in 1 file; `--inner-val` on the real results is run once and its numbers are reported; existing CSVs unchanged.
 - allowed_paths: `scripts/23_fewshot_stats.py`, `results/fewshot8_iv_stats.csv`, `results/fewshot8_iv_per_site.csv`, `results/fewshot8_iv_cells.csv`
+- test_evidence: commit 2429791; worker +56/-29 lines (above ~50, mostly selftest, judged not material by qa). qa PASS 2026-11-25. Open LOW: QA-T18-01 (selftest does not cover the flag wiring in main), QA-T18-02 (iv content such as n_train not checked). Approved (light task), merged `be6b306`.

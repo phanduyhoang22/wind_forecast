@@ -12,13 +12,13 @@ Written 2026-11-25 (Leader) at the User's request. **Nothing here is approved or
 | L03 | No NWP input | M08 | Add archived operational forecasts (never reanalysis: future leakage) | high |
 | L04 | n = 8 target sites, 2 per regime; the smallest reachable Holm p (3 horizons) is 0.023 | M08, R21 | More sites (M08 decided against) | high |
 | L05 | Zero-shot transfer is fragile: LOSO 3h/6h not significant vs persistence; Mamba-W vs RF-W not significant; cross-regime skill negative | R21, R21c (Holm p 0.078, 0.117); R23 (−8.2/−10.6/−6.7%) | Source-site selection by similarity, target-free normalization, domain adaptation | medium |
-| L06 | Fine-tuning adds little over zero-shot: n.s. at 1h and 3h, 6h depends on seed aggregation; no visible effect of 1/2/4 weeks | R25, R25c, QA-T12-02/04; median `best_epoch` 1 | Lower LR, layer freezing, adapters | low–medium |
+| L06 | Fine-tuning adds little over zero-shot: n.s. at 1h and 3h, 6h depends on seed aggregation; no visible effect of 1/2/4 weeks | R25, R25c, QA-T12-02/04; median `best_epoch` 1; not reproduced in R26 (M16) | Lower LR, layer freezing, adapters | low–medium |
 
 ### B. Fairness and reviewer risk
 | id | limitation | evidence | possible improvement | cost |
 |---|---|---|---|---|
 | L07 | Few-shot references are weak (the oracle best is below persistence) | R25c (−9.1/−15.8/−11.1%) | Tuned Ridge, RF with lags, LOSO-pretrained LSTM/DLinear | medium |
-| L08 | Fine-tuning and scratch use ~9 months of target validation data (checkpoint, early stopping, LR schedule); Ridge/RF do not | QA-T12-05 | T16 (inner validation) is running | in progress |
+| L08 | Fine-tuning and scratch use ~9 months of target validation data (checkpoint, early stopping, LR schedule); Ridge/RF do not | QA-T12-05 | T16 done (R26, M16): no gain over zero-shot; control run separating the confounds | medium (est. 2–4 T4-h) |
 | L09 | Target MinMax scaler is fitted on the full target train set, so LOSO "zero-shot", cross-site and few-shot results are not free of target data (each site uses the MinMax of its own train segment) | `scripts/09_global_loso.py:12`, `04_data_pipeline.py:180`, R23, QA-T12 item 4 | Scaler from the k weeks only, or window-wise normalization | low–medium |
 | L10 | RF and Ridge see only the last time step (19 features), neural networks see the whole look-back | QA-T12 item 4 | RF/Ridge with lagged inputs | low |
 | L11 | The LOSO 8-fold covers Mamba and RF only, so a transfer benefit cannot be attributed to Mamba | R16, R21 | Transformer / PatchTST LOSO-W | medium (GPU) |

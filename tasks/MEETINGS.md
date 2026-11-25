@@ -7,7 +7,12 @@ Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with thr
 - evidence: R25, R25c, R26; qa T16/T18 report PASS (2429791); merge be6b306.
 - question: which few-shot claim does the paper make, and is more compute needed?
 - options: A) write from R25 + R26, no new runs: transfer pre-training beats from-scratch references on k weeks (reference weak, disclosed); no claim of gain over zero-shot; vs persistence significant only with target validation. B) A + a control run that separates the confounds (full k-week fit with no target-validation signal, fixed epochs taken from source data, epoch-0 checkpoint allowed). C) keep the R25 claim as written (current plan).
-- status: DECISION_PENDING
+- qa: A SOLID (reference claim only; reference weak), B WEAK (post hoc, n stays 8, cannot rescue significance), C INVALID (breaks the frozen M15 sign-flip rule). Recommends A.
+- worker: A 2–3 h, 0 GPU. B 4–6 h + QA, est. 2–4 T4-h (not measured) for two arms; strict source-only epoch choice needs leave-two-out inits, proxy = median best_epoch of the other 7 sites. C indefensible. Prefers B-lite, A if time is short.
+- leader: A has no GPU or schedule impact; B delays PatchTST (33 runs) and the paper. losoW8 checkpoints 24/24 are on Drive by name (checked 2026-11-25).
+- director recommendation: A with conditions: (1) claim = LOSO-pretrained then fine-tuned beats k-week scratch/Ridge/RF, whose oracle best is below persistence, in both protocols (8/8, Holm 0.023), reference weakness always stated; (2) no consistent gain over zero-shot; inner validation at 1h worse (RMSE-difference Holm 0.047, skill 0.070); (3) vs persistence significant only with the ~9-month target validation set (Holm 0.117 otherwise); (4) R25 and R26 in the same table; D loses at 3h/6h in R25, 6h gain over zero-shot is seed-median only; (5) confounds of R26 (fit data, recency, checkpoint/LR signal, no epoch-0) and the three data uses (scaler, const-calendar, tuning) disclosed; (6) forbidden wording: "few-shot adaptation improves transfer", "k weeks suffice/only", "competitive baseline", "caused by lack of validation", "equivalent to zero-shot", "fine-tuning hurts" in general. B goes to the backlog, not scheduled. Dissent: worker prefers B-lite.
+- decision: A with conditions (1)–(6), 2026-11-25. Taken under the User's delegation (User message 2026-11-25, merge T18 and run the meeting). | status: DECIDED
+- action items: T08 (wording).
 
 ## M15 — 2026-11-25 — T16 design (amends M14 condition 6)
 - trigger: "fixed-step finetune" needs a step count with no source-only basis and a change in `run_nn`.

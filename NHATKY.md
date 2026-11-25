@@ -1,5 +1,12 @@
 # NHATKY
 
+## 2026-11-25 21:20 — leader — T16, T18 DONE; họp M16
+- Làm được: Colab mất sau 05:06 UTC, nối lại 13:55 UTC; T16 đủ 432/432 × 2; `23_fewshot_stats.py --inner-val` (T18) qa PASS, merge `be6b306`; R26.
+- Kết quả: thắng đối chứng tốt nhất 8/8 (p 0.023) nhưng không còn lợi so với zero-shot (−2.2/−0.7/−0.1%); so persistence p 0.117.
+- Quyết định (M16, theo ủy quyền): phương án A, viết từ R25 + R26, không chạy thêm; worker thích B-lite.
+- Dở dang / bước tiếp: T04b SHAP losoW8 rồi T05 PatchTST (7/40) trên Colab; T04 qa khi có CSV.
+- Mở chat tiếp: /role leader T04
+
 ## 2026-11-25 11:49 — leader — T17 DONE (harness đầu ca)
 - Làm được: `scripts/24_shift_check.py` (qa FAIL vòng 1 vì PASS giả, PASS vòng 2 trên `54e5150`), merge `2597ac7`; quy trình đầu ca ghi ở `CLAUDE.md` mục 8.
 - Dở dang / bước tiếp: T16 scratch và T04 SHAP chạy trên Colab; còn 4 lỗi LOW của script, chưa sửa.
