@@ -176,57 +176,73 @@ def check_remote(path):
 
 def check_tasks(text):
     tasks, bad = {}, []
-    for part in re.split(r"(?m)^## (?=T\d)", text)[1:]:
-        tid = re.match(r"\w+", part).group()
+    for part in re.split(r"(?m)^## +", text)[1:]:
+        head = re.match(r"[\W_]*(T\d+[A-Za-z]*)", part)   # tieu de co the in dam
+        if not head:
+            continue
+        tid = head.group(1)
         m = re.search(r"\bstatus: *([A-Z_]+)([^|\n]*)", part)
         if tid in tasks or not m:
             bad.append(tid)
         tasks[tid] = (m.group(1), m.group(0)[8:].strip()) if m else ("", "?")
     if not tasks:
-        return "FAIL", "khong thay task nao"
+        return "NOT_VERIFIED", "khong thay task nao"
     is_open = ["{} {}".format(t, s) for t, (k, s) in tasks.items() if k not in ("DONE", "CANCELLED")]
     ev = "{} task mo: {}".format(len(is_open), ", ".join(is_open))
     return ("WARN", "thieu status hoac trung id {}; {}".format(bad, ev)) if bad else ("PASS", ev)
 
 
 def result_rows(text):
-    """[(run_id, dong)] cua bang RESULTS.md, theo thu tu."""
-    return [(m.group(1), m.group(0)) for m in re.finditer(r"(?m)^\|[^|]*\| *(R\d\w*) *\|.*$", text)]
+    """[(run_id, dong)] cua bang RESULTS.md, theo thu tu; run_id la "?" neu khong doc duoc."""
+    out = []
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().removeprefix("|").split("|")]
+        if len(cells) < 3 or cells[1] == "run_id" or not cells[1].strip("-: "):
+            continue
+        m = re.search(r"R\d+[A-Za-z]*", cells[1])   # bo qua dinh dang **R1**, `R1`, [R1](...)
+        out.append((m.group() if m else "?", line))
+    return out
 
 
 def check_run_ids(text):
     n = collections.Counter(i for i, _ in result_rows(text))
-    dup = [i for i, k in n.items() if k > 1]
+    dup = [i for i, k in n.items() if k > 1 or i == "?"]
     if not n:
-        return "FAIL", "khong thay run_id nao"
-    return ("FAIL", "run_id trung {}".format(dup)) if dup else ("PASS", "{} run_id, khong trung".format(len(n)))
+        return "NOT_VERIFIED", "khong thay dong nao trong RESULTS.md"
+    return ("FAIL", "run_id trung hoac khong doc duoc {}".format(dup)) if dup else ("PASS", "{} run_id, khong trung".format(len(n)))
 
 
 def check_qa(text):
     rows, left = result_rows(text), []
+    if not rows:
+        return "NOT_VERIFIED", "khong thay dong nao trong RESULTS.md"
     for k, (i, line) in enumerate(rows):
         if "not yet QA'd" in line and not any(
-                "QA PASS" in later and (j.startswith(i + "c") or re.search(r"\b{}\b".format(i), later))
+                i != "?" and j in (i, i + "c") and "QA PASS" in later and "not yet QA'd" not in later
                 for j, later in rows[k + 1:]):
             left.append(i)
     return ("WARN", "chua QA: {}".format(left)) if left else ("PASS", "khong con dong chua QA")
 
 
 def check_paths(text, results):
-    """CSV trong backtick; 'Drive' dung truoc trong cung o thi chi co tren Drive."""
+    """CSV trong backtick; chi co tren Drive khi moi lan nhac deu co 'Drive' dung truoc trong cung o."""
     paths = {}
     for _, line in result_rows(text):
         for cell in line.split("|"):
             for m in re.finditer(r"`([^`\s]+\.csv)`", cell):
                 p = m.group(1).removeprefix("results/")
-                paths[p] = paths.get(p, False) or "Drive" in cell[:m.start()]
+                paths[p] = paths.get(p, True) and "Drive" in cell[:m.start()]
+    if not paths:
+        return "NOT_VERIFIED", "khong thay duong dan CSV nao trong RESULTS.md"
     miss = [p for p in paths if not glob.glob(os.path.join(results, p))]
     out = []
     for status, drive, what in (("FAIL", False, "khong co tai may"), ("NOT_VERIFIED", True, "chi co tren Drive")):
         s = [p for p in miss if paths[p] == drive]
         if s:
             out.append((status, "{}: {}".format(what, ", ".join(s))))
-    return out + [("PASS", "{}/{} duong dan co tai may".format(len(paths) - len(miss), len(paths)))]
+    if len(miss) < len(paths):
+        out.append(("PASS", "{}/{} duong dan co tai may".format(len(paths) - len(miss), len(paths))))
+    return out
 
 
 def check_headline(item, text, results):
@@ -265,6 +281,8 @@ def check_script(name):
                            encoding="utf-8", errors="replace")
     except subprocess.TimeoutExpired:
         return "NOT_VERIFIED", "qua 300 s"
+    if not p.returncode and not p.stdout.strip():
+        return "NOT_VERIFIED", "exit 0 nhung khong in gi"
     last = (p.stdout.strip().splitlines() or ["(khong in gi)"])[-1]
     return "FAIL" if p.returncode else "PASS", "exit {}: {}".format(p.returncode, last)
 
@@ -361,12 +379,34 @@ def _selftest():
         # tai lieu
         s, ev = check_tasks("## T01 x\n- status: DONE\n## T02 y\n- owner: a | status: TODO (cho) | n: 1\n")
         assert s == "PASS" and "T02 TODO (cho)" in ev and "T01" not in ev
-        assert check_tasks("## T01 x\n- goal\n")[0] == "WARN" and check_tasks("")[0] == "FAIL"
+        assert check_tasks("## T01 x\n- goal\n")[0] == "WARN" and check_tasks("")[0] == "NOT_VERIFIED"
+        s, ev = check_tasks("## **T01** x\n- goal\n## Khac\n- status: DONE\n")
+        assert s == "WARN" and "T01" in ev   # khong muon status cua muc khac
         bad, ok = "| d | R1 | not yet QA'd |\n", "| d | R1c | QA PASS |\n"
         assert check_qa(bad)[0] == "WARN" and check_qa(bad + ok)[0] == "PASS" and check_qa(ok + bad)[0] == "WARN"
         assert check_qa(bad + ok.replace("R1c", "R10"))[0] == "WARN"
         assert check_run_ids(bad + ok)[0] == "PASS" and check_run_ids(bad + bad)[0] == "FAIL"
-        assert check_run_ids("")[0] == "FAIL"
+        blank = "# RESULTS\n| date | run_id | note |\n|---|---|---|\n"
+        for x in ("", "# RESULTS\n", blank):
+            assert [guard(f, x, *a)[0][0] for f, a in ((check_run_ids, ()), (check_qa, ()), (check_paths, (tmp,)))] \
+                == ["NOT_VERIFIED"] * 3
+        assert check_paths(bad, tmp)[0] == "NOT_VERIFIED"
+        for mark in ("**R1**", "`R1`", "_R1_", "[R1](x)", "~~R1~~"):
+            assert check_run_ids(bad + bad.replace("R1", mark))[0] == "FAIL", mark
+            assert check_qa(bad.replace("R1", mark))[0] == "WARN", mark
+        assert check_run_ids(bad + "| d | x | y |\n")[0] == "FAIL"
+        # chi dong cung id hoac id + c moi xoa duoc "not yet QA'd"
+        assert check_qa(bad + ok.replace("R1c", "R1"))[0] == "PASS"
+        for x in ("| d | R2 | R1 QA PASS |\n", "| d | R1cx | QA PASS |\n", "| d | R1c | doi |\n"):
+            assert check_qa(bad + x)[0] == "WARN", x
+        # mot lan nhac khong co Drive la phai co tai may
+        two = ["| d | R1 | Drive `results/y.csv` |", "| d | R2 | `results/y.csv` |"]
+        for x in (two, two[::-1]):
+            assert check_paths("\n".join(x), tmp)[0][0] == "FAIL"
+        assert [s for s, _ in check_paths(two[0], tmp)] == ["NOT_VERIFIED"]
+        # script rong: exit 0 khong in gi
+        open(os.path.join(tmp, "rong.py"), "w").close()
+        assert check_script(os.path.join(tmp, "rong.py"))[0] == "NOT_VERIFIED"
         r = check_paths("| d | R1 | `results/t.csv`, `x*.csv`, Drive `results/y.csv` |", tmp)
         assert [s for s, _ in r] == ["FAIL", "NOT_VERIFIED", "PASS"] and "x*" in r[0][1] and "y.csv" in r[1][1]
 
