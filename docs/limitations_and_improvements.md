@@ -19,7 +19,7 @@ Written 2026-11-25 (Leader) at the User's request. **Nothing here is approved or
 |---|---|---|---|---|
 | L07 | Few-shot references are weak (the oracle best is below persistence) | R25c (−9.1/−15.8/−11.1%) | Tuned Ridge, RF with lags, LOSO-pretrained LSTM/DLinear | medium |
 | L08 | Fine-tuning and scratch use ~9 months of target validation data (checkpoint, early stopping, LR schedule); Ridge/RF do not | QA-T12-05 | T16 (inner validation) is running | in progress |
-| L09 | Target MinMax scaler is fitted on the full target train set, so the few-shot setting (and cross-site evaluation with the target scaler) is not free of target data; check the LOSO case before writing | R23, QA-T12 item 4 | Scaler from the k weeks only, or window-wise normalization | low–medium |
+| L09 | Target MinMax scaler is fitted on the full target train set, so LOSO "zero-shot", cross-site and few-shot results are not free of target data (each site uses the MinMax of its own train segment) | `scripts/09_global_loso.py:12`, `04_data_pipeline.py:180`, R23, QA-T12 item 4 | Scaler from the k weeks only, or window-wise normalization | low–medium |
 | L10 | RF and Ridge see only the last time step (19 features), neural networks see the whole look-back | QA-T12 item 4 | RF/Ridge with lagged inputs | low |
 | L11 | The LOSO 8-fold covers Mamba and RF only, so a transfer benefit cannot be attributed to Mamba | R16, R21 | Transformer / PatchTST LOSO-W | medium (GPU) |
 | L12 | Post-hoc choices: coastal threshold 6.0→5.5 m/s, scratch step budget, `month_*` handling | M06, M07, M12 | Disclose (cannot be undone) | low |
