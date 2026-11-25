@@ -2,6 +2,13 @@
 
 Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with three standing agents (methods/statistics reviewer, wind-energy domain expert, ML engineer) and Claude deciding by majority. Full minutes (Vietnamese): `docs/NHAT_KY_DU_AN.md` §5 and later sections; briefs: `docs/meetings/`. From now on, meetings follow `/meeting` (qa, worker, Leader, Director, User decides).
 
+## M16 — 2026-11-25 — Few-shot claim after T16
+- trigger: R26 contradicts R25 on finetune vs zero-shot (QA-T16-01).
+- evidence: R25, R25c, R26; qa T16/T18 report PASS (2429791); merge be6b306.
+- question: which few-shot claim does the paper make, and is more compute needed?
+- options: A) write from R25 + R26, no new runs: transfer pre-training beats from-scratch references on k weeks (reference weak, disclosed); no claim of gain over zero-shot; vs persistence significant only with target validation. B) A + a control run that separates the confounds (full k-week fit with no target-validation signal, fixed epochs taken from source data, epoch-0 checkpoint allowed). C) keep the R25 claim as written (current plan).
+- status: DECISION_PENDING
+
 ## M15 — 2026-11-25 — T16 design (amends M14 condition 6)
 - trigger: "fixed-step finetune" needs a step count with no source-only basis and a change in `run_nn`.
 - evidence: code of `18_fewshot.py`, `07_run_benchmark.py`; no test scores read.
