@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-25 11:35 — leader — Đồng bộ kit, harness đầu ca (T17)
+- Làm được: chép từ kit `commands/{handoff,role,task}.md`, `rules/{sessions,docs}.md`, `references/handoff-template.md`, `hooks/session_start.py`, `settings.json` (thêm SessionStart); selftest hook OK. `docs/limitations_and_improvements.md` ghi điểm yếu và bài báo.
+- Bỏ qua: `setup-project.md`, `README.md`, `templates` (chỉ có ở kit).
+- Dở dang / bước tiếp: worker viết `scripts/24_shift_check.py` (T17), rồi qa; giữ Colab.
+- Mở chat tiếp: /role leader T16
+
 ## 2026-11-25 11:09 — leader — T12 DONE (qa PASS), Colab chạy lại
 - Làm được: nối lại Colab 03:35 UTC (T4); T12 xong, chạy `23_fewshot_stats.py` lần đầu trên dữ liệu thật (R25, R25c, `c25db4c`); qa tính lại khớp.
 - Kết quả: finetune thắng baseline tốt nhất 8/8 site (p 0.023), nhưng baseline đó còn kém persistence; so với zero-shot lợi ích nhỏ (chỉ 6h có ý nghĩa, phụ thuộc cách gộp seed).
