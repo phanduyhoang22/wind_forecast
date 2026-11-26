@@ -200,7 +200,7 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
 **Pairwise tests (per-site benchmark, E1).** Diebold–Mariano tests are used only for the window-level comparisons of the per-site benchmark. <!-- M01, M02; scripts/08_aggregate.py:38-55 (dm_test) -->
 
-- **Test statistic.** Diebold–Mariano tests on squared-error loss differentials with the Harvey–Leybourne–Newbold small-sample correction. The HAC variance uses a Bartlett kernel with lag max(h − 1, 96), so that the 24-h overlap of input windows is covered. This lag replaced the lag h − 1 of a pilot run, after the pilot DM results had been seen; it was fixed before the E1 runs. A longer lag gives a larger variance estimate, so the change is conservative. <!-- M01; docs/NHAT_KY_DU_AN.md:129-147 (Họp #1: pilot DM results, lag h−1 too short, fix max(h−1, 96) + Holm) -->
+- **Test statistic.** Diebold–Mariano tests on squared-error loss differentials with the Harvey–Leybourne–Newbold small-sample correction. The HAC variance uses a Bartlett kernel with lag max(h − 1, 96), so that the 24-h overlap of input windows is covered. This lag and the Holm adjustment (below) were set after the DM results of a pilot run had been seen and before the E1 runs. The pilot used lag h − 1 and no multiplicity adjustment; the lag h − 1 was judged too short for the 15-min series, so that |DM| was overstated. The change was meant to make the tests more conservative. <!-- M01; docs/meetings/2026-11-09_pilot_brief.md:33-35 (pilot DM results); docs/NHAT_KY_DU_AN.md:129-147 (Họp #1), :142 (lag h−1 too short, |stat| inflated, no multiplicity adjustment), :147 (fix max(h−1, 96) + Holm) -->
 - **Multiple comparisons.** p-values are adjusted with the Holm procedure over one family that holds all comparisons of a run: site × horizon × competitor for the seed ensemble, and site × horizon × competitor × seed for the per-seed tests. <!-- scripts/08_aggregate.py:107 (dm_all), :137 (dm_per_seed); M01 -->
 - **Seed-level evidence.** The main E1 evidence is the per-seed comparison (seed i of Mamba vs seed i of each competitor): the number of seeds (out of five) on which one model significantly beats another, and a paired t-test on the per-seed RMSE. The seed ensemble is tested separately. This choice was made after the first E1 pass (M02) and is post-hoc. <!-- scripts/08_aggregate.py:113-116 (dm_per_seed), :149 (paired t), :82-83 (dm_all, ensemble); M02 -->
 
@@ -223,11 +223,11 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
 - the tuning grid;
 - the site-selection gate;
-- the DM test specification of the per-site benchmark (loss, HLN correction, HAC lag, Holm adjustment; M01).
+- the DM test specification of the per-site benchmark (loss, HLN correction, HAC lag, Holm adjustment; M01), fixed after the pilot and before the E1 results were seen.
 
 The few-shot statistics were fixed while the runs were incomplete, after a few rows had been seen (M14; Section 3.6, item 8).
 
-The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), the per-seed DM and paired t-test as the main E1 evidence (above; M02), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
+The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), the DM HAC lag max(h − 1, 96) and the Holm adjustment, set after the pilot DM results (above; M01) <!-- docs/NHAT_KY_DU_AN.md:142, :147 -->, the per-seed DM and paired t-test as the main E1 evidence (above; M02), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
 
 ## Data and code availability
 SEA-WTK v3 is publicly available from NREL. Download, verification, feature construction, all experiments and statistics are reproducible from the project repository (`scripts/01`–`25`). **[TODO: DOI/Zenodo snapshot at submission]**
