@@ -80,8 +80,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21 (Leader): approved on QA PASS (light task), merged `e124620` from 2be4970; worktree removed.
 
 ## T02 — Few-shot scratch, fixed step budget
-- owner: Leader (Colab) | priority: P1 | status: IN_PROGRESS (QA FAIL round 1) | attempt_count: 1
+- owner: Leader (Colab) | priority: P1 | status: CANCELLED (superseded) | attempt_count: 1
 - goal: fair from-scratch baseline for E9 (M07).
+- 2026-11-26 Leader: closed as superseded. The QA-T02-01/-02 FAIL led to M12; fixes in T11, rerun A–H in T12/T16 (R25, R26; claim frozen in M16). `fewshot_scratch2.csv` stays as the disclosed invalid-baseline row (R18).
 - scope: `scripts/18_fewshot.py --sites A,B,C,D --models Mamba --seeds 3 --modes scratch --scratch-steps 2000 --out results/fewshot_scratch2.csv`
 - acceptance_criteria: 72 runs (4 sites × 2 windows × 3 weeks × 3 seeds); table vs finetune (`fewshot.csv`), RF (`fewshot_rf.csv`), persistence.
 - qa: FAIL 2026-11-21 (QA-T02-01 high: scratch 1.4–3.3 m/s vs Ridge 0.61–0.83 on the same k weeks, not explained by range coverage; suspects constant month_* and unscaled LR patience; QA-T02-02 low: window drops the 23:45 sample) -> meeting M12.
@@ -286,3 +287,18 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - acceptance_criteria: without the flag the output is unchanged (regenerated CSVs identical); incomplete, duplicate or extra iv rows fail loudly and write nothing; `--selftest` covers the iv mode (known winner, dropped pairs, files written, missing file); primary = finetune free vs oracle best of {scratch, Ridge, RF const}, Holm over 3 horizons; diff <= ~50 lines in 1 file; `--inner-val` on the real results is run once and its numbers are reported; existing CSVs unchanged.
 - allowed_paths: `scripts/23_fewshot_stats.py`, `results/fewshot8_iv_stats.csv`, `results/fewshot8_iv_per_site.csv`, `results/fewshot8_iv_cells.csv`
 - test_evidence: commit 2429791; worker +56/-29 lines (above ~50, mostly selftest, judged not material by qa). qa PASS 2026-11-25. Open LOW: QA-T18-01 (selftest does not cover the flag wiring in main), QA-T18-02 (iv content such as n_train not checked). Approved (light task), merged `be6b306`.
+
+## T19 — Committed statistics for R22/R23 (W vs 31 features, own site and cross-site)
+- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | created: 2026-11-26 (Leader)
+- goal: the R22/R23 Wilcoxon p-values (Section 2.6 TODO) are reproducible from a committed script, with the exact test variant stated.
+- scope: new `scripts/26_feature_set_stats.py` reading `results/runs.csv` (Mamba, 31 features), `results/runs_wind.csv` (Mamba W), `results/cross_eval_nn.csv` (31), `results/cross_eval_wind.csv` (W), `results/baselines.csv` (persistence); reuse `22_transfer_stats.py` helpers (`compare`, `rank_biserial`, `check`) via its `_load` pattern; writes `results/feature_set_stats.csv`; `--selftest`.
+- acceptance_criteria:
+  1. Own site (R22): per-site skill vs persistence of the median-seed RMSE (5 seeds), W vs 31, W−31 pp, two-sided exact Wilcoxon n = 8, Holm over 3 horizons; also the seed-mean variant. Reproduces RESULTS R22 (W +14.19/+18.23/+24.09 %, 31 +16.05/+21.81/+27.95 %, Holm p 0.023 ×3, seed-mean 0.055/0.023/0.023) to the printed precision.
+  2. Cross-site (R23): mean over 8 targets of same-regime and cross-regime skill (median of 3 seeds), W−31 same and cross (Holm p 0.297/0.297/0.164 and 0.031/0.031/0.023), same−cross (0.023 ×3), W vs persistence same and cross (n.s.). Reproduces R23 to the printed precision.
+  3. Any number that does not reproduce is reported with both values; do not tune the method to match. State the exact variant used (zero handling, exact vs normal, aggregation).
+  4. `--selftest` with an assert-based check (known Wilcoxon p and Holm); script follows the existing style (Vietnamese comments without diacritics, argparse like 22).
+  5. Only `scripts/26_feature_set_stats.py` and `results/feature_set_stats.csv` change.
+  6. Shift checks (HANDOFF 2026-11-26 §7): `py scripts/24_shift_check.py --full` -> 0 FAIL, report every WARN/NOT_VERIFIED; Drive `runs.csv` PatchTST counts and `shap_*.npz` modifiedTime need Drive -> NOT_VERIFIED (Leader checks them on Colab).
+- allowed_paths: `scripts/26_feature_set_stats.py`, `results/feature_set_stats.csv`
+- dependencies: R22, R23 (QA PASS); independent of T05 (uses Mamba rows only).
+- 2026-11-26 Leader: contract written, worker spawned.
