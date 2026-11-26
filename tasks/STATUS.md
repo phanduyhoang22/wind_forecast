@@ -139,7 +139,10 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - owner: worker | priority: P2 | status: TODO | attempt_count: 0
 - scope: `py scripts/11_conformal.py` (α 0.1, 0.05), PICP/PINAW overall and by wind tercile.
 - dependencies: preds + val preds from E1 | allowed_paths: `results/`
-- last_update: 2026-11-21
+- 2026-11-27 Leader contract: owner Leader (Colab; NN val/test preds live only on Colab/Drive, local has RF val only). No code change.
+  - command: `cd /content/wind_forecast && python scripts/11_conformal.py --selftest` then `python scripts/11_conformal.py --models Mamba,LSTM,Transformer,PatchTST,DLinear,RF` -> `results/conformal.csv`, copied to Drive and repo.
+  - acceptance_criteria: (1) selftest prints PICP ~0.900 "dat"; (2) conformal.csv rows = 8 sites x 6 models x 5 seeds x 2 alphas x 3 horizons = 1440 (missing preds listed, not silently skipped); (3) PICP/PINAW finite, PINAW > 0, PICP in [0,1]; (4) calibration on val only, test untouched (code read); (5) RESULTS row with run_id; (6) HANDOFF section 7 checks: Drive runs.csv PatchTST 15/site A-H (120) + others 15/site + newline; `py scripts/24_shift_check.py --full` 0 FAIL, every WARN/NOT_VERIFIED read; Drive shap_*.npz modifiedTime (2026-11-25 expected; open finding F-T05-01 for A-D).
+- last_update: 2026-11-27
 
 ## T08 — Paper: Results & Discussion draft
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0
