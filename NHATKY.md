@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 00:18 — leader — handoff: T05 38/40, status cell treo
+- Làm được: keep-alive Colab 14 phút suốt buổi; PatchTST 38/40 lúc 17:01 UTC (A–G xong, H seed 0–2 xong).
+- Sự cố: status cell ~17:15 UTC treo >120 s; Drive `run.log` sửa lần cuối 17:08 UTC (lúc 17:18 là 9,5 phút) → có thể mất runtime, chưa chắc.
+- Dở dang / bước tiếp: kiểm runtime; mất thì nối lại + setup (chuỗi tự bỏ qua run đã xong); 40/40 → qa T05 → T07 → T06 → T08.
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 19:30 — leader — handoff: T05 23/40, T08c DONE
 - Làm được: Colab reset → setup lại 12:10 UTC, PatchTST 23/40 lúc 12:28 UTC (E đang chạy). T08c qa PASS vòng 2, merge `ea1104d`, docs `7c8fee7`, đã push. Shift check đầu ca 65 PASS, 0 FAIL.
 - Quyết định: chat này vẫn mở để giữ Colab (cron 14 phút, theo yêu cầu User).
