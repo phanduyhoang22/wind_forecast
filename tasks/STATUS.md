@@ -52,6 +52,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-24 22:34 UTC: last Drive sync; at 22:49–22:59 UTC the status cell and a ping cell hung, no new sync, re-running the setup cell had no effect. Treated as runtime lost (not proven: MCP cells gave no output). State at the last live check (22:32 UTC): T04 SHAP running, `fewshot8_cc.csv` 864/864, `fewshot8_ft_free.csv` 180/432 rows, T16 waiting for `t12.done`, PatchTST (T05) not started. Resume: reconnect MCP, new runtime + Drive consent, run cell 1 (setup + T12), then cell 3 (T16, source below in HANDOFF), then cell 2. Handoff + shutdown per the User rule.
 - 2026-11-25 03:35 UTC: reconnected (empty notebook, T4, commit eb4e17c). Restarted: chain at T04a SHAP, T12 `fewshot8_ft_free.csv` 195/432, T16 waiting for `t12.done`. Cells: 1 = setup + T12, 2 = T16, 3 = status.
 - 2026-11-25 13:55 UTC: runtime was lost after the 05:06 UTC Drive sync; reconnected (empty notebook, T4, commit 4eb5f54). T16 runs complete (432/432 both files). T04a skipped (both CSVs on Drive have 8 sites); restarted: T04b from A, then T05 (PatchTST 7/40). Cells: 1 = setup, 2 = status.
+- 2026-11-26 ~01:20 UTC: reconnected (empty notebook, T4, commit 6807cab). Drive check: all result CSVs end with newline and match the clone; E1 models/preds 5 seeds × A–H for DLinear/LSTM/Mamba/Transformer, RF preds A–H; PatchTST A–C 5 seeds, D 1 (16/40, `runs.csv` 528 rows on Drive vs 501 in git); `models_wind`/`preds_wind` 40; losoW8 24 + globalW8 3 models, 24 + 24 preds; 16 SHAP npz finite. Chain killed at T04a (no skip in `10_shap.py`), T05 started alone. Cells: 1 = setup, 2 = status, 3 = scratch check.
 - Never `cp` the clone's `models_loso/`/`preds_loso/` onto Drive by hand after a rename (cp -u re-creates old names); the Drive snapshot `models_loso_4fold/`, `preds_loso_4fold/` is frozen.
 
 ## T01 — Mamba-W LOSO 8-fold
@@ -96,7 +97,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25: qa PASS on c4dffed (R22–R24). Claims allowed: W costs 1.9–3.9 pp at the own site (1h depends on seed aggregation); W gains 9–11 pp cross-regime; same-regime gain n.s.; W transfer n.s. vs persistence. Not verified: per-sample DM for E1-W (T06), GPU re-run. Director APPROVE under User delegation.
 
 ## T04 — SHAP (Mamba-31 per site, Mamba-W LOSO)
-- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 1
+- owner: Leader (Colab) | priority: P2 | status: DONE | attempt_count: 2
 - scope: `10_shap.py --sites A..H --model Mamba --seed 0`; `10_shap.py --sites A,B,C,D --models-dir results/models_loso --pattern losoW_{site}_{model}_{seed}.pt --features wind --tag losoW`
 - acceptance_criteria: `shap_importance_*.csv`, `shap_temporal_*.csv`; completeness error reported.
 - last_update: 2026-11-21
@@ -106,6 +107,10 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-25 qa FAIL on d656f18: QA-T04-01 HIGH (T04a completeness missing for A, E, F, G, H). CSVs, splits, method, LOSO code PASS. Claim limits: -03 cancellation (sum |phi| 4–13x the target deviation), -04 correlated heights/grouping artefact, -05 preregistered RF TreeSHAP and air_density control not done / not valid, -06 calendar share; -02 checkpoint provenance unverified; -07 docs. One seed only: no stability claim.
 - round 2 (worker): new `scripts/25_shap_check.py`, no SHAP re-run. From npz + checkpoints, forward passes only: rebuild the seed-0 background exactly as `10_shap.py`; write `results/shap_completeness.csv` (tag, site, horizon incl. pooled "all", completeness_error, n) for both tags and 8 sites; `results/shap_net_importance.csv` (tag, site, horizon, feature, mean |sum over t of phi|, share, rank); compare fx (inverse-scaled) with the stored prediction files of E1 and losoW8 seed 0 at the same test positions (max and mean abs diff, m/s) into `results/shap_provenance.csv`.
 - acceptance (round 2): `--selftest` with asserts (known attribution gives ~0 error, perturbed attribution gives the expected error, missing npz/checkpoint fails loudly and writes nothing); pooled definition identical to `10_shap.py`; CPU only; existing files unchanged; runs on Colab with `--results <dir>`; allowed_paths: `scripts/25_shap_check.py`, the three CSVs. Then Leader runs on Colab, qa.
+- round 2 worker: `6314178` (script), Colab run `20bb21c` (Drive `results/shapchk/`). Recorded late by the Leader on 2026-11-26 (previous shift did not log it).
+- 2026-11-26 qa PASS on 20bb21c (run R27): selftest exit 0; 64/1200/16 rows complete and finite; pooled definition identical; losoW8 matches the 10_shap log to 3 decimals. NOT_VERIFIED: CPU recompute (no npz/checkpoints locally), Colab run itself. Findings: QA-T04-08 LOW provenance max diff 0.009–0.018 m/s, no negative control (fp16 autocast likely); QA-T04-09 top-1 feature changes under net importance (no "ws_200m dominates" claim); QA-T04-10 INFO missing preds -> `status=missing`. Claim limits -03..-07 still bind T08.
+- 2026-11-26 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Leader merged `d406f57`. status: DONE.
+- 2026-11-26 note: `10_shap.py` has no skip of finished sites; the Colab chain re-ran T04a on restart. The Leader killed it before any npz was written and restarted T05 alone. Do not put `10_shap.py` back in the chain.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
 - owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0

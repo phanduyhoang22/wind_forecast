@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-26 08:35 — leader — T04 DONE, Colab chạy lại T05
+- Làm được: nối lại Colab (T4, 01:20 UTC); kiểm tra Drive: CSV đủ, khớp bản clone, model/preds đủ; PatchTST 16/40 (A–C xong, D 1 seed). T04 vòng 2 qa PASS (R27), merge `d406f57`.
+- Sự cố: `10_shap.py` không bỏ qua site đã xong nên chuỗi chạy lại SHAP; đã dừng trước khi ghi đè npz, chạy riêng T05. Xóa 2 dòng SHAP khỏi `notebooks/colab_resume.py` (sửa nhỏ).
+- Dở dang / bước tiếp: giữ Colab (status cell 15 phút); T05 xong thì T07, T06, T08. Lưu ý QA-T04-08/09 khi viết.
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-25 21:08 — leader — T16, T18 DONE; họp M16
 - Làm được: Colab mất sau 05:06 UTC, nối lại 13:55 UTC; T16 đủ 432/432 × 2; `23_fewshot_stats.py --inner-val` (T18) qa PASS, merge `be6b306`; R26.
 - Kết quả: thắng đối chứng tốt nhất 8/8 (p 0.023) nhưng không còn lợi so với zero-shot (−2.2/−0.7/−0.1%); so persistence p 0.117.
