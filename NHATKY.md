@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 — leader — M17: T07 chọn phương án A
+- Làm được: họp M17 (qa: bằng chứng WEAK chỉ ở RF A–D; worker: A khả thi, ~15–20 phút CPU); biên bản `tasks/MEETINGS.md`, commit `398d00f`.
+- Quyết định: User chọn A (chạy lại RF A–D có cổng kiểm tái lập seed 0; sửa lượng tử, PINAW theo biên độ train, báo cặp thiếu).
+- Dở dang / bước tiếp: worker T07 vòng 2 đang chạy (worktree); sau đó qa, rồi Leader chạy lại 11 trên Colab (1440 dòng).
+- Mở chat tiếp: /role leader T07
+
 ## 2026-11-27 — director — duyệt T05
 - Làm được: T05 APPROVE (qa PASS `5fc2cc9`, runs.csv 600 dòng, 40/40 PatchTST).
 - Quyết định: check (3) SHAP npz tách sang F-T05-01 (còn mở, chặn dùng số SHAP ở T08). Paper phải nêu QA-T05-02 (12/120 dòng chạm trần 50 epoch) và QA-T05-03 (PatchTST thua persistence 1h ở D, H).
