@@ -1,5 +1,12 @@
 # NHATKY
 
+## 2026-11-27 01:15 — leader — handoff: T05 qa PASS, T07 qa FAIL, Colab vẫn chạy
+- Làm được: T05 40/40 xong, `runs.csv` 600 dòng (`5fc2cc9`), qa PASS (`6633991`). T07 conformal chạy trên Colab, `conformal.csv` 1320 dòng, R29 (`549bfec`); qa FAIL tiêu chí số dòng (RF thiếu val A–D) (`d0e12ad`).
+- Phát hiện F-T05-01: SHAP npz A–D bị tính lại ngày 26/11; đang chạy `25_shap_check.py` trên Colab để so.
+- Quyết định: User giữ Colab chạy, keep-alive `e23b42ee` ở chat này; User qua chat director duyệt T05.
+- Dở dang / bước tiếp: đọc kết quả shapchk; User chọn T07 (a)/(b); T06 sau khi T05 DONE.
+- Mở chat tiếp: /role director T05 (rồi /role leader T07)
+
 ## 2026-11-27 — leader — T05 tạm dừng Colab
 - Làm được: shift check 65 PASS / 0 FAIL / 2 NOT_VERIFIED; Drive run.log dừng ở 17:08Z 26/11 (runtime coi như mất, T05 38/40, thiếu H seed 3–4).
 - Quyết định: User "ngừng colab" -> không chạy lại setup cell.
