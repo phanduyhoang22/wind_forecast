@@ -1,5 +1,10 @@
 # NHATKY
 
+## 2026-11-26 09:40 — leader — T08a DONE, đóng NOT_VERIFIED của T04
+- Làm được: R27c (tính lại SHAP trên CPU khớp, đối chứng âm provenance), R27d (sửa làm tròn). T08a nháp Results chuyển giao/few-shot/SHAP qa PASS, merge `a56b751`; sửa nhỏ -01/-03 trong `docs/paper/section3_results_transfer.md`.
+- Dở dang / bước tiếp: T05 PatchTST chạy trên Colab (16/40 lúc 01:20 UTC), keep-alive 15 phút; xong thì chép `runs.csv` + summary từ Drive, làm T07, T06, rồi T08 (sửa Section 2 theo TODO, thêm E1).
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 08:35 — leader — T04 DONE, Colab chạy lại T05
 - Làm được: nối lại Colab (T4, 01:20 UTC); kiểm tra Drive: CSV đủ, khớp bản clone, model/preds đủ; PatchTST 16/40 (A–C xong, D 1 seed). T04 vòng 2 qa PASS (R27), merge `d406f57`.
 - Sự cố: `10_shap.py` không bỏ qua site đã xong nên chuỗi chạy lại SHAP; đã dừng trước khi ghi đè npz, chạy riêng T05. Xóa 2 dòng SHAP khỏi `notebooks/colab_resume.py` (sửa nhỏ).

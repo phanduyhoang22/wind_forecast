@@ -140,7 +140,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21
 
 ## T08a — Paper: Results draft for the frozen parts (transfer, few-shot, SHAP) — split from T08
-- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | created: 2026-11-26 (Leader; T05 still running, so E1/T06/T07 parts wait)
+- owner: worker | priority: P1 | status: DONE | attempt_count: 1 | created: 2026-11-26 (Leader; T05 still running, so E1/T06/T07 parts wait)
 - goal: draft the Results subsections whose experiments are finished and whose claims are fixed by meetings, so T08 only adds E1, regimes and conformal later.
 - scope: new file `docs/paper/section3_results_transfer.md` with subsections: (a) zero-shot transfer, LOSO 8-fold (R21, R21c; M13); (b) cross-site 8×8 and wind-only set W (R22–R24); (c) few-shot adaptation (R25, R25c, R26; M14, M15, M16 conditions (1)–(6)); (d) explainability, SHAP (R27 and the T04 claim limits QA-T04-03..-09). Tables built from the committed result CSVs (`results/transfer_stats.csv`, `transfer_per_site.csv`, `cross_eval_wind.csv`, `fewshot8_stats.csv`, `fewshot8_iv_stats.csv`, `shap_*.csv`), plus a short "Disclosed deviations" list for these parts.
 - inputs: `tasks/RESULTS.md`, `tasks/MEETINGS.md` (M13–M16), `tasks/STATUS.md` (T01, T03, T04, T12, T16, T18 entries), `docs/paper/section2_data_methods.md` (style, terms, notation), `docs/limitations_and_improvements.md`.
@@ -153,6 +153,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - HANDOFF mandatory checks: the current HANDOFF has no section 7; nothing extra to carry.
 - allowed_paths: `docs/paper/section3_results_transfer.md`
 - dependencies: T01, T03, T04, T12, T16, T18 (all DONE)
+- 2026-11-26 worker: `9911e57` (212 lines, 54 source comments). Leader pre-check: only the allowed file.
+- 2026-11-26 qa PASS on 9911e57: every table/text number recomputed from the CSVs (Wilcoxon + Holm independently, incl. R22/R23 p-values); claims inside M13, M16 (1)?(6), T04 limits; 2,357 body words + 347 deviations. NOT_VERIFIED: R25c "seed 1 n.s. vs zero-shot" (no per-seed CSV), upstream GPU runs. Findings LOW: -01 R27c not reflected; -02 R27 rounding (C 0.077 -> 0.076); -03 Section 2 conflicts only partly flagged; -04 some method constants without source comment.
+- 2026-11-26 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Leader merged `a56b751`, then fixed -01 and -03 in the draft and -02 with RESULTS row R27d (small doc changes). -04 left for T08. status: DONE.
 
 ## T09 — Update README
 - owner: worker | priority: P3 | status: DONE | attempt_count: 1
