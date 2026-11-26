@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 01:25 — leader — handoff: T07 vòng 2 worker đang chạy
+- Làm được: T05 DONE (`7b6531b`); F-T05-01 completeness khớp R27; M17 chốt A; worker commit `b0a73d1` (sửa 11_conformal.py) và đang chạy RF A–D (A xong, B dở).
+- Quyết định: handoff sớm vì hết token; Colab giữ nguyên.
+- Dở dang / bước tiếp: kiểm scratch t07, chạy nốt RF site thiếu, so 20/20 dự đoán test, chép val npz, qa, merge, chạy lại 11 trên Colab.
+- Mở chat tiếp: /role leader T07
+
 ## 2026-11-27 — leader — M17: T07 chọn phương án A
 - Làm được: họp M17 (qa: bằng chứng WEAK chỉ ở RF A–D; worker: A khả thi, ~15–20 phút CPU); biên bản `tasks/MEETINGS.md`, commit `398d00f`.
 - Quyết định: User chọn A (chạy lại RF A–D có cổng kiểm tái lập seed 0; sửa lượng tử, PINAW theo biên độ train, báo cặp thiếu).
