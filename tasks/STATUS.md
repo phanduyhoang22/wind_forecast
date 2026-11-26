@@ -139,7 +139,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0
 - scope: `docs/paper/section3_results.md`; Section 2 draft exists (`docs/paper/section2_data_methods.md`).
 - dependencies: T06 (experiments frozen) | allowed_paths: `docs/paper/`
-- carry-over: fix QA-T08b-08/-09 (see T08b).
+- carry-over: fix QA-T08b-08/-09 (see T08b); Section 2.6 R22/R23 TODO -> cite `scripts/26_feature_set_stats.py` (T19), same-cross 6h 17.9 (R23e), note exact Wilcoxon n=8 p floor (Holm 0.023).
 - last_update: 2026-11-21
 
 ## T08a — Paper: Results draft for the frozen parts (transfer, few-shot, SHAP) — split from T08
@@ -289,7 +289,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - test_evidence: commit 2429791; worker +56/-29 lines (above ~50, mostly selftest, judged not material by qa). qa PASS 2026-11-25. Open LOW: QA-T18-01 (selftest does not cover the flag wiring in main), QA-T18-02 (iv content such as n_train not checked). Approved (light task), merged `be6b306`.
 
 ## T19 — Committed statistics for R22/R23 (W vs 31 features, own site and cross-site)
-- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | created: 2026-11-26 (Leader)
+- owner: worker | priority: P1 | status: DONE | attempt_count: 1 | created: 2026-11-26 (Leader)
 - goal: the R22/R23 Wilcoxon p-values (Section 2.6 TODO) are reproducible from a committed script, with the exact test variant stated.
 - scope: new `scripts/26_feature_set_stats.py` reading `results/runs.csv` (Mamba, 31 features), `results/runs_wind.csv` (Mamba W), `results/cross_eval_nn.csv` (31), `results/cross_eval_wind.csv` (W), `results/baselines.csv` (persistence); reuse `22_transfer_stats.py` helpers (`compare`, `rank_biserial`, `check`) via its `_load` pattern; writes `results/feature_set_stats.csv`; `--selftest`.
 - acceptance_criteria:
@@ -302,3 +302,4 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - allowed_paths: `scripts/26_feature_set_stats.py`, `results/feature_set_stats.csv`
 - dependencies: R22, R23 (QA PASS); independent of T05 (uses Mamba rows only).
 - 2026-11-26 Leader: contract written, worker spawned.
+- 2026-11-26 worker `96bf6fc` (2 allowed files, pre-check OK). qa PASS: selftest dat; in-memory `analyze()` equals committed CSV (45x11, rtol 1e-12); independent brute-force Wilcoxon + Holm recompute matches every R22/R23 value; pairs A-E, B-F, C-G, D-H, persistence of target site; `24_shift_check --full` 0 FAIL; Drive checks NOT_VERIFIED. QA-T19-01 LOW: R23 same-cross 6h is 17.947 (17.9), not 18.0 (double rounding) -> correction row R23e. Risks: 24_shift_check does not run 26 selftest yet; exact Wilcoxon n=8 floor p 2/256 -> Holm 0.023, state in paper. Director APPROVE (Leader, User delegation 2026-11-25). Merged `25fb482`.

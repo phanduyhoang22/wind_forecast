@@ -1,5 +1,10 @@
 # NHATKY
 
+## 2026-11-26 17:50 — leader — T19 DONE
+- Làm được: `scripts/26_feature_set_stats.py` tính lại R22/R23, qa PASS, merge `25fb482`; R23e sửa same−cross 6h 18.0 → 17.9. T02 đóng (bị thay bởi T11/T12).
+- Dở dang / bước tiếp: T05 PatchTST 19/40 trên Colab (keep-alive); qa T05 → T07 → T06 → T08 (mang theo QA-T08b-08/-09, TODO 2.6).
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 17:20 — leader — T08b DONE, T05 chạy lại
 - Làm được: Colab reset 09:47 UTC, chạy lại setup (T4); Drive đủ dữ liệu (67 CSV khớp, PatchTST 19/40, SHAP npz không đổi). T08b vòng 2 qa PASS, merge `730cfc9`; dọn 4 worktree.
 - Dở dang / bước tiếp: keep-alive 14 phút tới hết T05; qa T05, rồi T07, T06, T08 (sửa thêm QA-T08b-08/-09).
