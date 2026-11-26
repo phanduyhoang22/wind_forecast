@@ -116,7 +116,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 note: `10_shap.py` has no skip of finished sites; the Colab chain re-ran T04a on restart. The Leader killed it before any npz was written and restarted T05 alone. Do not put `10_shap.py` back in the chain.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
-- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 0
+- owner: Leader (Colab) | priority: P2 | status: DONE | attempt_count: 1
+- 2026-11-27 Leader: Director APPROVE (`5f8790d`) -> DONE. Work already on main (`5fc2cc9`, no worker branch to merge). F-T05-01 stays open (blocks SHAP numbers in T08).
+- 2026-11-27 Leader F-T05-01 evidence: Drive `results/shapchk_F-T05-01/run.log` ends `exit=0`, `0 file du doan luu bi thieu`; pooled completeness on the current npz, E1 A-H `0.094/0.072/0.073/0.064/0.087/0.082/0.072/0.066`, losoW8 A-H `0.085/0.079/0.076/0.069/0.079/0.073/0.066/0.072` = R27 exactly (3 decimals); provenance mean <= 3.18e-03 m/s (as R27). Full CSV diff vs repo R27 CSVs NOT_VERIFIED -> next Leader runs it, then qa closes F-T05-01.
 - scope: `07_run_benchmark.py --sites A,B,C,D,E,F,G,H --models PatchTST --seeds 5 --out results/runs.csv` (M10, 2026-11-21; Drive 7/40 done: A 5, B 2).
 - acceptance_criteria: 40 PatchTST runs ×3 horizons in `runs.csv`; fallback if the GPU runs out: A–D 20/20 with a common-site average and disclosure (M10).
 - 2026-11-26 09:49 UTC Leader: runtime reset, restarted via setup cell (commit `01950ac`); Drive check 09:52 UTC: runs.csv 537 rows, PatchTST A–C 15, D 12, E–H 0 (19/40); all 67 result CSVs match clone, end with newline; 16 SHAP npz finite, dated 2026-11-25.
