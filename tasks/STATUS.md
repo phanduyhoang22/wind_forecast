@@ -115,10 +115,11 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 note: `10_shap.py` has no skip of finished sites; the Colab chain re-ran T04a on restart. The Leader killed it before any npz was written and restarted T05 alone. Do not put `10_shap.py` back in the chain.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
-- owner: Leader (Colab) | priority: P2 | status: TODO | attempt_count: 0
+- owner: Leader (Colab) | priority: P2 | status: IN_PROGRESS | attempt_count: 0
 - scope: `07_run_benchmark.py --sites A,B,C,D,E,F,G,H --models PatchTST --seeds 5 --out results/runs.csv` (M10, 2026-11-21; Drive 7/40 done: A 5, B 2).
 - acceptance_criteria: 40 PatchTST runs ×3 horizons in `runs.csv`; fallback if the GPU runs out: A–D 20/20 with a common-site average and disclosure (M10).
-- last_update: 2026-11-21
+- 2026-11-26 09:49 UTC Leader: runtime reset, restarted via setup cell (commit `01950ac`); Drive check 09:52 UTC: runs.csv 537 rows, PatchTST A–C 15, D 12, E–H 0 (19/40); all 67 result CSVs match clone, end with newline; 16 SHAP npz finite, dated 2026-11-25.
+- last_update: 2026-11-26
 
 ## T06 — Aggregate statistics for 8 sites
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0
@@ -171,6 +172,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - dependencies: T08a (DONE)
 - 2026-11-26 worker: `70b6a36` on branch `worktree-agent-abfd31a775e2a64a4` (not merged). Pre-check: 2 allowed files only.
 - 2026-11-26 qa FAIL round 1 on 70b6a36 (~45 citations all valid, no number wrong): QA-T08b-01 MED 2.6 Holm family "site × horizon" but `08_aggregate.py:107,137` use site × horizon × competitor (× seed); -02 MED 2.5.3 "frozen before any test score was used" hides the M12 pilot-v1 test-RMSE exposure (MEETINGS M12 follow-up 2026-11-22); -03 MED 2.6 pre-registration list claims E1 test statistics fixed before results, but M02 chose per-seed DM + paired t after E1 first pass; LOW -04 2.1 cross-ref should be 2.5.4; -05 Section 3.6 item 1 "4-fold design of Section 2.5.3" -> "originally planned"; -06 completeness notation (ratio of means) differs in 3.5; -07 provenance bullet: only explained-window idx is stored, background checked via RNG stream. Round 2 (same worker branch): text fixes only, allowed to touch the Section 3 references in -05/-06. Paused by User (token budget) 2026-11-26.
+- 2026-11-26 ~10:00 Leader: round 2 resumed (User: continue). Worker spawned on a new worktree from `70b6a36`, findings QA-T08b-01..07 + criterion 6 (shift checks HANDOFF §7). attempt_count 2.
 
 ## T09 — Update README
 - owner: worker | priority: P3 | status: DONE | attempt_count: 1
