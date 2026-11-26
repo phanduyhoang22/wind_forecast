@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 — director — duyệt T05
+- Làm được: T05 APPROVE (qa PASS `5fc2cc9`, runs.csv 600 dòng, 40/40 PatchTST).
+- Quyết định: check (3) SHAP npz tách sang F-T05-01 (còn mở, chặn dùng số SHAP ở T08). Paper phải nêu QA-T05-02 (12/120 dòng chạm trần 50 epoch) và QA-T05-03 (PatchTST thua persistence 1h ở D, H).
+- Dở dang / bước tiếp: Leader set T05 DONE; đọc kết quả shapchk F-T05-01; T07 chọn (a)/(b); T06.
+- Mở chat tiếp: /role leader T07
+
 ## 2026-11-27 01:15 — leader — handoff: T05 qa PASS, T07 qa FAIL, Colab vẫn chạy
 - Làm được: T05 40/40 xong, `runs.csv` 600 dòng (`5fc2cc9`), qa PASS (`6633991`). T07 conformal chạy trên Colab, `conformal.csv` 1320 dòng, R29 (`549bfec`); qa FAIL tiêu chí số dòng (RF thiếu val A–D) (`d0e12ad`).
 - Phát hiện F-T05-01: SHAP npz A–D bị tính lại ngày 26/11; đang chạy `25_shap_check.py` trên Colab để so.
