@@ -4,7 +4,7 @@ Kiem tra dau ca (T17): trang thai that cua repo. Chi doc, khong ghi, khong mang.
 Moi dong: PASS|WARN|FAIL|NOT_VERIFIED <nhom> <muc> - <bang chung>. Ma thoat 1 neu co FAIL.
 
     py scripts/24_shift_check.py
-    py scripts/24_shift_check.py --full       (them --selftest cua 08, 11, 22, 23)
+    py scripts/24_shift_check.py --full       (them --selftest cua 08, 11, 22, 23, 26)
     py scripts/24_shift_check.py --selftest
 """
 
@@ -60,6 +60,12 @@ _B, _P, _Z = [("fewshot8_stats.csv", dict(model="finetune_free", ref=r, metric="
               for r in ("best_test", "persistence", "zero_shot")]
 _C = (_B[0], dict(model="finetune_cc", ref="finetune_free", metric="skill"))
 _O = ("fewshot8_per_site.csv", dict(variant="best_test", weeks="all", seed="median"))
+
+
+def _F(analysis, quantity, variant="median"):
+    return "feature_set_stats.csv", dict(analysis=analysis, variant=variant, quantity=quantity)
+
+
 # (dong RESULTS.md, chu dung truoc so, so viet trong tai lieu, nguon, cot, horizon); CSV va tai lieu phai cung khop.
 # globalW 6h lay tu R21c: gia tri 23.8 trong R21 da duoc dinh chinh. Mot so thi dung cho moi horizon.
 HEADLINE = [
@@ -87,6 +93,23 @@ HEADLINE = [
     ("R25", "finetune const vs free ", "−1.4/−3.1/−3.8%", _C, "mean", HORIZONS),
     ("R25", "−3.8% (p ", "0.031/0.023/0.031", _C, "p_holm", HORIZONS),
     ("R25c", "mean skill ", "−9.1/−15.8/−11.1%", _O, "skill", HORIZONS),
+    ("R22", "skill 1h/3h/6h W ", "+14.19/+18.23/+24.09%", _F("own_site", "skill_W"), "mean", HORIZONS),
+    ("R22", "vs 31 feat ", "+16.05/+21.81/+27.95%", _F("own_site", "skill_31"), "mean", HORIZONS),
+    ("R22", "W−31 ", "−1.87/−3.58/−3.86", _F("own_site", "W_minus_31"), "mean", HORIZONS),
+    ("R22", "W better at ", "1/0/0", _F("own_site", "W_minus_31"), "wins", HORIZONS),
+    ("R22", "Wilcoxon exact Holm p ", "0.023/0.023/0.023", _F("own_site", "W_minus_31"), "p_holm", HORIZONS),
+    ("R22", "(seed-mean: ", "0.055/0.023/0.023", _F("own_site", "W_minus_31", "mean"), "p_holm", HORIZONS),
+    ("R23", "6h own ", "+14.01/+18.03/+24.21%", _F("cross_site", "own_W"), "mean", HORIZONS),
+    ("R23", "same-regime ", "+1.78/+6.63/+11.28%", _F("cross_site", "same_W"), "mean", HORIZONS),
+    ("R23", "cross-regime ", "−8.23/−10.56/−6.67%", _F("cross_site", "cross_W"), "mean", HORIZONS),
+    ("R23", "W−31: same ", "+5.61/+5.03/+4.44", _F("cross_site", "same_W_minus_31"), "mean", HORIZONS),
+    ("R23", "(Holm p ", "0.297/0.297/0.164", _F("cross_site", "same_W_minus_31"), "p_holm", HORIZONS),
+    ("R23", "cross ", "+11.18/+9.07/+9.42", _F("cross_site", "cross_W_minus_31"), "mean", HORIZONS),
+    ("R23", "(Holm p ", "0.031/0.031/0.023", _F("cross_site", "cross_W_minus_31"), "p_holm", HORIZONS),
+    # 6h cua R23 (18.0) lam tron hai lan sai; so dung o R23e
+    ("R23", "same−cross ", "+10.0/+17.2", _F("cross_site", "same_minus_cross_W"), "mean", ["1h", "3h"]),
+    ("R23", "18.0 pp (Holm p ", "0.023", _F("cross_site", "same_minus_cross_W"), "p_holm", HORIZONS),
+    ("R23e", "same-cross 6h = ", "+17.9", _F("cross_site", "same_minus_cross_W"), "mean", ["6h"]),
 ]
 
 
@@ -311,7 +334,8 @@ def run_checks(root, full):
               lambda t, i=i: check_headline(i, t, results)) for i in HEADLINE]
     if full:
         jobs += [("selftest", s, check_script, s)
-                 for s in ("08_aggregate.py", "11_conformal.py", "22_transfer_stats.py", "23_fewshot_stats.py")]
+                 for s in ("08_aggregate.py", "11_conformal.py", "22_transfer_stats.py", "23_fewshot_stats.py",
+                           "26_feature_set_stats.py")]
     jobs.append(("colab", "drive", lambda: ("NOT_VERIFIED", "chay status cell (cell 3, notebook MCP Colab)")))
     n = collections.Counter()
     for group, name, fn, *args in jobs:
