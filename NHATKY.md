@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-26 09:15 — leader — handoff: T05 chạy trên Colab, T08b chờ vòng 2
+- Làm được: T04 DONE (`d406f57`, R27/R27c/R27d), T08a DONE (`a56b751`); T08b worker `70b6a36` qa FAIL vòng 1 (3 MED câu chữ, không sai số) `08c1538`. T05 PatchTST 18/40 lúc 02:10 UTC.
+- Quyết định: bỏ `10_shap.py` khỏi chuỗi Colab (không có bước bỏ qua).
+- Dở dang / bước tiếp: giữ Colab 14 phút/lần tới hết T05; rồi qa T05, T08b vòng 2, T07, T06, T08.
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 09:40 — leader — T08a DONE, đóng NOT_VERIFIED của T04
 - Làm được: R27c (tính lại SHAP trên CPU khớp, đối chứng âm provenance), R27d (sửa làm tròn). T08a nháp Results chuyển giao/few-shot/SHAP qa PASS, merge `a56b751`; sửa nhỏ -01/-03 trong `docs/paper/section3_results_transfer.md`.
 - Dở dang / bước tiếp: T05 PatchTST chạy trên Colab (16/40 lúc 01:20 UTC), keep-alive 15 phút; xong thì chép `runs.csv` + summary từ Drive, làm T07, T06, rồi T08 (sửa Section 2 theo TODO, thêm E1).
