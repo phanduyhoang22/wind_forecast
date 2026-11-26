@@ -1,44 +1,40 @@
-# HANDOFF — 2026-11-26 18:20 (local, 11:20 UTC) — leader — T05 on Colab, T08b/T19/T20 done
+# HANDOFF — 2026-11-26 19:30 (local, 12:30 UTC) — leader — T05 on Colab, T08c done
 
 Overwritten by `/handoff`. The next chat gets this file at start (hook `session_start.py`). Facts only; write "none" instead of deleting a section.
 
 ## 1. Current task
-- task_id / state / path: T05 PatchTST E1 A–H, IN_PROGRESS on Colab (full loop: qa after 40/40). 20/40 at 10:18 UTC (A–D done; E next).
-- contract: `tasks/STATUS.md` section T05.
-- branch / worktree / last commit: main (this handoff commit on top of `a21b4d9`), pushed. No worktrees open. Old branches `worktree-agent-*` remain (not deleted: `branch -D` needs User OK).
+- task_id / state / path: T05 PatchTST E1 A–H, IN_PROGRESS on Colab (full loop: qa after 40/40). 23/40 at 12:28 UTC (A–D done, E 3 seeds; E seed 3 at epoch 30).
+- contract: `tasks/STATUS.md` section T05 (acceptance criteria now include the 3 HANDOFF checks of section 7).
+- branch / worktree / last commit: main, pushed (this handoff commit on top of `7c8fee7`). No worktrees open. Old branches `worktree-agent-*` remain (`branch -D` needs User OK).
 
 ## 2. Verified (command -> real output)
-- `py scripts/24_shift_check.py --full` (shift start) -> `tong: 47 PASS, 1 WARN, 0 FAIL, 2 NOT_VERIFIED`.
-- Colab status 09:47 UTC -> `Tesla T4, 0 MiB`, no `/content/wind_forecast` (runtime reset); setup cell -> `GPU: Tesla T4 | torch 2.14.1+cu130`, `job dang song: khong`, commit `01950ac`, chain restarted.
-- Drive check cell 09:52 UTC -> 67 result CSVs: drive rows = clone rows, all end with newline; `runs.csv` 537 rows; DLinear/LSTM/Mamba/Transformer 15 per site A–H; PatchTST A–C 15, D 12, E–H 0; 16 SHAP npz finite, modified 2026-11-25; preds 219, models 557, preds_loso 264, models_loso 150, preds_wind 40, models_wind 120 (drive = clone).
-- Colab status 10:18 UTC -> `PatchTST rows/site: {'A': 15, 'B': 15, 'C': 15, 'D': 15}`, `[20/40] D PatchTST seed=4 1086s ... 1h RMSE=0.5320`, next run training.
-- qa T08b round 2 -> PASS (merged `730cfc9`); qa T19 -> PASS, independent recompute of R22/R23 (merged `25fb482`); qa T20 -> PASS (merged `8594f40`).
-- `py scripts/24_shift_check.py` on main after T20 merge -> `tong: 59 PASS, 1 WARN, 0 FAIL, 2 NOT_VERIFIED`.
+- `py scripts/24_shift_check.py --full` (shift start) -> `tong: 65 PASS, 0 WARN, 0 FAIL, 2 NOT_VERIFIED` (runs.csv no key table; colab drive = status cell).
+- Colab status 12:10 UTC -> `Tesla T4, 0 MiB`, 0 jobs, no clone (runtime reset). Setup cell -> `GPU: Tesla T4 | torch 2.14.1+cu130`, `job dang song: khong`, commit `e7c17b2`, chain restarted.
+- Colab status 12:28 UTC -> `PatchTST rows/site: {'A': 15, 'B': 15, 'C': 15, 'D': 15, 'E': 9}`, `Tesla T4, 667 MiB`, 3 processes, `ep 30 ... val=0.00479`.
+- qa T08c round 2 -> PASS (`24_shift_check --full` 0 FAIL); merged `ea1104d`; docs `7c8fee7`, pushed.
 
 ## 3. NOT verified, risks, open findings
+- Drive checks (runs.csv PatchTST 120 rows; shap npz modifiedTime 2026-11-25) not run this chat.
 - `10_shap.py` has no skip of finished sites: never put it back in the Colab chain.
 - Drive `summary_by_site.csv` / `summary_overall.csv` stale: T06 regenerates.
-- T08 carry-over: QA-T08b-08 (2.5.3 post-hoc list order), -09 (cite RESULTS R20, not `README.md:106`); Section 2.6 R22/R23 TODO -> cite `scripts/26_feature_set_stats.py`, same-cross 6h = 17.9 (R23e); state exact Wilcoxon n=8 floor (Holm 0.023); M01 DM lag chosen after pilot DM results (disclose).
-- Still open TODOs: 4-fold E7/E8 ablation reporting; Fig. 1; DOI.
+- T08 open TODOs: 4-fold E7/E8 ablation reporting (§2.5.2 TODO); Fig. 1; DOI. qa note: paper DM claims rest on a pilot without saved predictions (T08c qa, outside scope).
 - R25c "seed 1 n.s. vs zero-shot" not recomputable.
-- The WARN in the last shift check was not read.
 
 ## 4. Files and commits touched this chat
-- `e0598af` STATUS T05/T08b; `730cfc9` merge T08b (`docs/paper/section2_data_methods.md`, `section3_results_transfer.md`); `e1606d7` T08b DONE.
-- `9acc313` T19 contract, T02 closed; `25fb482` merge T19 (`scripts/26_feature_set_stats.py`, `results/feature_set_stats.csv`); `8db0469` T19 DONE + RESULTS R23e.
-- `8594f40` merge T20 (`scripts/24_shift_check.py`); `a21b4d9` T20 DONE. This commit: NHATKY.md, HANDOFF.md.
+- `ea1104d` merge T08c (`docs/paper/section2_data_methods.md`); `7c8fee7` T08c contract/QA/DONE + QA-T08c-03 fix (STATUS.md, NHATKY.md, section2). This commit: NHATKY.md, HANDOFF.md.
+- Colab MCP notebook: `CpfLXatdw-jL` = setup (clone `/content/_runner`, exec `notebooks/colab_resume.py`), `lIYdn1woOS1n` = status (PatchTST rows/site + run.log tail). IDs change after a reset.
 
 ## 5. Environment traps
 - Python `py` 3.12 (project override). Open chats from a terminal at `D:\Project\wind_forecast`.
-- Colab MCP cells now: `lIYdn1woOS1n` = setup (clones `/content/_runner`, execs `notebooks/colab_resume.py`), `ki6QDcWcQFoO` = status (PatchTST rows/site + run.log tail), `rr24v-UeRV_S` = Drive integrity check. IDs change after a runtime reset (notebook comes back empty).
-- The previous chat stays open and keeps Colab alive (cron every 14 min). Do not run two keep-alive loops on the same notebook; if that chat is closed, start keep-alive here.
+- This chat stays open and keeps Colab alive (cron `263058e4`, every 14 min, session-only). Do not start a second keep-alive while it runs; if this chat is closed, start keep-alive in the new chat.
+- The MCP notebook may come back empty after a browser reconnect even when the runtime is alive: run the status cell first, setup only if 0 jobs.
 - Edit docs with Edit tool or Python, not PowerShell Set-Content.
 
 ## 6. Waiting on the User
-- User asked (2026-11-26): keep Colab alive; the old chat keeps the keep-alive cron running.
+- User (2026-11-26): keep Colab running; this chat keeps the keep-alive cron.
 
 ## 7. Next step
-- do: when `all.done` (40/40): copy Drive `runs.csv` to repo, commit + push, qa T05, RESULTS row. Then T07 (`11_conformal.py --models Mamba,LSTM,Transformer,PatchTST,DLinear`, needs Drive preds -> run on Colab), T06 aggregate, T08 (with carry-overs above).
+- do: when `all.done` (40/40): copy Drive `runs.csv` to repo, commit + push, qa T05, RESULTS row. Then T07 (`11_conformal.py --models Mamba,LSTM,Transformer,PatchTST,DLinear`, needs Drive preds -> Colab), T06 aggregate, T08.
 - On GPU loss / Colab not reconnectable: commit + push, then `shutdown /s /t 600` (User rule).
 - done when: T05 40 PatchTST runs × 3 horizons in `runs.csv`, qa PASS.
 - mandatory checks (the next worker/qa must run each one and report its real output; not run -> `NOT_VERIFIED`):

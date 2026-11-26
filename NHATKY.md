@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-26 19:30 — leader — handoff: T05 23/40, T08c DONE
+- Làm được: Colab reset → setup lại 12:10 UTC, PatchTST 23/40 lúc 12:28 UTC (E đang chạy). T08c qa PASS vòng 2, merge `ea1104d`, docs `7c8fee7`, đã push. Shift check đầu ca 65 PASS, 0 FAIL.
+- Quyết định: chat này vẫn mở để giữ Colab (cron 14 phút, theo yêu cầu User).
+- Dở dang / bước tiếp: T05 tới 40/40 → qa T05 (3 kiểm tra Drive) → T07 → T06 → T08.
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 19:40 — leader — T08c DONE, Colab chạy lại T05
 - Làm được: Colab reset → setup lại 12:10 UTC (`e7c17b2`), PatchTST 23/40 lúc 12:15 UTC; keep-alive cron 14 phút trong chat này. T08c (Section 2: QA-T08b-08/-09, TODO R22/R23, sàn p 0.023, khai báo lag DM + Holm sau pilot) qa PASS vòng 2, merge `ea1104d`.
 - Dở dang / bước tiếp: T05 tới 40/40 → qa T05 (3 kiểm tra Drive) → T07 → T06 → T08.
