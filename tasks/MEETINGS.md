@@ -11,8 +11,8 @@ Meetings M01–M08 (2026-11-09 → 2026-11-15) were held before the kit with thr
 - worker: A feasible, CPU only, ~15-20 min for 4 sites x 5 seeds (one site per command); `--out <scratch>` keeps `results/` untouched (models/preds dirs next to --out). First: A seed 0 only, `np.array_equal` vs `results/preds/A_RF_0.npz`; match -> all seeds A-D, copy only `*_val.npz`; mismatch -> stop, choose full A-D re-run or B. 02/03 ~5-10 lines + selftest assert; re-run 11 on Colab (NN preds there). B = A minus 20 min, table without RF A-D. C weakest. Prefers A.
 - leader: no GPU cost (Colab free T4 already up, 11 runs in minutes); ~1 h incl. qa; stage unchanged (transfer/explainability -> statistics); T06 not blocked by T07 (T06 needs T05 DONE, done 2026-11-27), so T06 can run in parallel.
 - director recommendation: A, gated: (1) seed-0 reproducibility check first (array_equal, then node count); mismatch -> stop and report, no mixing; (2) `11_conformal.py` prints missing (site, model, seed) pairs and exits non-zero if any expected pair is missing; (3) QA-T07-02 exact k-th order statistic with selftest assert; (4) QA-T07-03 PINAW denominator = train-target range (no test-dependent normalisation), stated in paper; (5) RESULTS correction row for R29 + new run row; sklearn version recorded. Dissent: none (qa: test-range PINAW is a convention, acceptable either way).
-- decision (User):   | status: DECISION_PENDING
-- action items: (after decision) T07 round 2 contract.
+- decision (User): A with Director conditions (1)-(5), 2026-11-27 | status: DECIDED
+- action items: T07 round 2 (contract in STATUS T07).
 
 ## M16 — 2026-11-25 — Few-shot claim after T16
 - trigger: R26 contradicts R25 on finetune vs zero-shot (QA-T16-01).
