@@ -122,7 +122,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 09:49 UTC Leader: runtime reset, restarted via setup cell (commit `01950ac`); Drive check 09:52 UTC: runs.csv 537 rows, PatchTST A–C 15, D 12, E–H 0 (19/40); all 67 result CSVs match clone, end with newline; 16 SHAP npz finite, dated 2026-11-25.
 - acceptance_criteria (HANDOFF 2026-11-26 §7, mandatory for qa; each run with real output, not run -> NOT_VERIFIED): (1) Drive `results/runs.csv`: PatchTST 15 rows for each of A–H (120), other models 15 per site, file ends with newline; (2) `py scripts/24_shift_check.py --full`: 0 FAIL, every WARN / NOT_VERIFIED read; (3) Drive `results/shap_*.npz` modifiedTime unchanged (2026-11-25).
 - 2026-11-26 Leader (new shift): `24_shift_check.py --full` -> `65 PASS, 0 WARN, 0 FAIL, 2 NOT_VERIFIED` (runs.csv key table; Colab drive status).
-- last_update: 2026-11-26
+- 2026-11-27 Leader: shift check `65 PASS, 0 WARN, 0 FAIL, 2 NOT_VERIFIED`; Drive `run.log`/`runs.csv` last modified 2026-11-26T17:08Z (runtime presumed lost, 38/40: H seeds 3-4 missing); MCP notebook empty, status cell never returned. User: "ngừng colab" -> Colab work paused, setup cell NOT re-run. T05 stays IN_PROGRESS (38/40).
+- last_update: 2026-11-27
 
 ## T06 — Aggregate statistics for 8 sites
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0

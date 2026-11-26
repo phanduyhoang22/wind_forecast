@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 — leader — T05 tạm dừng Colab
+- Làm được: shift check 65 PASS / 0 FAIL / 2 NOT_VERIFIED; Drive run.log dừng ở 17:08Z 26/11 (runtime coi như mất, T05 38/40, thiếu H seed 3–4).
+- Quyết định: User "ngừng colab" -> không chạy lại setup cell.
+- Dở dang / bước tiếp: chạy lại setup cell khi User cho, chuỗi bỏ qua khóa đã xong, chạy tiếp H seed 3–4.
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-27 00:18 — leader — handoff: T05 38/40, status cell treo
 - Làm được: keep-alive Colab 14 phút suốt buổi; PatchTST 38/40 lúc 17:01 UTC (A–G xong, H seed 0–2 xong).
 - Sự cố: status cell ~17:15 UTC treo >120 s; Drive `run.log` sửa lần cuối 17:08 UTC (lúc 17:18 là 9,5 phút) → có thể mất runtime, chưa chắc.
