@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-26 18:20 — leader — handoff: T05 20/40, T08b/T19/T20 DONE
+- Làm được: Colab reset 09:47 UTC → chạy lại setup, Drive đủ dữ liệu; T05 PatchTST 20/40 (D xong) lúc 10:18 UTC. T08b `730cfc9`, T19 `25fb482` (+R23e: 17.9 thay 18.0), T20 `8594f40`, đều qa PASS. T02 đóng (superseded).
+- Quyết định: chat này vẫn mở để giữ Colab (cron 14 phút, theo yêu cầu User).
+- Dở dang / bước tiếp: T05 tới 40/40 (~7 giờ) → qa T05 → T07 → T06 → T08 (mang QA-T08b-08/-09, TODO 2.6).
+- Mở chat tiếp: /role leader T05
+
 ## 2026-11-26 18:10 — leader — T20 DONE
 - Làm được: `24_shift_check.py` kiểm thêm 16 số R22/R23/R23e + selftest 26, qa PASS, merge `8594f40`.
 - Dở dang / bước tiếp: T05 trên Colab (19/40 lúc 10:05 UTC); qa T05 → T07 → T06 → T08.
