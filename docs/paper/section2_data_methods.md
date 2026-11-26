@@ -4,7 +4,7 @@
 
 ## 2.1 Data source
 
-All time series are taken from the NREL Southeast Asia Wind Toolkit v3 (SEA-WTK; Draxl et al., NREL/TP-5000-85481). They were retrieved through the Wind Toolkit Data Download API (endpoint `wtk-seasiawind-v3-download`) on 11 September 2026. SEA-WTK is a **modelled** dataset, not a measurement record. The Weather Research and Forecasting (WRF) model produces fields at 9 km / 60 min. The sup3r generative adversarial network (GAN) then downscales them to 3 km / 15 min, a 3× increase in spatial resolution and a 4× increase in temporal resolution. Three of every four 15-min samples are therefore GAN-generated. Section 2.6 tests whether this affects forecast skill.
+All time series are taken from the NREL Southeast Asia Wind Toolkit v3 (SEA-WTK; Draxl et al., NREL/TP-5000-85481). They were retrieved through the Wind Toolkit Data Download API (endpoint `wtk-seasiawind-v3-download`) on 11 September 2026. SEA-WTK is a **modelled** dataset, not a measurement record. The Weather Research and Forecasting (WRF) model produces fields at 9 km / 60 min. The sup3r generative adversarial network (GAN) then downscales them to 3 km / 15 min, a 3× increase in spatial resolution and a 4× increase in temporal resolution. Three of every four 15-min samples are therefore GAN-generated. Section 2.5.4 tests whether this affects forecast skill.
 
 We use the five years 2017-01-01 to 2021-12-31, sampled every 15 min in local time (UTC+7) at 100 m hub height. After the first 24 h are removed for the 24-h lag features, each site has 175,200 samples. The series contain no gaps and no missing values. The year 2016 is downloaded separately and used only as an out-of-period test set (Section 2.5.4).
 
@@ -173,7 +173,7 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
   Target data therefore enter all protocols through the scaler, the calendar choice (pilot below) and, at sites A and D, the tuning (Section 3.6, item 8).
 
-  **Post-hoc changes to the baseline.** The step budget for training from scratch was set after a pilot run (M07). In that run the original epoch-based schedule (≈ 300 steps for one week) stopped while the model was still on its initial plateau. After a later QA finding (M12), the from-scratch baseline was revised before the eight-site runs: the scheduler patience was scaled to steps for both fine-tuning and scratch; the calendar handling for scratch was chosen on validation MSE only, in a pilot (sites A–D, one seed), and frozen before any test score was used; Ridge was added; and the window was extended to include its last sample (23:45). The first scratch baseline (R18) is reported as invalid. The step budgets of fine-tuning (epochs) and scratch (steps) differ. <!-- M07; M12 (1)-(5) and pilot v2 follow-up; M14 (7); RESULTS R18 -->
+  **Post-hoc changes to the baseline.** The step budget for training from scratch was set after a pilot run (M07). In that run the original epoch-based schedule (≈ 300 steps for one week) stopped while the model was still on its initial plateau. After a later QA finding (M12), the from-scratch baseline was revised before the eight-site runs: the scheduler patience was scaled to steps for both fine-tuning and scratch; the calendar handling for scratch was chosen on validation MSE only, in a second pilot (sites A–D, one seed), and then frozen. A first pilot had logged test metrics only and could not be used for selection; before the second pilot the experimenters saw partial test RMSE from its logs (constant calendar looked better at A–C). The selection itself used no test score, but it was not blind to test results; Ridge was added; and the window was extended to include its last sample (23:45). The first scratch baseline (R18) is reported as invalid. The step budgets of fine-tuning (epochs) and scratch (steps) differ. <!-- M07; M12 (1)-(5), follow-up 2026-11-22 (pilot v1 test-RMSE exposure) and pilot v2; M14 (7); RESULTS R18 -->
 
 ### 2.5.4 Robustness analyses
 
@@ -185,8 +185,8 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
   Two checks use forward passes only, with the stored attributions and checkpoints (`25_shap_check.py`):
 
-  - *completeness error*, mean |Σ φ − (f(x) − E f)| / mean |f(x) − E f| over the explained windows, where E f is the mean output over the background, per horizon and pooled over horizons; <!-- scripts/25_shap_check.py:46-48; scripts/10_shap.py:120-125 (same pooled definition) -->
-  - *provenance*: the background and test indices are rebuilt and must match the stored ones; the checkpoint outputs for the explained windows, transformed back to m/s, are compared with the stored test predictions of the same model (maximum and mean absolute difference). As a negative control (run separately from the script), the stored test predictions of seeds 0 and 1 are compared in the same way. <!-- scripts/25_shap_check.py:73-77, :100-110; RESULTS R27, R27c (negative control, CPU recompute at A and H) -->
+  - *completeness error*, mean |Σφ − (f(x) − E f)| / mean |f(x) − E f|, with both means over the explained windows, where E f is the mean output over the background, per horizon and pooled over horizons; <!-- scripts/25_shap_check.py:46-48; scripts/10_shap.py:120-125 (same pooled definition) -->
+  - *provenance*: only the explained-window indices are stored. The script redraws the background and the explained windows with the same seed-0 random stream as `10_shap.py` (background first); the redrawn explained indices must equal the stored ones, which confirms the seed and the background size, and the stored inputs must equal the data windows at those indices; the checkpoint outputs for the explained windows, transformed back to m/s, are compared with the stored test predictions of the same model (maximum and mean absolute difference). As a negative control (run separately from the script), the stored test predictions of seeds 0 and 1 are compared in the same way. <!-- scripts/25_shap_check.py:73-77 (redraw bg then explained idx, compare idx and x), :100-110; scripts/10_shap.py:104-106; RESULTS R27, R27c (negative control, CPU recompute at A and H) -->
 
   The planned RF TreeSHAP comparison and the `air_density` negative control were not run (Section 3.6, item 9).
 - **Cost.** We report:
@@ -201,8 +201,8 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 **Pairwise tests (per-site benchmark, E1).** Diebold–Mariano tests are used only for the window-level comparisons of the per-site benchmark. <!-- M01, M02; scripts/08_aggregate.py:38-55 (dm_test) -->
 
 - **Test statistic.** Diebold–Mariano tests on squared-error loss differentials with the Harvey–Leybourne–Newbold small-sample correction. The HAC variance uses a Bartlett kernel with lag max(h − 1, 96), so that the 24-h overlap of input windows is covered.
-- **Multiple comparisons.** p-values are adjusted with the Holm procedure within each family (site × horizon).
-- **Seed-level evidence.** We report the number of seeds (out of five) on which one model beats another, and a paired t-test across seeds.
+- **Multiple comparisons.** p-values are adjusted with the Holm procedure over one family that holds all comparisons of a run: site × horizon × competitor for the seed ensemble, and site × horizon × competitor × seed for the per-seed tests. <!-- scripts/08_aggregate.py:107 (dm_all), :137 (dm_per_seed); M01 -->
+- **Seed-level evidence.** The main E1 evidence is the per-seed comparison (seed i of Mamba vs seed i of each competitor): the number of seeds (out of five) on which one model significantly beats another, and a paired t-test on the per-seed RMSE. The seed ensemble is tested separately. This choice was made after the first E1 pass (M02) and is post-hoc. <!-- scripts/08_aggregate.py:113-116 (dm_per_seed), :149 (paired t), :82-83 (dm_all, ensemble); M02 -->
 
 **Transfer tests.** The unit of analysis is the **target site** (n = 8), not the individual window. <!-- M06; M13 (3); STATUS Approved decisions 2026-11-25 (M13) -->
 
@@ -222,11 +222,11 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
 - the tuning grid;
 - the site-selection gate;
-- the test statistics of the per-site benchmark.
+- the DM test specification of the per-site benchmark (loss, HLN correction, HAC lag, Holm adjustment; M01).
 
 The few-shot statistics were fixed while the runs were incomplete, after a few rows had been seen (M14; Section 3.6, item 8).
 
-The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
+The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), the per-seed DM and paired t-test as the main E1 evidence (above; M02), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
 
 ## Data and code availability
 SEA-WTK v3 is publicly available from NREL. Download, verification, feature construction, all experiments and statistics are reproducible from the project repository (`scripts/01`–`25`). **[TODO: DOI/Zenodo snapshot at submission]**
