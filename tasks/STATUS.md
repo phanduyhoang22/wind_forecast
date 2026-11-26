@@ -110,6 +110,8 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - round 2 worker: `6314178` (script), Colab run `20bb21c` (Drive `results/shapchk/`). Recorded late by the Leader on 2026-11-26 (previous shift did not log it).
 - 2026-11-26 qa PASS on 20bb21c (run R27): selftest exit 0; 64/1200/16 rows complete and finite; pooled definition identical; losoW8 matches the 10_shap log to 3 decimals. NOT_VERIFIED: CPU recompute (no npz/checkpoints locally), Colab run itself. Findings: QA-T04-08 LOW provenance max diff 0.009–0.018 m/s, no negative control (fp16 autocast likely); QA-T04-09 top-1 feature changes under net importance (no "ws_200m dominates" claim); QA-T04-10 INFO missing preds -> `status=missing`. Claim limits -03..-07 still bind T08.
 - 2026-11-26 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Leader merged `d406f57`. status: DONE.
+- 2026-11-26 (Leader, Colab, closes two NOT_VERIFIED items, run R27c): (1) negative control for QA-T04-08: stored preds seed 0 vs seed 1 differ by mean 0.21–0.38 m/s (max 2.6–5.9) for E1 and losoW8 A–H, ~100x the provenance mean diff (<= 0.0032) -> provenance consistent with the seed-0 checkpoints. (2) Independent recompute of `25_shap_check.py` on `918d299`, `--device cpu`, sites A and H, both tags, vs Drive `shapchk/`: 16/16 completeness rows (max diff 6.3e-08), 4/4 provenance (4.8e-06 m/s), 300/300 net-importance rows (0) match. Still not verified: the original SHAP npz themselves (GPU, not re-run).
+- 2026-11-26 note: Drive `summary_by_site.csv`/`summary_overall.csv` have all `*_std` NaN and only 60 rows (stale aggregate); do not use, T06 regenerates them.
 - 2026-11-26 note: `10_shap.py` has no skip of finished sites; the Colab chain re-ran T04a on restart. The Leader killed it before any npz was written and restarted T05 alone. Do not put `10_shap.py` back in the chain.
 
 ## T05 — PatchTST E1 to 40/40 (A–H, M10)
@@ -136,6 +138,21 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - scope: `docs/paper/section3_results.md`; Section 2 draft exists (`docs/paper/section2_data_methods.md`).
 - dependencies: T06 (experiments frozen) | allowed_paths: `docs/paper/`
 - last_update: 2026-11-21
+
+## T08a — Paper: Results draft for the frozen parts (transfer, few-shot, SHAP) — split from T08
+- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | created: 2026-11-26 (Leader; T05 still running, so E1/T06/T07 parts wait)
+- goal: draft the Results subsections whose experiments are finished and whose claims are fixed by meetings, so T08 only adds E1, regimes and conformal later.
+- scope: new file `docs/paper/section3_results_transfer.md` with subsections: (a) zero-shot transfer, LOSO 8-fold (R21, R21c; M13); (b) cross-site 8×8 and wind-only set W (R22–R24); (c) few-shot adaptation (R25, R25c, R26; M14, M15, M16 conditions (1)–(6)); (d) explainability, SHAP (R27 and the T04 claim limits QA-T04-03..-09). Tables built from the committed result CSVs (`results/transfer_stats.csv`, `transfer_per_site.csv`, `cross_eval_wind.csv`, `fewshot8_stats.csv`, `fewshot8_iv_stats.csv`, `shap_*.csv`), plus a short "Disclosed deviations" list for these parts.
+- inputs: `tasks/RESULTS.md`, `tasks/MEETINGS.md` (M13–M16), `tasks/STATUS.md` (T01, T03, T04, T12, T16, T18 entries), `docs/paper/section2_data_methods.md` (style, terms, notation), `docs/limitations_and_improvements.md`.
+- acceptance_criteria:
+  1. Every number in the text or tables traces to a RESULTS run_id or a committed CSV (cite the run_id in an HTML comment next to it); qa can recompute each from the CSV.
+  2. Claims stay inside M13 (only 1h significant vs persistence; no Mamba > RF-W), M16 conditions (1)–(6) and the T04 limits (no "ws_200m dominates"; one seed, no stability claim; completeness error 6–12% stated; cancellation stated). Wording "Mamba ≈ Transformer" rule (M02) kept; data called "modelled", never "measurements".
+  3. No new experiment, no new statistics code; reading CSVs with pandas to build tables is allowed (do not save scripts in the repo). Do not touch E1 per-site benchmark claims (T06 pending): mark them `[TODO T06]`.
+  4. English, Markdown, terms and symbols consistent with Section 2; length ~1500–2500 words.
+  5. Only `docs/paper/section3_results_transfer.md` is added or changed.
+- HANDOFF mandatory checks: the current HANDOFF has no section 7; nothing extra to carry.
+- allowed_paths: `docs/paper/section3_results_transfer.md`
+- dependencies: T01, T03, T04, T12, T16, T18 (all DONE)
 
 ## T09 — Update README
 - owner: worker | priority: P3 | status: DONE | attempt_count: 1
