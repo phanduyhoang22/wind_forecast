@@ -227,7 +227,7 @@ The aim is to estimate how well a model forecasts at a site with no local traini
 
 The few-shot statistics were fixed while the runs were incomplete, after a few rows had been seen (M14; Section 3.6, item 8).
 
-The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), the DM HAC lag max(h − 1, 96) and the Holm adjustment, set after the pilot DM results (above; M01) <!-- docs/NHAT_KY_DU_AN.md:142, :147 -->, the per-seed DM and paired t-test as the main E1 evidence (above; M02), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
+The post-hoc deviations are disclosed where they occur: the coastal mean threshold (Section 2.2), the step budget for training from scratch and the later revision of the from-scratch baseline (Section 2.5.3; M07, M12), the DM HAC lag max(h − 1, 96) and the Holm adjustment, set after the pilot DM results (above; M01)<!-- docs/NHAT_KY_DU_AN.md:142, :147 -->, the per-seed DM and paired t-test as the main E1 evidence (above; M02), and the choice of the transfer test (above; M13). Further changes to the planned design (eight-fold LOSO, RF depth 16 in LOSO, the SHAP controls not run) are listed in Section 3.6.
 
 ## Data and code availability
 SEA-WTK v3 is publicly available from NREL. Download, verification, feature construction, all experiments and statistics are reproducible from the project repository (`scripts/01`–`25`). **[TODO: DOI/Zenodo snapshot at submission]**
