@@ -138,6 +138,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0
 - scope: `docs/paper/section3_results.md`; Section 2 draft exists (`docs/paper/section2_data_methods.md`).
 - dependencies: T06 (experiments frozen) | allowed_paths: `docs/paper/`
+- carry-over: fix QA-T08b-08/-09 (see T08b).
 - last_update: 2026-11-21
 
 ## T08a — Paper: Results draft for the frozen parts (transfer, few-shot, SHAP) — split from T08
@@ -159,7 +160,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. Leader merged `a56b751`, then fixed -01 and -03 in the draft and -02 with RESULTS row R27d (small doc changes). -04 left for T08. status: DONE.
 
 ## T08b — Paper: align Section 2 (Data & Methods) with the frozen designs — split from T08
-- owner: worker | priority: P1 | status: IN_PROGRESS | attempt_count: 1 | created: 2026-11-26 (Leader)
+- owner: worker | priority: P1 | status: DONE | attempt_count: 2 | created: 2026-11-26 (Leader)
 - goal: Section 2 describes the designs actually run, so Methods and Results (`section3_results_transfer.md`) do not contradict each other.
 - scope: edit `docs/paper/section2_data_methods.md`: (1) LOSO 8-fold, LOSO trains on 7 sites, global model on all 8 (M08, M09); (2) few-shot design as run: k-week windows (DB/TN, TN ends 30 June 2020 23:45 per `scripts/18_fewshot.py`), finetune free (main) / const calendar (ablation), scratch with fixed budget, Ridge and RF on k weeks, oracle best-of reference, target-validation and inner-validation protocols (M07, M11, M12, M14, M15, M16); (3) statistics: transfer = two-sided exact Wilcoxon on per-site skill of the median-seed RMSE, n = 8, Holm over horizons, RMSE difference also reported; DM kept only where it is used (E1) (M13, M14); (4) SHAP: expected gradients settings, completeness and provenance checks (R27, R27c). Then remove the matching `[TODO: update Section 2.5.3 ...]` / Section 2 TODOs in `docs/paper/section3_results_transfer.md` and add source comments for the method constants flagged by QA-T08a-04 (lines with max_depth 16, window ends, 20 %/120-sample gap, ~9 months, 1,000/200 windows).
 - acceptance_criteria:
@@ -173,6 +174,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 worker: `70b6a36` on branch `worktree-agent-abfd31a775e2a64a4` (not merged). Pre-check: 2 allowed files only.
 - 2026-11-26 qa FAIL round 1 on 70b6a36 (~45 citations all valid, no number wrong): QA-T08b-01 MED 2.6 Holm family "site × horizon" but `08_aggregate.py:107,137` use site × horizon × competitor (× seed); -02 MED 2.5.3 "frozen before any test score was used" hides the M12 pilot-v1 test-RMSE exposure (MEETINGS M12 follow-up 2026-11-22); -03 MED 2.6 pre-registration list claims E1 test statistics fixed before results, but M02 chose per-seed DM + paired t after E1 first pass; LOW -04 2.1 cross-ref should be 2.5.4; -05 Section 3.6 item 1 "4-fold design of Section 2.5.3" -> "originally planned"; -06 completeness notation (ratio of means) differs in 3.5; -07 provenance bullet: only explained-window idx is stored, background checked via RNG stream. Round 2 (same worker branch): text fixes only, allowed to touch the Section 3 references in -05/-06. Paused by User (token budget) 2026-11-26.
 - 2026-11-26 ~10:00 Leader: round 2 resumed (User: continue). Worker spawned on a new worktree from `70b6a36`, findings QA-T08b-01..07 + criterion 6 (shift checks HANDOFF §7). attempt_count 2.
+- 2026-11-26 worker round 2: `d36384a` (on merge `3d830f8` of `70b6a36`), 2 allowed files only (pre-check). qa PASS round 2 on d36384a: -01..-07 fixed, ~30 citations checked, criteria 1-5 PASS, 6b `24_shift_check --full` 0 FAIL, 6a/6c NOT_VERIFIED (Drive; Leader Drive check 09:52 UTC in T05). New LOW (to T08): QA-T08b-08 2.5.3 post-hoc list broken by the pilot disclosure sentences, reorder; -09 comment cites `README.md:106` for the free-calendar Ridge/RF run, cite RESULTS R20 instead. Risk noted: M01 DM lag chosen after pilot DM results (conservative). Director APPROVE (Leader, User delegation 2026-11-25). Merged `730cfc9`; worktrees removed.
 
 ## T09 — Update README
 - owner: worker | priority: P3 | status: DONE | attempt_count: 1
