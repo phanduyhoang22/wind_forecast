@@ -6,7 +6,7 @@
 
 ## 3.1 Per-site benchmark (E1)
 
-**[TODO T06]** E1 tables. Below, the only E1 numbers used are the own-site skill of Mamba with W and with 31 features (R22), as the no-transfer reference.
+E1 tables and tests: see Section 3.1 in `section3_results.md`. Below, the only E1 numbers used are the own-site skill of Mamba with W and with 31 features (R22), as the no-transfer reference.
 
 ## 3.2 Zero-shot transfer: leave-one-site-out (LOSO, 8 folds)
 
