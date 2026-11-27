@@ -426,7 +426,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - dependencies: none (runs on CPU, parallel to T21; different files)
 
 ## T23 — Stronger references: smart persistence, persistence–climatology blend, LightGBM (M20)
-- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-27, qa phase A round 1 FAIL: QA-T23-02 grid re-selection on subsets, 29_lgbm.py:176; QA-T23-03 d_rmse label; see HANDOFF) | attempt_count: 1 | created: 2026-11-27 (Leader, M20)
+- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-28, Leader: phase A qa round 2 PASS on 55af237 (fixes QA-T23-02 `select_units()` A,D only + SystemExit; QA-T23-03 d_rmse rows `secondary`; QA-T23-01 shift check 0 FAIL; merge integrity 86fdd51 = 8f26658 content; P1 N=1 max|d| 0.0 on 39 rows; selftests pass; lightgbm 4.7.0); merged `32b3589`; next: phase B after T21 RF) | attempt_count: 2 | created: 2026-11-27 (Leader, M20)
 - goal: test whether the E1 and LOSO-W claims hold against references stronger than plain persistence.
 - pre-registered design (fixed and committed before any run; no test score seen):
   - data: same contract as all models (`scripts/04_data_pipeline.py`: SEQ_LEN 96, horizons 4/12/24 steps, 70/15/15 purged split, train-only MinMax). E1 = per site, 31 features (same as the main E1 table); LOSO = 8 folds, W features (19), source pool and scaling exactly as `scripts/09_global_loso.py` (R21 setting, i.e. S0 of T21).
@@ -447,6 +447,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - allowed_paths: `scripts/28_references.py`, `scripts/29_lgbm.py`, `results/references.csv`, `results/lgbm_e1.csv`, `results/lgbm_loso8.csv`, `results/references_stats.csv`
 - dependencies: R21 (LOSO Mamba-W), E1 `results/runs.csv`; `py -m pip install lightgbm` (allowed, CLAUDE.md §8).
 - Leader decisions (2026-11-27, phase A pre-check, before any LightGBM test score): input `--lag-step 4` by the timing rule (R34); confirmatory statistic = per-site skill 1 − RMSE_Mamba/RMSE_LightGBM of the median seed (convention of `22_transfer_stats.py`), Holm m = 6; one grid config for all horizons (M01 policy); no per-sample LightGBM preds saved, so the per-seed DM row for LightGBM is dropped (it was descriptive only; disclosed).
+- Leader decisions (2026-11-28, phase B rules from qa round 2): QA-T23-04 (low) resume key lacks the LOSO source pool -> LOSO phase B runs only with the default `--sites` (all 8) into a fresh `results/lgbm_loso8.csv`; LightGBM timings recorded only with no RF job running (CPU contention seen in qa smoke).
 - risk: Mamba loses to LightGBM or smart persistence -> claim change -> meeting (M20). CPU/RAM: 96×31 float32 window ≈ 1.5 GB per site; RF/LightGBM jobs never in parallel.
 
 ## T24–T27 — M20 credibility package (stubs; full contract written by the Leader when each starts)
