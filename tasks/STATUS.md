@@ -139,7 +139,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-27
 
 ## T06 — Aggregate statistics for 8 sites
-- owner: Leader (Colab) | priority: P1 | status: QA_PASSED (meeting on E1 claim pending) | attempt_count: 1
+- owner: Leader (Colab) | priority: P1 | status: DONE | attempt_count: 2
 - goal: final E1 tables + DM/Holm + per-seed evidence for 8 sites; regime tables; Wilcoxon for transfer.
 - scope: run `08_aggregate.py`, `14_regime.py` on 8 sites; transfer stats script for LOSO-8 (Mamba vs RF vs persistence, rank-biserial).
 - dependencies: T01, T03, T05 | allowed_paths: `scripts/`, `results/`
@@ -157,6 +157,9 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
     - steps: Leader downloads Drive `results/preds/` NN npz (200 files, 5 NN x 8 sites x 5 seeds, ~55-65 MB) into scratch, checks count and names vs `runs.csv` keys; qa recomputes with its own code (not importing 08/14 functions except `04_data_pipeline.load_site`): per-seed DM + Holm (600), ensemble DM (120), NN regime rows (840), compares with committed `dm_per_seed.csv`, `dm_tests.csv`, `regime.csv`.
     - acceptance_criteria: (a) 200 NN npz present, shapes = y_test; (b) max abs diff <= 1e-6 on RMSE/skill and <= 1e-4 on DM stat (float32), same win/loss flags 600/600 and same better/worse flags 120/120; (c) RESULTS R31 numbers unchanged; (d) HANDOFF checks: `py scripts/24_shift_check.py --full` 0 FAIL, every WARN/NOT_VERIFIED read; Drive runs.csv 600 rows 15/(model, site) + newline; Drive shap_*.npz modifiedTime unchanged; RF A-D test preds unchanged.
     - then: Director APPROVE T06 -> DONE.
+  - 2026-11-27 10:13Z Leader: Colab runtime was reset (fresh T4, Drive remounted). Drive checks: runs.csv 600 rows, 15/15 per (model, site), 40 groups, newline True; shap_*.npz mtimes = HANDOFF section 2 (E1 A-D 2026-11-26T01:34-02:24Z, E1 E-H 2026-11-25T04:31-05:01Z, losoW8 A-H 2026-11-25T14:03-14:38Z). 200 NN npz zipped per site (Drive `tmp_t06/nn_{A-H}.zip`), downloaded via connector, md5 8/8 equal Colab, extracted to session scratch `t06preds/` (200 files). `24_shift_check.py --full` -> 64 PASS, 1 WARN (locked merged worktree), 0 FAIL, 2 NOT_VERIFIED (runs.csv key table, Colab cell). qa round 2 spawned.
+  - 2026-11-27 qa round 2 PASS (own code, imports only `load_site`): (a) 200 NN npz, 5 per (site, model), shape (26161, 3) = y_test, names = runs.csv keys, RMSE vs runs.csv/runs_rf.csv 720 keys max diff 1.2e-07; (b) dm_per_seed 600/600, DM stat max diff 3.2e-06, win/loss 600/600 (closest p_holm 4.6e-4 from 0.05); dm_tests 120/120, diff 3.8e-06, better/worse 120/120; dm_per_seed_summary 120/120; regime 1176/1176 (840 NN), RMSE diff <= 1.4e-07, skill <= 1.1e-07; (c) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` empty, R31 headline numbers reproduced; (d)1 shift check 63 PASS / 2 WARN (qa detached worktree; extra worktrees) / 0 FAIL / 2 NOT_VERIFIED (runs.csv key table: checked by hand, 600 rows, 15/(model, site), newline, 0 dup; Colab cell: no access); (d)2, (d)3 Drive checks rest on Leader evidence above (NOT_VERIFIED by qa); RF preds unchanged since `dc6587b`. New finding QA-T06-07 LOW (qa called it -02; renumbered): ramp-regime membership has 1-24 ties at the q95 threshold per (site, h); "now" from float32 inverse-scaled X vs raw y changes ramp n by up to 13, RMSE by <= 7.9e-3 m/s, skill by < 1e-3: one line in limitations, or report ramp counts with a tie rule. Evidence: RESULTS R31c.
+  - 2026-11-27 (Director, under User delegation of 2026-11-25): APPROVE on QA PASS. No code merge (no repo change in round 2). State: DONE. Claims bound by M18 and QA-T06-02..-07.
 
 ## T07 — Conformal intervals (E11)
 - owner: worker | priority: P2 | status: DONE | attempt_count: 2
