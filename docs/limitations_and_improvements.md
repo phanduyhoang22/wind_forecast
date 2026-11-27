@@ -33,6 +33,8 @@ Written 2026-11-25 (Leader) at the User's request. **Nothing here is approved or
 | L16 | SHAP and conformal results are not QA'd yet; SHAP completeness error in the run log is 6.4–7.3% (sites B, C, D) | T04 log, 2026-11-25 | QA; more background samples or steps |
 
 ## 2. Proposed order (after the current queue is done)
+**Superseded 2026-11-27 by M19/M20** (decided plan: `tasks/ROADMAP.md` stage S3b, tasks T21–T27 in `tasks/STATUS.md`). The list below is kept as history.
+
 1. Normalization that needs no target training data (L09).
 2. Lighter fine-tuning (L06), Transformer LOSO-W (L11), stronger references (L07, L10), zero-shot foundation model baseline.
 3. Source-site selection by similarity (L05).

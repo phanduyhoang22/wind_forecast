@@ -42,7 +42,7 @@
 
 ## 7. Development pipeline
 data → per-site benchmark (E1) → transfer (LOSO / cross-site / few-shot) → explainability & uncertainty → statistics & aggregation → paper writing → submission.
-Current stage: **transfer** (Mamba 8-fold LOSO running) with writing started. Details: `tasks/ROADMAP.md`. Submission needs User approval.
+Current stage: **S3b credibility package** (M20: T21–T27) with writing in parallel. Details: `tasks/ROADMAP.md`. Submission needs User approval.
 
 ## 8. Project rules & overrides
 - Every result reported with persistence skill; DM test (HAC lag max(h−1, 96), HLN, Holm); per-seed evidence; transfer stats unit = target site (Wilcoxon, n = 8).
