@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 17:55 — leader — T08 DONE (Results E1)
+- Làm được: `docs/paper/section3_results.md` (3.1–3.6: độ chính xác, DM theo seed, regime, conformal, độ trễ CPU, sai lệch công khai); qa vòng 1 FAIL (2 câu sai số §3.3), vòng 2 PASS; merge `265ba61`.
+- Quyết định: Director APPROVE theo ủy quyền; câu chữ RF 3h/6h giữ nguyên (qa: khớp M18, trung thực), không cần họp.
+- Dở dang / bước tiếp: `/meeting` chọn hạng mục cải thiện (`docs/limitations_and_improvements.md` §2) trước khi viết Discussion; căn chỉnh §2.5.4; đánh lại số mục 3.x; xoá Drive `tmp_t06/`, worktree cũ `agent-af25ad602b8f31bd8`.
+- Mở chat tiếp: /role leader
+
 ## 2026-11-27 17:35 — leader — T06 DONE
 - Làm được: Colab reset → mount lại Drive, kiểm runs.csv 600 dòng + giờ shap đúng; tải 200 preds NN (md5 8/8 khớp); qa vòng 2 tự tính lại DM/Holm/regime: 600/600, 120/120, 1176/1176 khớp → PASS; R31c.
 - Quyết định: Director APPROVE theo ủy quyền User 2026-11-25; T06 DONE. Phát hiện mới QA-T06-07 (ramp nhạy với giá trị trùng ở q95, skill lệch < 1e-3) → ghi vào hạn chế.
