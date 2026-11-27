@@ -404,7 +404,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   2. S1/S2 scalers use no target train or test data (S2: only the k-week window); qa checks the fit indices in code.
   3. `py scripts/27_loso_scaler.py --selftest` passes; CPU mode runs locally; results whatever the direction are logged as new RESULTS rows (failed runs too).
   4. Only the allowed paths change; `data_v2/` untouched.
-  5. HANDOFF 2026-11-27 §7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` -> 600 rows, 15 per (model, site), ends with newline; (iii) Drive `results/shap_*.npz` modifiedTime as in HANDOFF §2 (nothing newer); (iv) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> only this task's files; (v) `git diff --stat 6d2819a HEAD -- docs/paper/` -> empty.
+  5. HANDOFF 2026-11-27 §7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` -> 600 rows, 15 per (model, site), ends with newline; (iii) Drive `results/shap_*.npz` modifiedTime as in HANDOFF §2 (nothing newer); (iv) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> only this task's files; (v) `git diff --stat 6d2819a HEAD -- docs/paper/` -> empty; (vi) Drive `results/models_loso/losoW8_*.pt` -> 24 files (A–H × seeds 0–2) before any T21 run (HANDOFF 2026-11-27 20:00 §7.6).
 - allowed_paths: `scripts/27_loso_scaler.py`, `results/loso8_scaler.csv`, `results/loso8_scaler_stats.csv`
 - dependencies: R21 (DONE); Drive `models_loso/losoW8_*` (24 files per STATUS Colab queue 2026-11-26; confirm first)
 - risk: a skill drop that changes the M13 claim -> meeting (M19 condition 4).
@@ -424,9 +424,32 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - allowed_paths: `scripts/18_fewshot.py`, `results/fewshot8_lag.csv`
 - dependencies: none (runs on CPU, parallel to T21; different files)
 
+## T23 — Stronger references: smart persistence, persistence–climatology blend, LightGBM (M20)
+- owner: worker | priority: P1 | status: TODO | attempt_count: 0 | created: 2026-11-27 (Leader, M20)
+- goal: test whether the E1 and LOSO-W claims hold against references stronger than plain persistence.
+- pre-registered design (fixed and committed before any run; no test score seen):
+  - data: same contract as all models (`scripts/04_data_pipeline.py`: SEQ_LEN 96, horizons 4/12/24 steps, 70/15/15 purged split, train-only MinMax). E1 = per site, 31 features (same as the main E1 table); LOSO = 8 folds, W features (19), source pool and scaling exactly as `scripts/09_global_loso.py` (R21 setting, i.e. S0 of T21).
+  - (P1) smart persistence: y_hat(t+h) = mean of the last N observed `wind_speed` steps, N in {1, 2, 4, 8, 16, 32, 48, 96}, N chosen per (site, horizon) on the val split (LOSO: on the pooled source-site val; target-site data never used).
+  - (P2) persistence–climatology blend (Nielsen et al. 1998 reference): y_hat = a_h * ws(t) + (1 − a_h) * mu, mu = train mean, a_h = lag-h autocorrelation of `wind_speed` on train (LOSO: source-site train only). No tuning.
+  - (P3) LightGBM: one regressor per horizon; input = the flattened 96-step window of the same features (E1 96×31, LOSO 96×19). Grid {num_leaves 31, 63, 127} × {learning_rate 0.03, 0.1}, n_estimators ≤ 3000 with early stopping (100 rounds) on val, other params default except subsample 0.8 / colsample 0.5 / bagging_freq 1; grid selected on sites A+D val (E1 policy, M01) and on source-site val of folds A and D (LOSO), then frozen for all sites/folds. Seeds: E1 5 (0–4), LOSO 3 (0–2).
+  - compute fallback (decided by timing only, never by score): the worker times one LightGBM fit on site A; if the projected total CPU time > 12 h, the input becomes every 4th lag of the same window (lags 0, 4, …, 92 → 24×F). The choice is recorded in RESULTS before any test score.
+  - metrics: RMSE / MAE (m/s, test split, 2021-04..12), skill vs persistence (same as M13/M18); every model's skill also reported vs P1 and P2 (descriptive).
+  - Holm family (m = 6, confirmatory): (E1) Mamba vs LightGBM per-site skill of the median-seed RMSE, two-sided exact Wilcoxon n = 8, 3 horizons; (LOSO) Mamba-W LOSO (R21) vs LightGBM-W LOSO, same test, 3 horizons. Everything else (P1/P2 comparisons, per-seed DM, other models) descriptive. Added reuse of the 2021 test split is disclosed.
+- scope / phases: (A) worker writes code + `--selftest` + CPU mode (1 site, 1 seed, few hundred rows) + the timing pilot; qa checks code and leakage; (B) full runs (CPU, local, one heavy job at a time — never concurrent with T21's RF refit; Leader schedules), qa checks the results and recomputes the Holm table.
+- acceptance_criteria:
+  1. P1 at N = 1 reproduces `results/baselines.csv` persistence RMSE per (site, horizon) within 1e-6 m/s.
+  2. No val/test data in fitting; N, a_h, mu, LightGBM grid and early stopping use only train/val (LOSO: source sites only); qa checks the indices in code.
+  3. `py scripts/28_references.py --selftest` and `py scripts/29_lgbm.py --selftest` pass; CPU mode runs locally; results whatever the direction logged as RESULTS rows (failed runs too); `lightgbm` version recorded.
+  4. Holm table (m = 6) written to `results/references_stats.csv`; qa recomputes it independently.
+  5. Only the allowed paths change; `data_v2/` untouched.
+  6. HANDOFF 2026-11-27 20:00 §7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` -> 600 rows, 15 per (model, site), ends with newline; (iii) Drive `results/shap_*.npz` -> nothing newer than 2026-11-26T02:24Z; (iv) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> only this task's files; (v) `git diff --stat 6d2819a HEAD -- docs/paper/` -> empty; (vi) Drive `results/models_loso/losoW8_*.pt` -> 24 files (not used by T23; report only).
+- allowed_paths: `scripts/28_references.py`, `scripts/29_lgbm.py`, `results/references.csv`, `results/lgbm_e1.csv`, `results/lgbm_loso8.csv`, `results/references_stats.csv`
+- dependencies: R21 (LOSO Mamba-W), E1 `results/runs.csv`; `py -m pip install lightgbm` (allowed, CLAUDE.md §8).
+- risk: Mamba loses to LightGBM or smart persistence -> claim change -> meeting (M20). CPU/RAM: 96×31 float32 window ≈ 1.5 GB per site; RF/LightGBM jobs never in parallel.
+
 ## T23–T27 — M20 credibility package (stubs; full contract written by the Leader when each starts)
 Common acceptance criteria for all: pre-registration (variants, metrics, Holm family with m <= 6, or "exploratory") committed before any run; selection on validation only (LOSO: source-site val); results logged in RESULTS whatever the direction; added test reuse disclosed; a claim change -> meeting; HANDOFF §7 mandatory checks (latest HANDOFF) run with real output or NOT_VERIFIED.
-- T23 (P1, CPU, parallel to T21): references on E1 and LOSO test: smart persistence, persistence–climatology blend (climatology from train only), LightGBM on the same look-back window as the DL models, same tuning grid policy (val only). Install `lightgbm` (CLAUDE.md §8 override). status: TODO
+- T23: full contract in section "T23" below. status: TODO
 - T24 (P1, free T4, after T21/T23): zero-shot TSFM baseline (Chronos-Bolt and/or TTM) on wind only vs LOSO-W; context length fixed in the contract before any test score; pretraining-corpus check (WindFM excluded); reported descriptive with contamination disclosure unless the corpus is confirmed disjoint. status: TODO
 - T25 (P1): 2007–2015 unseen test years. Step 1 availability check for the 8 sites + NREL daily cap (no download); step 2 hash checkpoints, configs, eval + stats scripts and the claims table, commit; step 3 download (`01_download_seawtk.py --years 2007-2015 --raw-dir ...`), build test-only set; step 4 one evaluation (pattern `17_backtest_2016.py`), report-only, not pooled with 2021. Needs `NREL_*` env vars; never written anywhere. status: TODO
 - T26 (P2): descriptive controls: data-size-matched source pool, leave-one-regime-out (4 folds); power-curve conversion with a reference turbine curve (cited). status: TODO
