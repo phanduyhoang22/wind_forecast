@@ -180,6 +180,8 @@ def run(args):
                 job("select", u, 0, j, cfg)
     sel = pd.read_csv(out)
     sel = sel[(sel.stage == "select") & sel[ucol].isin(sel_units)]
+    n = sel.groupby(["num_leaves", "learning_rate"]).size()
+    assert len(n) == len(GRID) and (n == len(sel_units) * len(HORIZONS)).all(), "luoi chon chua du"
     cfg = choose(sel)
     print("Cau hinh chot (val, {}): num_leaves={} lr={}".format(sel_units, *cfg))
     for u in units:
