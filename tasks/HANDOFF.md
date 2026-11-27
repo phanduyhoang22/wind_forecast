@@ -4,7 +4,7 @@ Overwritten by `/handoff`. The next chat gets this file at start (hook `session_
 
 ## 1. Current task
 - T21 (full loop) IN_PROGRESS: phase A code qa PASS, merged `2ef6c47`; phase B Mamba done on Colab (R35); RF refit running locally in background (`py -u scripts/27_loso_scaler.py --models RF --seeds 3`, log `results/t21_rf.log`, writes `results/loso8_scaler.csv`), started this chat.
-- T23 (full loop) IN_PROGRESS: phase A code done on branch `worktree-agent-a33af13b679889703` @ `8f26658` (not merged, not pushed); qa phase A was running in background when this chat closed: its report is lost with the chat -> re-run qa T23 phase A.
+- T23 (full loop) IN_PROGRESS: phase A code on branch `worktree-agent-a33af13b679889703` @ `8f26658` (not merged, not pushed). qa phase A round 1 = FAIL (attempt 1 of 3): QA-T23-02 (medium, blocks phase B) `scripts/29_lgbm.py:176` `sel_units = [...] or units[:1]` re-selects the grid on other units when `--folds`/`--sites` omit A or D -> fix: outside `--max-rows` always select on SELECT_UNITS (A, D), fail if they are not loaded. QA-T23-03 (low): label `d_rmse` Holm rows secondary. QA-T23-01 (low): shift check FAIL `csv_paths ... references.csv` until merge. All other criteria PASS (P1 N=1 4.44e-16; leakage checks; Holm recompute diff 0.0; R34 projection 33.38 h). Next: worker fix (round 2) -> qa re-check -> merge.
 - contract: `tasks/STATUS.md` sections T21, T23 (incl. "Leader clarifications" / "Leader decisions" lines); RESULTS R32–R35.
 - branch / last commit: main `4de2c81` + this handoff commit, pushed. Remote branch `t21-phaseA` (= 20da2d7, used by Colab).
 

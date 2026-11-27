@@ -426,7 +426,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - dependencies: none (runs on CPU, parallel to T21; different files)
 
 ## T23 — Stronger references: smart persistence, persistence–climatology blend, LightGBM (M20)
-- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-27, Leader: phase A worker spawned on aaa048b) | attempt_count: 1 | created: 2026-11-27 (Leader, M20)
+- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-27, qa phase A round 1 FAIL: QA-T23-02 grid re-selection on subsets, 29_lgbm.py:176; QA-T23-03 d_rmse label; see HANDOFF) | attempt_count: 1 | created: 2026-11-27 (Leader, M20)
 - goal: test whether the E1 and LOSO-W claims hold against references stronger than plain persistence.
 - pre-registered design (fixed and committed before any run; no test score seen):
   - data: same contract as all models (`scripts/04_data_pipeline.py`: SEQ_LEN 96, horizons 4/12/24 steps, 70/15/15 purged split, train-only MinMax). E1 = per site, 31 features (same as the main E1 table); LOSO = 8 folds, W features (19), source pool and scaling exactly as `scripts/09_global_loso.py` (R21 setting, i.e. S0 of T21).
