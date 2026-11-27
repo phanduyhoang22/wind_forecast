@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 17:25 — leader — handoff: T06 vòng 2 chờ tính lại DM NN
+- Làm được: T07 DONE (`f799e33`, 1440 dòng); F-T05-01 đóng (`917953a`); T06 QA_PASSED (`2f2d0ae`, `58a2648`); M18 chốt A + B(1) (`d7b1d1d`).
+- Quyết định: claim E1 "không khác biệt có ý nghĩa" Mamba/Transformer/RF; DM theo seed là chính.
+- Dở dang / bước tiếp: tải 200 preds NN từ Drive về scratch, qa tự tính lại DM + regime NN, Director APPROVE T06; rồi T08. Bật lại keep-alive Colab.
+- Mở chat tiếp: /role leader T06
+
 ## 2026-11-27 17:20 — leader — F-T05-01 đóng, T06 QA_PASSED, M18 chốt
 - Làm được: F-T05-01 đóng (`917953a`, qa PASS, SHAP R27 dùng được); T06 chạy Colab, R31 (`2f2d0ae`), qa vòng 2 PASS sau sửa đường dẫn (`58a2648`); họp M18 (`eef7308`).
 - Quyết định: M18 = A + B(1) (User giao cho họp quyết): claim "không khác biệt có ý nghĩa" Mamba/Transformer/RF, DM theo seed là chính, chi phí CPU từ `latency.csv`.

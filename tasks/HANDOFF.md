@@ -1,44 +1,49 @@
-# HANDOFF — 2026-11-27 01:25 (local, 2026-11-26 18:25 UTC) — leader — T07 round 2 worker mid-run (RF A-D val), M17 decided
+# HANDOFF — 2026-11-27 17:25 (local, 10:25 UTC) — leader — T07 DONE, F-T05-01 closed, T06 QA_PASSED, M18 decided
 
 Overwritten by `/handoff`. The next chat gets this file at start (hook `session_start.py`). Facts only; write "none" instead of deleting a section.
 
 ## 1. Current task
-- T07 conformal round 2 (M17 option A, User 2026-11-27), full loop, attempt_count 1 -> round 2 IN_PROGRESS. Contract: `tasks/STATUS.md` T07 "ROUND 2 contract".
-- T05 DONE (Director APPROVE `5f8790d`, Leader DONE `7b6531b`).
-- F-T05-01: completeness on current npz = R27 to 3 decimals (STATUS T05); full CSV diff + qa close still open. SHAP numbers stay blocked for T08 until closed.
-- branch / worktree / last commit: main `aba8221` + this handoff. Worker worktree `D:\Project\wind_forecast\.claude\worktrees\agent-af25ad602b8f31bd8`, branch `worktree-agent-af25ad602b8f31bd8`, commit `b0a73d1 fix(T07): conformal exact quantile, train-range PINAW, fail on missing preds` (11_conformal.py fixes; NOT pre-checked, NOT qa'd).
+- T06 round 2 (full loop), state QA_PASSED, round 2 contract TODO (M18 = A + B(1)): independent recompute of NN DM + NN regime rows, then Director APPROVE -> DONE.
+- contract: `tasks/STATUS.md` section T06 ("ROUND 2 contract (TODO)"); decision: STATUS Approved decisions M18, `tasks/MEETINGS.md` M18.
+- branch / worktree / last commit: main `d7b1d1d` + this handoff commit. No open task branch. Leftover worktree `.claude/worktrees/agent-af25ad602b8f31bd8` (branch `worktree-agent-af25ad602b8f31bd8`, merged) is locked by a dead pid; harmless.
+- Done this chat: T07 DONE (conformal 1440 rows, R30, R29c); F-T05-01 CLOSED (qa PASS; R27 SHAP usable in T08).
 
 ## 2. Verified (command -> real output)
-- Colab status 18:20 UTC -> `3 MiB` GPU idle, shapchk `run.log` ends `exit=0`, `0 file du doan luu bi thieu`.
-- shapchk pooled completeness E1 A-H `0.094/0.072/0.073/0.064/0.087/0.082/0.072/0.066`, losoW8 `0.085/0.079/0.076/0.069/0.079/0.073/0.066/0.072` = R27.
-- Worker scratch (`C:\Users\User\AppData\Local\Temp\claude\8e7e329b3f27fbe2\466e9487-1ea2-478e-b411-2c8b00b99d32\scratchpad\t07`) at 01:23 local: `gate/` (A seed 0), `A/preds/A_RF_0..4.npz`, `B/models/B_RF_0_val.npz`, `B_RF_1_val.npz` -> gate passed presumably (worker went on), B running; one python process ~2.4 GB RAM. Worker report NOT received.
-- M17 minutes + decision: `tasks/MEETINGS.md` M17; Approved decisions line in STATUS.
+- RF C, D re-run (worktree, `07_run_benchmark.py --models RF --sites X --seeds 5 --out <scratch>\t07\X\runs.csv`) -> `C exit=0`, `D exit=0`, 5 preds + 5 val each.
+- `py <scratch>\verify_rf.py <old scratch>\t07` -> 20/20 `array_equal True`, params equal, `total mismatch 0`.
+- Colab `11_conformal.py --models Mamba,LSTM,Transformer,PatchTST,DLinear,RF` -> `exit=0`; 1440 rows, 240 per model, 0 dup, finite; md5 `58d708db8bec8b0ebb886366ce520ca3` on Drive = repo.
+- Colab 09:38Z: Drive `runs.csv` 600 rows, 15-15 per (model, site), newline True; `shap_*.npz` times: losoW8 A-H 2026-11-25T14:03-14:38Z, E1 E-H 2026-11-25T04:31-05:01Z, E1 A-D 2026-11-26T01:34-02:24Z.
+- shapchk CSV diff vs repo R27 -> max abs diff 2.0e-09 / 2.6e-10 / 0.0 (qa PASS).
+- Colab T06 (`08_aggregate.py --selftest`, `08_aggregate.py`, `14_regime.py`) -> `exit=0`; summary_by_site 144, overall 18, cost 6, dm_tests 120, dm_per_seed 600, dm_per_seed_summary 120 (n=5), regime 1176; 0 NaN/inf.
+- `py scripts/24_shift_check.py --full` (after `58a2648`) -> `62 PASS, 3 WARN, 0 FAIL, 2 NOT_VERIFIED` (qa round 2: 63/2/0/2).
+- Colab status cell last run 10:04:29 UTC -> `3 MiB` (T4 idle).
 
 ## 3. NOT verified, risks, open findings
-- Worker gate result (array_equal + node count) not seen by Leader: read `scratch\t07\gate\runs.csv` vs `results/runs_rf.csv` and compare npz yourself.
-- Whether the background RF job survives this chat closing: unknown. If `B/C/D` dirs are incomplete, re-run missing sites one per command (see section 7).
-- Nothing copied to `results/models/` on main yet (check worktree `results/models/{A-D}_RF_*_val.npz`).
-- Open findings: QA-T07-01..04 (STATUS T07); QA-T05-01..03 (paper disclosure: PatchTST 50-epoch cap 12/120, below persistence 1h D/H); T08 TODOs (E7/E8 ablation, Fig. 1, DOI); Drive summary_*.csv stale (T06).
+- NN DM rows (`dm_per_seed.csv`, `dm_tests.csv`) and NN regime rows (`regime.csv`) not independently recomputed: T06 round 2.
+- Open findings: QA-T06-02..-06 (paper disclosures, bound by M18); QA-T07-04 (no nominal-coverage claim), QA-T07-06 INFO; QA-T05-01..03 (paper disclosure); T08 TODOs (E7/E8 ablation, Fig. 1, DOI).
+- `24_shift_check` `check_qa` does not catch "qa pending" rows (QA-T06-06); R31 note still says "qa pending" (do not edit old row; add correction row when T06 is APPROVED).
+- Colab notebook has helper cells 2-5 (setup/conformal/T06) that delete and re-clone `/content/wind_forecast` if re-run: run only the status cell `npN7bCc2XqnR` and new cells. Twice this chat a wrong cell was run (no harm, verified).
 
 ## 4. Files and commits touched this chat
-- main: `8ab4bb9`, `b3b5476`, `5fc2cc9` (runs.csv 600), `549bfec` (conformal.csv R28/R29), `6633991`, `d0e12ad`, `3b57ef3` (handoff 1), `7b6531b` (T05 DONE), `c52719d`/`398d00f` (M17), `aba8221` (NHATKY).
-- Drive new: `results/conformal.csv`, `conformal.log`, `results/shapchk_F-T05-01/` (3 CSV + run.log).
+- main: `621aad9` (20 RF A-D val npz), `dc6587b` (merge T07), `4335e88`, `f799e33` (conformal.csv 1440, R29c/R30, T07 DONE), `917953a` (F-T05-01 closed), `2f2d0ae` (T06 results, R31), `58a2648` (R31 paths), `b87ec0d`, `eef7308` (M18 minutes), `d7b1d1d` (M18 decided, T06 round 2 contract).
+- Drive new: `results/conformal.csv`, `conformal.log` (overwritten), `results/t06/` (7 CSV + `t06.log`).
 
 ## 5. Environment traps
 - Python `py` 3.12. Open chats from a terminal at `D:\Project\wind_forecast`.
-- Colab alive (T4, idle, chain finished, 5-min sync loop running). Cells: `lIYdn1woOS1n` setup, `8R8wSfTe8kKD` scratch/status. Keep-alive cron `e23b42ee` dies with this chat: start a new 14-min keep-alive in the next chat (User keeps Colab; no shutdown).
-- RF depth 24: one site per process (MemoryError risk on 16 GB).
-- `07_run_benchmark.py --out <dir>/runs.csv` writes models/ and preds/ next to --out (results/ untouched); fresh --out = no skip.
+- Colab: runtime alive (T4 idle), Drive mounted, `/content/wind_forecast` cloned at 4335e88 with Drive `preds/` + `models/` copied in (240 + 240 npz). No 5-min sync loop running. Status cell id `npN7bCc2XqnR`. Keep-alive cron dies with this chat: start a new 14-min keep-alive.
+- Drive downloads via connector land in the session `tool-results` dir (not context); copy them from there.
+- Drive NN preds: `MyDrive/WIND_FORECAST_DATA/results/preds/` (240 npz incl. 40 RF). qa has no Drive access: Leader must download into a scratch dir outside the repo.
 - qa hook blocks heredocs and `>`: qa uses single-line `py -c`.
 
 ## 6. Waiting on the User
-- none (M17 decided). User keeps Colab running.
+- none (M18 decided by the agent meeting under User delegation).
 
 ## 7. Next step
-- do: (1) check worker state: scratch `t07/{A,B,C,D}` each with 5 `preds/*_RF_*.npz` and 5 `models/*_val.npz`; if missing, run per site in the worktree: `py scripts/07_run_benchmark.py --models RF --sites X --seeds 5 --out <scratch>\t07\X\runs.csv`. (2) verify 20/20 test preds `np.array_equal` to `results/preds/X_RF_s.npz` and node count = `runs_rf.csv`; copy 20 val npz into the worktree `results/models/`, commit on the worker branch. (3) Leader pre-check `b0a73d1` diff (allowed_paths only), selftest; spawn qa with the full round 2 contract. (4) qa PASS -> merge to main, Colab re-run `11_conformal.py --models Mamba,LSTM,Transformer,PatchTST,DLinear,RF` (pull main in /content/wind_forecast first; copy the 20 new RF val npz there), 1440 rows, RESULTS correction row for R29 + new row. (5) close F-T05-01 (full CSV diff). (6) T06.
-- done when: T07 conformal.csv 1440 rows, qa PASS, Director APPROVE.
+- do: (1) start Colab keep-alive; (2) download the 200 NN npz (`{A-H}_{Mamba,LSTM,Transformer,PatchTST,DLinear}_{0-4}.npz`) from Drive `results/preds/` into a scratch dir (connector `download_file_content`, or zip on Colab and download one file); check count and names; (3) spawn qa with the T06 round 2 contract (own recompute of per-seed DM + Holm, ensemble DM, NN regime rows vs committed CSVs); (4) on qa PASS: Director APPROVE T06, RESULTS correction row closing "qa pending" for R31, T06 DONE; (5) then T08 (E1 section under M18 wording rules).
+- done when: T06 round 2 qa PASS and Director APPROVE recorded in STATUS.
 - mandatory checks (the next worker/qa must run each one and report its real output; not run -> `NOT_VERIFIED`):
-  1. Drive `results/runs.csv` -> expected: 600 rows, 15 per (model, site) for 5 NN models x A-H, ends with newline.
-  2. `py scripts/24_shift_check.py --full` -> expected: 0 FAIL; read every WARN / NOT_VERIFIED.
-  3. Drive `results/shap_*.npz` modifiedTime -> expected: E1 E-H and losoW8 A-H 2026-11-25; E1 A-D 2026-11-26 01:34-02:24Z (F-T05-01); nothing newer.
-  4. 20/20 RF A-D re-run test preds `np.array_equal` to existing `results/preds/` -> expected: all True (else STOP, meeting).
+  1. `py scripts/24_shift_check.py --full` -> expected: 0 FAIL; read every WARN / NOT_VERIFIED.
+  2. Drive `results/runs.csv` -> expected: 600 rows, 15 per (model, site), ends with newline.
+  3. Drive `results/shap_*.npz` modifiedTime -> expected: as in section 2 (nothing newer).
+  4. 200 downloaded NN npz -> expected: 5 per (site, model), `y_pred` shape (26161, 3) = y_test.
+  5. Independent recompute vs committed `dm_per_seed.csv` / `dm_tests.csv` / `regime.csv` -> expected: RMSE/skill diff <= 1e-6, DM stat diff <= 1e-4, win/loss flags 600/600 and better/worse 120/120 identical.
