@@ -138,7 +138,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-27
 
 ## T06 — Aggregate statistics for 8 sites
-- owner: worker | priority: P1 | status: TODO | attempt_count: 0
+- owner: Leader (Colab) | priority: P1 | status: QA_PASSED (meeting on E1 claim pending) | attempt_count: 1
 - goal: final E1 tables + DM/Holm + per-seed evidence for 8 sites; regime tables; Wilcoxon for transfer.
 - scope: run `08_aggregate.py`, `14_regime.py` on 8 sites; transfer stats script for LOSO-8 (Mamba vs RF vs persistence, rank-biserial).
 - dependencies: T01, T03, T05 | allowed_paths: `scripts/`, `results/`
@@ -149,6 +149,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   - 2026-11-27 Leader ran on Colab (clone 4335e88, runs.csv `cmp`-identical to Drive): log `exit=0`; outputs committed `2f2d0ae`, RESULTS R31. attempt_count 1.
   - 2026-11-27 qa round 1 FAIL on (9) only: shift check `FAIL docs csv_paths` (R31 artifacts cell used brace path `summary_{by_site,overall,cost}.csv`). (1)-(8) PASS: selftest; 144/18/6 rows, independent summary recompute max diff 7.1e-15; 600/120/120 DM rows, Holm recompute <= 3.3e-14; lag 96 (h in steps 4/12/24) + HLN; regime 1176 rows, persistence + RF cells rebuilt locally (RMSE diff <= 3.3e-7); all finite; R31 numbers reproduce. NN DM + NN regime rows NOT_VERIFIED (preds on Drive only). Findings: QA-T06-01 LOW (brace path, blocks 9); QA-T06-02 HIGH-for-claims (Transformer >= Mamba at 3h/6h, best in 12/24 cells; per-seed DM vs Transformer 3h/6h 0/0 of 40 -> parity only); QA-T06-03 HIGH-for-claims (ensemble DM Mamba > RF 23/24 cells vs per-seed 4/4/9 wins + 4 losses of 40: per-seed is primary (meeting #2), never cite ensemble alone); QA-T06-04 MED (negative skill PatchTST 1h D, H; 39 negative regime cells: PatchTST 27, DLinear 10, LSTM 2); QA-T06-05 MED (`summary_cost` latency/params/train_s not comparable NN vs RF: use `13_latency.py` for CPU cost); QA-T06-06 LOW (DM stat float32; `check_qa` misses "qa pending").
   - 2026-11-27 Leader fix QA-T06-01: R31 artifacts cell now lists the 3 paths explicitly (path text only, no number changed); `24_shift_check.py --full` -> 62 PASS, 3 WARN (dirty RESULTS.md before commit, worker worktree locked, handoff age), 0 FAIL, 2 NOT_VERIFIED (runs.csv key table, Colab status cell).
+  - 2026-11-27 qa round 2 PASS on `58a2648`: only R31 path text changed (`git diff 2f2d0ae 58a2648`), no results/ or scripts/ change; shift check 63 PASS / 2 WARN (locked worker worktree, handoff age) / 0 FAIL / 2 NOT_VERIFIED; (1)-(8) carried over; NN DM + NN regime rows and Drive shap times NOT_VERIFIED. QA-T06-01 closed; -02..-06 open as paper disclosures. State: QA_PASSED. Leader proposes `/meeting` on the E1 claim (QA-T06-02/-03: Mamba ≈ Transformer, no clear edge over RF in per-seed DM) before Director decision and before T08.
 
 ## T07 — Conformal intervals (E11)
 - owner: worker | priority: P2 | status: DONE | attempt_count: 2
