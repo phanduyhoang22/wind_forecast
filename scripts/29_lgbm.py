@@ -118,6 +118,17 @@ def projection(t_fit, n_sites=8):
     return e1, loso
 
 
+def select_units(sites, units, max_rows):
+    """Don vi chon luoi. Chay that: luon A, D (M01), thieu thi dung han de khong chon lai luoi
+    tren don vi khac. Chi CPU mode (--max-rows) moi duoc lui ve don vi dang chay."""
+    if max_rows:
+        return [u for u in SELECT_UNITS if u in units] or units[:1]
+    miss = [u for u in SELECT_UNITS if u not in sites]
+    if miss:
+        raise SystemExit("chon luoi can tram {} trong --sites (thieu {})".format(SELECT_UNITS, miss))
+    return list(SELECT_UNITS)
+
+
 class Units:
     """E1: don vi = tram (31 dac trung). LOSO: don vi = fold, Pooled cua 09 voi dac trung W."""
 
@@ -173,7 +184,7 @@ def run(args):
                                    header=not os.path.exists(out), index=False)
         done.add(k)
 
-    sel_units = [u for u in SELECT_UNITS if u in units] or units[:1]
+    sel_units = select_units(sites, units, args.max_rows)
     for u in sel_units:
         for cfg in GRID:
             for j in range(len(HORIZONS)):
@@ -220,7 +231,9 @@ def stats(runs_e1, loso_nn, lgb_e1, lgb_loso, refs, base, loso_rf=None):
     conf = pd.concat([ts.compare(e1["Mamba"], e1["LightGBM"]).assign(setting="E1"),
                       ts.compare(lo["Mamba"], lo["LightGBM"]).assign(setting="losoW")])
     conf["p_holm"] = conf.groupby("metric").p_raw.transform(ts.holm)    # m = 6 trong moi metric
-    conf = conf.assign(table="confirmatory", model="Mamba", ref="LightGBM")
+    # chi skill la ho xac nhan; d_rmse (m/s) la phu, ghi nhan rieng de khong doc nham la xac nhan
+    conf = conf.assign(table=np.where(conf.metric == "skill", "confirmatory", "secondary"),
+                       model="Mamba", ref="LightGBM")
 
     # Mo ta: skill moi model vs persistence / P1 / P2 (seed trung vi), khong hieu chinh
     for m in sorted(set(runs_e1.model) - {"Mamba"}):
@@ -294,6 +307,16 @@ def _selftest():
     assert choose(sel) == GRID[0]
     sel.loc[sel.num_leaves == 127, "val_mse"] = 0.1
     assert choose(sel) == (127, 0.03)
+    # chay that luon chon tren A, D du --folds/--sites bo chung; thieu A/D -> dung; CPU mode moi lui
+    assert select_units(list("ABCD"), ["B"], 0) == SELECT_UNITS
+    for bad in (list("BCD"), list("ABC")):
+        try:
+            select_units(bad, ["B"], 0)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("thieu A/D ma khong dung")
+    assert select_units(["B"], ["B"], 500) == ["B"] and select_units(list("AB"), ["A", "B"], 500) == ["A"]
     e1, lo = projection(1.0)
     assert e1 == 36 + 120 and np.isclose(lo, (36 + 72) * 7 * 19 / 31)
     # 5) bang Holm m = 6 tren du lieu gia: thang ca 8 tram -> p = 2/256, Holm x6
@@ -313,8 +336,9 @@ def _selftest():
                          for h in HORIZONS])
     out = stats(runs_e1, loso_nn, mk("-", "LightGBM", range(5), rm_l), mk("losoW", "LightGBM", range(3), rm_l),
                 refs, base)
-    c = out[out.table == "confirmatory"]
+    c = out[out.table.isin(["confirmatory", "secondary"])]
     assert len(c) == 12 and (c.wins == 8).all()
+    assert set(c[c.table == "confirmatory"].metric) == {"skill"} and set(c[c.table == "secondary"].metric) == {"d_rmse"}
     assert np.allclose(c.p_raw, 2 / 256) and np.allclose(c.p_holm, 12 / 256)
     dsc = out[out.table == "descriptive"]
     assert len(dsc) == (3 + 2) * 3 * 6 and set(dsc.model) == {"Mamba", "LSTM", "LightGBM"} and dsc.p_holm.isna().all()
@@ -353,7 +377,7 @@ def main():
                     rd("references.csv"), rd("baselines.csv"), pd.read_csv(rf) if os.path.exists(rf) else None)
         path = args.out or os.path.join(RESULTS, "references_stats.csv")
         out.to_csv(path, index=False)
-        print(out[out.table == "confirmatory"].to_string(index=False, float_format=lambda x: "%.4f" % x))
+        print(out[out.table.isin(["confirmatory", "secondary"])].to_string(index=False, float_format=lambda x: "%.4f" % x))
         print("\nGhi vao", path)
     else:
         if not args.setting or not args.lag_step:
