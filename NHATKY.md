@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-28 06:06 — leader — handoff: RF T21 xong, T23 phase A merge, tắt máy
+- Làm được: RF T21 24/24 fold, 1296 dòng (R36, `14bb563`); T23 phase A qa vòng 2 PASS, merge `32b3589`; T25 bước 1 DONE (`5a20aa8`); shift check 0 FAIL.
+- Quyết định: User: xong RF thì handoff + tắt máy, không chạy LightGBM đêm nay; CSV Mamba T21 chép qua Colab lần sau; LOSO LightGBM chỉ chạy đủ 8 site, CSV mới (QA-T23-04).
+- Dở dang / bước tiếp: Colab chép CSV Mamba (md5 27fc5a92) → ghép → `--stats`, trigger RevIN, qa phase B T21; rồi LightGBM E1 → LOSO.
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-28 05:10 — leader — T25 bước 1 DONE, T21 RF chạy lại, T23 chờ qa vòng 2
 - Làm được: T25 bước 1 (2007–2015 có trên NREL, probe A/2007 HTTP 200, 72 request ≈ 1 ngày) qa vòng 2 PASS, merge `5a20aa8`; RF T21 chết lặng ở chat trước → chạy lại bằng tiến trình tách riêng; T23 worker sửa QA-T23-02/03 (`55af237`, nhánh `worktree-agent-a35e331e8a47afaa6`), qa vòng 2 đang chạy.
 - Quyết định: làm xong phần local trước (User), Colab để sau; keep-alive Colab đã tắt.

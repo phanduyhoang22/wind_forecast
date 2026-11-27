@@ -1,49 +1,51 @@
-# HANDOFF — 2026-11-27 23:40 (local) — leader — T21 phase B running, T23 qa pending
+# HANDOFF — 2026-11-28 06:06 (local) — leader — T21 RF done, T23 phase A merged, T25 step 1 done
 
 Overwritten by `/handoff`. The next chat gets this file at start (hook `session_start.py`). Facts only; write "none" instead of deleting a section.
 
 ## 1. Current task
-- T21 (full loop) IN_PROGRESS: phase A code qa PASS, merged `2ef6c47`; phase B Mamba done on Colab (R35); RF refit running locally in background (`py -u scripts/27_loso_scaler.py --models RF --seeds 3`, log `results/t21_rf.log`, writes `results/loso8_scaler.csv`), started this chat.
-- T23 (full loop) IN_PROGRESS: phase A code on branch `worktree-agent-a33af13b679889703` @ `8f26658` (not merged, not pushed). qa phase A round 1 = FAIL (attempt 1 of 3): QA-T23-02 (medium, blocks phase B) `scripts/29_lgbm.py:176` `sel_units = [...] or units[:1]` re-selects the grid on other units when `--folds`/`--sites` omit A or D -> fix: outside `--max-rows` always select on SELECT_UNITS (A, D), fail if they are not loaded. QA-T23-03 (low): label `d_rmse` Holm rows secondary. QA-T23-01 (low): shift check FAIL `csv_paths ... references.csv` until merge. All other criteria PASS (P1 N=1 4.44e-16; leakage checks; Holm recompute diff 0.0; R34 projection 33.38 h). Next: worker fix (round 2) -> qa re-check -> merge.
-- contract: `tasks/STATUS.md` sections T21, T23 (incl. "Leader clarifications" / "Leader decisions" lines); RESULTS R32–R35.
-- branch / last commit: main `4de2c81` + this handoff commit, pushed. Remote branch `t21-phaseA` (= 20da2d7, used by Colab).
+- T21 (full loop) IN_PROGRESS: phase A merged `2ef6c47`; phase B Mamba done on Colab (R35, Drive only); RF done locally 24/24 (R36, `results/loso8_scaler.csv` RF only, 1296 rows, md5 ce48458df70d04ec71bf9caf9cc43938, committed `14bb563`). Next: copy Drive Mamba CSV via Colab, merge, `--stats`, RevIN trigger, qa phase B, Director approve.
+- T23 (full loop) IN_PROGRESS: phase A qa round 2 PASS on `55af237`, merged `32b3589` (attempt 2). Phase B (LightGBM E1 -> LOSO) not started (User: no LightGBM tonight).
+- T25 step 1 (light) DONE: `docs/t25_availability.md`, qa PASS round 2, merge `5a20aa8`. Step 2 (hash checkpoints/configs/eval/stats/claims) after T21/T23.
+- contract: `tasks/STATUS.md` sections T21, T23, T24–T27 (T25 step 1 contract there); RESULTS R32–R36.
+- branch / last commit: main `14bb563` + this handoff commit, pushed.
 
 ## 2. Verified (command -> real output)
-- `py scripts/24_shift_check.py --full` (start) -> `tong: 64 PASS, 1 WARN, 0 FAIL, 2 NOT_VERIFIED`.
-- Colab cell (Drive) -> `runs.csv bytes 85118 rows 600 ends_nl True`; `per (model,site) counts: [15]`; `shap npz newest: 2026-11-26T02:24:22`; `losoW8 pt: 24`; `GPU: Tesla T4 | torch 2.14.1+cu130`.
-- Colab T21 Mamba -> `done: True`, 24 `fold=` lines, no `DUNG`/`Traceback`, `1296` rows, md5 `27fc5a927319d616e40ae39b2716ba00`; log lines e.g. `fold=E Mamba seed=2 ... S0-R21 max|d|=0.00e+00`.
-- qa T21 phase A -> PASS (criteria 2, 3, 4; criterion 1 logic; RF fold A seed 0 `S0-R21 max|d|=0.00e+00`; stats on R21/R16 reproduce `results/transfer_stats.csv`). Findings QA-T21-01 (low: rows written before the stop check; never just re-run after a stop), -02 (info: source-val check only counts rows), -03 (info: RF fold A test RMSE seen, disclose).
-- worker T23 -> `28_references.py --selftest` `dat (N=1 vs baselines.csv: lech max 4.44e-16 m/s)`; `29_lgbm.py --selftest` `dat`; timing pilot 194.0 s, 5.41 GB -> projection 33.4 h -> `--lag-step 4` (R34).
+- `py scripts/24_shift_check.py --full` (start) -> `tong: 64 PASS, 1 WARN, 1 FAIL, 3 NOT_VERIFIED` (FAIL = references.csv, QA-T23-01); after T23 merge -> `tong: 63 PASS, 2 WARN, 0 FAIL, 3 NOT_VERIFIED`.
+- Colab cell (2026-11-28, Drive mounted) -> `GPU: Tesla T4 | torch 2.14.1+cu130`; `runs.csv bytes 85118 rows 600 ends_nl True | per (model,site) counts: [15]`; `shap npz newest: 2026-11-26T02:24:22`; `t21 md5 27fc5a927319d616e40ae39b2716ba00 rows 1296 models ['Mamba']`.
+- RF log at end -> `fold=24 bad=0 alive=False`; last line `fold=H RF seed=2  170s  S0-R21 max|d|=1.11e-16 ...`.
+- `results/loso8_scaler.csv` -> `1296 ... {'RF': 1296}`, md5 `ce48458df70d04ec71bf9caf9cc43938`, splits test+val, variants S0/S1/S2_DB/S2_TN, 8 folds, seeds 0–2.
+- qa T23 round 2 -> PASS (select_units A,D + SystemExit; negative runs rc=1 no file; d_rmse `secondary`; merge 86fdd51 content = 8f26658; P1 N=1 max|d| 0.0 on 39 rows; selftests `dat`; lightgbm 4.7.0).
+- qa T25 round 2 -> PASS (probe A/2007 HTTP 200, 35,040 rows; no secrets; first local day lost only per built series by `03_build_dataset.py` dropna, leap days kept).
 
 ## 3. NOT verified, risks, open findings
-- Mamba T21 CSV is only on Drive `MyDrive/WIND_FORECAST_DATA/results/t21/loso8_scaler.csv` (md5 27fc5a92); must be merged (row-concat, keys disjoint by model) into local `results/loso8_scaler.csv` after the RF run, then check md5 of the Drive copy.
-- RF run result unknown at close (expected ~1.5–3 h, ~2.2 GB RAM). If it prints `DUNG`, stop; do not re-run on the same file (QA-T21-01).
-- T23 qa phase A not finished; LightGBM full runs not started (E1 ~3–3.5 h, LOSO ~8–10 h, LOSO RAM 5–6 GB not measured). Never run LightGBM in parallel with T21 RF.
-- `--stats` for T21 not run; RevIN trigger not evaluated yet.
-- Test scores seen before code QA: R32 (fold H RF) and QA-T21-03 (fold A RF); design was committed before (aaa048b); disclose.
-- Earlier open: 2007–2015 availability (T25), literature full-text check, QA-T05-01, QA-T06-06, Drive `tmp_t06/` cleanup.
-- Colab: keep-alive cron cancelled (GPU job done); runtime will idle out. Not needed until T24.
+- T21 `--stats` not run; RevIN trigger not evaluated; Mamba rows only on Drive `MyDrive/WIND_FORECAST_DATA/results/t21/loso8_scaler.csv` (file id 1TP2cguiIcoWv3Qe36tdXav6R6mbTO4OD, md5 27fc5a92). Merge = row-concat (keys disjoint by model) into `results/loso8_scaler.csv`.
+- Descriptive only (R36): S2 variants much worse than S0 for RF (1h mean test RMSE 1.13–1.17 vs 0.69 m/s); interpret after stats.
+- QA-T23-04 (low): LightGBM resume key lacks the source pool -> LOSO only with default 8 sites, fresh CSV (STATUS rule). LightGBM timings only with no other CPU job.
+- T25: 2008–2015 and sites B–H not probed (docs only). 2016 PROVENANCE section does not state the 2016-01-02 start (disclosure item).
+- git author email equals the NREL email and is on every public commit (User informed, no action taken).
+- Earlier open: literature full-text check, QA-T05-01, QA-T06-06, Drive `tmp_t06/` cleanup, test scores seen before code QA (R32, QA-T21-03) to disclose.
 
 ## 4. Files and commits touched this chat
-- `aaa048b` T23 pre-registered contract, T21 check (vi); `0bd0565` Leader clarifications T21/T23, R32–R34; `2ef6c47` merge T21 script `scripts/27_loso_scaler.py`; `4de2c81` R35, T21 state; this handoff commit. Files: `tasks/STATUS.md`, `tasks/RESULTS.md`, `scripts/27_loso_scaler.py`, `NHATKY.md`, `tasks/HANDOFF.md`.
+- `5a20aa8` merge T25 step 1 (`docs/t25_availability.md`); `0439458` T25 docs; `32b3589` merge T23 phase A (`scripts/28_references.py`, `scripts/29_lgbm.py`, `results/references.csv`); `99ea95b` T23 docs; `43a516c` T21 note; `14bb563` RF results (`results/loso8_scaler.csv`, RESULTS R36); this handoff commit. Files: `tasks/STATUS.md`, `tasks/RESULTS.md`, `NHATKY.md`, `tasks/HANDOFF.md`.
 
 ## 5. Environment traps
 - Python `py` 3.12. Open chats from a terminal at `D:\Project\wind_forecast`.
-- Worktrees open: `agent-af25ad602b8f31bd8` (old), `agent-a6bd9797059b684f5` (T21, merged), `agent-a33af13b679889703` (T23, NOT merged), `agent-ac2542476bb6056b9` (qa). Remove merged ones without `branch -D`/`rm -rf` (guard).
-- Colab notebook resets empty; minimal setup cell = mount Drive, clone, copy kernel (do not re-run the old CHAIN). Never re-run a clone cell while a job runs.
-- `results/t21_rf.log` is a local log (do not commit unless allowed).
+- Background jobs must be started detached (`Start-Process ... -RedirectStandardOutput`), or they die with the chat. Their logs are read with Get-Content (Select-String misreads the encoding).
+- 11 worktrees open (merged: a33af13 T23 old, a35e331 T23, af6c794 T25, a6bd979 T21; qa detached: a556df2, a58b133, ac25424, ad83b5a, ae69049; old af25ad6). Clean without `branch -D`/`rm -rf` (guard).
+- Colab notebook resets empty; minimal cell = mount Drive + checks (no CHAIN re-run). No keep-alive now.
+- Local-only, untracked: `results/t21_rf.log`, `results/t21_rf.err`, `paper_wind_prediction_ver2.md` (old draft).
 
 ## 6. Waiting on the User
 - none (agent-meeting delegation in force; paid/public/irreversible still need the User).
 
 ## 7. Next step
-- do: (1) wait for the RF run, read `results/t21_rf.log`; (2) download Drive `results/t21/loso8_scaler.csv`, append its Mamba rows to `results/loso8_scaler.csv`; (3) `py scripts/27_loso_scaler.py --stats` -> `results/loso8_scaler_stats.csv`, record RevIN trigger; (4) qa T21 phase B (recompute stats), Director approve, commit results, RESULTS row; (5) re-run qa T23 phase A, merge, then LightGBM E1 -> LOSO (one at a time), `--stats`, qa phase B; (6) a claim change vs M13 or a Mamba loss to LightGBM/smart persistence -> `/meeting`.
+- do: (1) connect Colab, copy Drive `results/t21/loso8_scaler.csv` into the repo (e.g. via a Colab cell writing to a git-free path, then download; or Drive connector), check md5 27fc5a92, append Mamba rows to `results/loso8_scaler.csv`; (2) `py scripts/27_loso_scaler.py --stats` -> `results/loso8_scaler_stats.csv`, record RevIN trigger (mean |Δskill| >= 2 pp on source-site val, Mamba only); (3) qa T21 phase B (recompute stats), Director approve, RESULTS row; (4) T23 phase B: LightGBM E1 (detached, no other CPU job) -> LOSO all 8 sites, fresh CSV -> `--stats`, qa phase B; (5) a claim change vs M13 or Mamba loss to LightGBM/smart persistence -> `/meeting`; (6) then T24 (GPU) and T25 step 2.
 - done when: T21 and T23 DONE with qa PASS, RESULTS rows, RevIN trigger recorded.
 - mandatory checks (the next worker/qa must run each one and report its real output; not run -> `NOT_VERIFIED`):
   1. `py scripts/24_shift_check.py --full` -> expected: 0 FAIL; read every WARN / NOT_VERIFIED.
   2. Drive `results/runs.csv` -> expected: 600 rows, 15 per (model, site), ends with newline (85118 B).
   3. Drive `results/shap_*.npz` modifiedTime -> expected: nothing newer than 2026-11-26T02:24Z.
-  4. `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> expected: only the task's own files (+ `scripts/27_loso_scaler.py` merged).
+  4. `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> expected: only task files (`27_loso_scaler.py`, `28_references.py`, `29_lgbm.py`, `references.csv`, `loso8_scaler.csv`, + the current task's own).
   5. `git diff --stat 6d2819a HEAD -- docs/paper/` -> expected: empty unless the task edits the paper.
   6. Drive `results/t21/loso8_scaler.csv` md5 -> expected: `27fc5a927319d616e40ae39b2716ba00`, 1296 rows, Mamba only.
-  7. `results/t21_rf.log` -> expected: 24 `fold=` RF lines, no `DUNG`.
+  7. local `results/loso8_scaler.csv` before merge -> expected: md5 `ce48458df70d04ec71bf9caf9cc43938`, 1296 rows, RF only; after merge 2592 rows, no duplicate (fold, model, seed, variant, split, site, horizon) keys.
