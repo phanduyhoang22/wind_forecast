@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 23:40 — leader — T21 chạy phase B, T23 chờ qa
+- Làm được: contract T23 khoá trước (`aaa048b`); qa T21 phase A PASS, merge `2ef6c47`; Mamba T21 xong trên Colab 24/24, S0 khớp R21 (R35, Drive `results/t21/`); RF T21 đang chạy local; T23: references.csv xong (R33), LightGBM chọn `--lag-step 4` theo thời gian (R34).
+- Quyết định: làm rõ T21 (Δskill val nguồn, trigger RevIN chỉ Mamba, mốc RF = R16); T23 thống kê theo quy ước 22, một config cho mọi horizon, bỏ DM từng seed cho LightGBM.
+- Dở dang / bước tiếp: ghép CSV Mamba từ Drive + RF, `--stats`, qa phase B T21; chạy lại qa T23 phase A rồi LightGBM (không song song với RF).
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-27 20:00 — leader — handoff: M19 + M20 chốt, tiếp theo T21 ‖ T23
 - Làm được: shift check 64 PASS/0 FAIL; kiểm Drive (24 `losoW8_*.pt`, runs.csv khớp, không npz SHAP mới); họp M19 và M20 (reviewer ngoài + đọc 22 bài); ROADMAP thêm stage S3b (`eddaecd`).
 - Quyết định: M20 = phương án B "gói độ tin cậy" (T21, T23–T27), T22 xuống P3; viết bài song song, điểm chính là W vs 31 đặc trưng.
