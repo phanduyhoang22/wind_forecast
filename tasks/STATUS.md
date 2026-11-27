@@ -185,8 +185,21 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - owner: worker | priority: P1 | status: TODO | attempt_count: 0
 - scope: `docs/paper/section3_results.md`; Section 2 draft exists (`docs/paper/section2_data_methods.md`).
 - dependencies: T06 (experiments frozen) | allowed_paths: `docs/paper/`
-- carry-over: fix QA-T08b-08/-09 (see T08b); Section 2.6 R22/R23 TODO -> cite `scripts/26_feature_set_stats.py` (T19), same-cross 6h 17.9 (R23e), note exact Wilcoxon n=8 p floor (Holm 0.023).
-- last_update: 2026-11-21
+- carry-over: fix QA-T08b-08/-09 (see T08b); Section 2.6 R22/R23 TODO -> cite `scripts/26_feature_set_stats.py` (T19), same-cross 6h 17.9 (R23e), note exact Wilcoxon n=8 p floor (Holm 0.023). (Done in T08c, `ea1104d`.)
+- last_update: 2026-11-27
+- 2026-11-27 Leader contract (round 1, full loop). Discussion is NOT in this task (later task, after the Results are frozen).
+  - goal: Results draft for the E1 per-site benchmark and its companions, the parts that waited for T05/T06/T07.
+  - scope: new file `docs/paper/section3_results.md` with: 3.1 accuracy per site and horizon (RMSE, MAE if in the CSV, skill vs persistence; tables from `results/summary_by_site.csv`, `summary_overall.csv`); 3.2 statistical comparison (per-seed DM + Holm primary from `dm_per_seed.csv` / `dm_per_seed_summary.csv`, ensemble DM secondary from `dm_tests.csv`, skill-difference effect sizes with 95% CIs over seeds, computed from `runs.csv` / `summary_by_site.csv` in a throw-away pandas session); 3.3 regimes (`regime.csv`: season, day/night, ramp); 3.4 prediction intervals (`conformal.csv`, E11); 3.5 CPU inference cost (`results/latency.csv` only); 3.6 disclosed deviations for these parts. In `docs/paper/section3_results_transfer.md` replace the `[TODO T06]` marker (line 9) with a pointer to Section 3.1 (no other change there).
+  - inputs: `tasks/RESULTS.md` (R28-R31, R31c, R29c/R30, latency run), `tasks/MEETINGS.md` M02, M18, `tasks/STATUS.md` T05/T06/T07 entries, `docs/paper/section2_data_methods.md` (terms, notation), `docs/paper/section3_results_transfer.md` (style), `docs/limitations_and_improvements.md`.
+  - acceptance_criteria:
+    1. Every number traces to a RESULTS run_id or a committed CSV (HTML comment with run_id / file next to it); qa can recompute each one.
+    2. Claims inside M18: "no significant difference" between Mamba, Transformer and RF (never "outperforms", "indistinguishable", "equivalent"); 1h mixed results stated (per-seed vs Transformer 6 wins / 4, vs RF 4 wins / 4 losses of 40, as in the CSV); per-seed DM primary, ensemble DM secondary with the seed-averaging asymmetry disclosed (QA-T06-03); Mamba beats LSTM (1h/3h), PatchTST, DLinear only as far as the CSV supports; Transformer >= Mamba at 3h/6h stated (QA-T06-02); M02 "Mamba ≈ Transformer" rule kept.
+    3. Disclosures: PatchTST negative skill 1h at D, H (QA-T05-03, QA-T06-04) and the 39 negative regime cells (PatchTST 27, DLinear 10, LSTM 2); 12/120 PatchTST rows at the 50-epoch cap (QA-T05-02); CPU cost from `latency.csv` only, `summary_cost.csv` not used (QA-T06-05); DM stat stored as float32 (QA-T06-06) if DM stats are tabled; ramp-regime counts sensitive to ties at q95, skill shift < 1e-3 (QA-T06-07); conformal: no "nominal coverage" claim (PICP below nominal, worst in the high-wind tercile and at G, H; QA-T07-04), PINAW normalised by the train-target range, exact k-th order statistic.
+    4. Data called "modelled", never "measurements"; English, Markdown; terms and symbols consistent with Section 2; ~1500-2500 words plus tables.
+    5. No new experiment, no committed script, no change to `results/` or `scripts/`; only `docs/paper/section3_results.md` (new) and line 9 of `docs/paper/section3_results_transfer.md` change.
+    6. HANDOFF 2026-11-27 section 7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` 600 rows, 15 per (model, site), newline (Leader evidence 2026-11-27 10:13Z; qa checks the repo copy); (iii) Drive `results/shap_*.npz` modifiedTime unchanged (Leader evidence 10:13Z); (iv)/(v) closed by T06 round 2 (R31c) — qa confirms `git diff --stat 2f2d0ae HEAD -- results/ scripts/` is empty.
+  - allowed_paths: `docs/paper/section3_results.md`, `docs/paper/section3_results_transfer.md`
+  - dependencies: T05, T06, T07 (DONE)
 
 ## T08a — Paper: Results draft for the frozen parts (transfer, few-shot, SHAP) — split from T08
 - owner: worker | priority: P1 | status: DONE | attempt_count: 1 | created: 2026-11-26 (Leader; T05 still running, so E1/T06/T07 parts wait)
