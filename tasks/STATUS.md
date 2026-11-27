@@ -392,7 +392,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - 2026-11-26 worker `0b4637a` (1 file, +26/−2, pre-check OK). qa PASS: 16 new HEADLINE mappings verified against RESULTS rows and CSV filters; `--full` 61 PASS, 4 WARN (worktree housekeeping), 0 FAIL, 2 NOT_VERIFIED; `--selftest` dat; in-memory negative tests FAIL 16/16 (text), 16/16 (number). QA-T20-01 info: one entry anchors on the known-wrong R23 "18.0" text (rows are append-only; edit would FAIL, a correct signal). Drive checks NOT_VERIFIED. Leader APPROVE (light task). Merged `8594f40`.
 
 ## T21 — LOSO-8 re-evaluation with a target-free scaler (L09, M19)
-- owner: worker | priority: P1 | status: TODO | attempt_count: 0 | created: 2026-11-27 (Leader, M19)
+- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-27, Leader: phase A worker spawned on aaa048b) | attempt_count: 1 | created: 2026-11-27 (Leader, M19)
 - goal: measure how much the LOSO-W 8-fold result (R21) depends on the target site's own train MinMax (`04_data_pipeline.py:180-181`), using scalers that need no target data.
 - pre-registered design (fixed before any test score is seen; M19 condition 1):
   - variants: (S0) current per-site target scaler = R21, re-computed as a reproduction check; (S1, primary) target `sx`/`sy` = MinMax fitted on the pooled train segments of the 7 source sites of that fold; (S2, secondary) target `sx`/`sy` fitted on the k-week few-shot window of the target (same windows as `scripts/18_fewshot.py`, k = 4, each window reported).
@@ -408,6 +408,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - allowed_paths: `scripts/27_loso_scaler.py`, `results/loso8_scaler.csv`, `results/loso8_scaler_stats.csv`
 - dependencies: R21 (DONE); Drive `models_loso/losoW8_*` (24 files per STATUS Colab queue 2026-11-26; confirm first)
 - risk: a skill drop that changes the M13 claim -> meeting (M19 condition 4).
+- Leader clarifications (2026-11-27, phase A pre-check, before any full run): source-site val Δskill uses the fold's S1 scaler (pooled 7-source train, incl. that source) vs the source's own S0 scaler; the RevIN trigger is evaluated on Mamba-W (RF reported, not binding); S0 reference for RF = R16 (`loso8_rf_wind.csv`, d16).
 - M20 amendment: also report S1−S0 mean |Δskill| per horizon on the SOURCE-site val split; the RevIN trigger (T27) is fixed now: mean |Δskill| >= 2 pp at any horizon on source-site val (never test).
 
 ## T22 — Few-shot references with lagged inputs (L10 + L07, M19)
@@ -425,7 +426,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - dependencies: none (runs on CPU, parallel to T21; different files)
 
 ## T23 — Stronger references: smart persistence, persistence–climatology blend, LightGBM (M20)
-- owner: worker | priority: P1 | status: TODO | attempt_count: 0 | created: 2026-11-27 (Leader, M20)
+- owner: worker | priority: P1 | status: IN_PROGRESS (2026-11-27, Leader: phase A worker spawned on aaa048b) | attempt_count: 1 | created: 2026-11-27 (Leader, M20)
 - goal: test whether the E1 and LOSO-W claims hold against references stronger than plain persistence.
 - pre-registered design (fixed and committed before any run; no test score seen):
   - data: same contract as all models (`scripts/04_data_pipeline.py`: SEQ_LEN 96, horizons 4/12/24 steps, 70/15/15 purged split, train-only MinMax). E1 = per site, 31 features (same as the main E1 table); LOSO = 8 folds, W features (19), source pool and scaling exactly as `scripts/09_global_loso.py` (R21 setting, i.e. S0 of T21).
@@ -445,9 +446,10 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   6. HANDOFF 2026-11-27 20:00 §7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` -> 600 rows, 15 per (model, site), ends with newline; (iii) Drive `results/shap_*.npz` -> nothing newer than 2026-11-26T02:24Z; (iv) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> only this task's files; (v) `git diff --stat 6d2819a HEAD -- docs/paper/` -> empty; (vi) Drive `results/models_loso/losoW8_*.pt` -> 24 files (not used by T23; report only).
 - allowed_paths: `scripts/28_references.py`, `scripts/29_lgbm.py`, `results/references.csv`, `results/lgbm_e1.csv`, `results/lgbm_loso8.csv`, `results/references_stats.csv`
 - dependencies: R21 (LOSO Mamba-W), E1 `results/runs.csv`; `py -m pip install lightgbm` (allowed, CLAUDE.md §8).
+- Leader decisions (2026-11-27, phase A pre-check, before any LightGBM test score): input `--lag-step 4` by the timing rule (R34); confirmatory statistic = per-site skill 1 − RMSE_Mamba/RMSE_LightGBM of the median seed (convention of `22_transfer_stats.py`), Holm m = 6; one grid config for all horizons (M01 policy); no per-sample LightGBM preds saved, so the per-seed DM row for LightGBM is dropped (it was descriptive only; disclosed).
 - risk: Mamba loses to LightGBM or smart persistence -> claim change -> meeting (M20). CPU/RAM: 96×31 float32 window ≈ 1.5 GB per site; RF/LightGBM jobs never in parallel.
 
-## T23–T27 — M20 credibility package (stubs; full contract written by the Leader when each starts)
+## T24–T27 — M20 credibility package (stubs; full contract written by the Leader when each starts)
 Common acceptance criteria for all: pre-registration (variants, metrics, Holm family with m <= 6, or "exploratory") committed before any run; selection on validation only (LOSO: source-site val); results logged in RESULTS whatever the direction; added test reuse disclosed; a claim change -> meeting; HANDOFF §7 mandatory checks (latest HANDOFF) run with real output or NOT_VERIFIED.
 - T23: full contract in section "T23" below. status: TODO
 - T24 (P1, free T4, after T21/T23): zero-shot TSFM baseline (Chronos-Bolt and/or TTM) on wind only vs LOSO-W; context length fixed in the contract before any test score; pretraining-corpus check (WindFM excluded); reported descriptive with contamination disclosure unless the corpus is confirmed disjoint. status: TODO
