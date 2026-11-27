@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 20:00 — leader — handoff: M19 + M20 chốt, tiếp theo T21 ‖ T23
+- Làm được: shift check 64 PASS/0 FAIL; kiểm Drive (24 `losoW8_*.pt`, runs.csv khớp, không npz SHAP mới); họp M19 và M20 (reviewer ngoài + đọc 22 bài); ROADMAP thêm stage S3b (`eddaecd`).
+- Quyết định: M20 = phương án B "gói độ tin cậy" (T21, T23–T27), T22 xuống P3; viết bài song song, điểm chính là W vs 31 đặc trưng.
+- Dở dang / bước tiếp: viết contract đầy đủ T23, nối Colab, chạy T21 ‖ T23; chưa kiểm dữ liệu 2007–2015.
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-27 19:30 — leader — họp M20 đầy đủ (reviewer ngoài + tài liệu)
 - Làm được: kiểm Drive (24 checkpoint `losoW8_*`, runs.csv 85118 B khớp repo, không npz SHAP mới); họp M20 với qa, worker, reviewer ngoài, agent đọc tài liệu (22 bài, mức abstract/snippet).
 - Quyết định: phương án B "gói độ tin cậy" (cả 4 đồng ý có sửa): T21 + T23 baseline (smart persistence, blend, LightGBM) + T24 foundation model zero-shot + T25 năm 2007–2015 làm test khoá trước + T26 kiểm soát/công suất + T27 thăm dò; T22 xuống P3.
