@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 16:55 — leader — T07 DONE
+- Làm được: chạy tiếp RF C, D (job nền chết theo chat cũ); 20/20 dự đoán test trùng bit với bản cũ; `621aad9` thêm 20 val npz; qa vòng 2 PASS; merge `dc6587b`; Colab chạy lại conformal: 1440 dòng (R30, R29c sửa R29).
+- Quyết định: Director APPROVE theo ủy quyền User 2026-11-25; T07 DONE.
+- Dở dang / bước tiếp: đóng F-T05-01 (diff toàn bộ CSV); T06. T08 không được nói "đạt độ phủ danh nghĩa" (QA-T07-04), phải ghi PINAW chia theo biên độ train.
+- Mở chat tiếp: /role leader T06
+
 ## 2026-11-27 01:25 — leader — handoff: T07 vòng 2 worker đang chạy
 - Làm được: T05 DONE (`7b6531b`); F-T05-01 completeness khớp R27; M17 chốt A; worker commit `b0a73d1` (sửa 11_conformal.py) và đang chạy RF A–D (A xong, B dở).
 - Quyết định: handoff sớm vì hết token; Colab giữ nguyên.

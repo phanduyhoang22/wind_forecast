@@ -143,7 +143,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - last_update: 2026-11-21
 
 ## T07 — Conformal intervals (E11)
-- owner: worker | priority: P2 | status: IN_PROGRESS (round 2 merged, Colab re-run pending) | attempt_count: 2
+- owner: worker | priority: P2 | status: DONE | attempt_count: 2
 - scope: `py scripts/11_conformal.py` (α 0.1, 0.05), PICP/PINAW overall and by wind tercile.
 - dependencies: preds + val preds from E1 | allowed_paths: `results/`
 - 2026-11-27 Leader contract: owner Leader (Colab; NN val/test preds live only on Colab/Drive, local has RF val only). No code change.
@@ -158,6 +158,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
   - 2026-11-27 round 2 work: worker `b0a73d1` (11_conformal.py fixes); RF A-D runs (worker A, B seeds; Leader resumed C seeds 1-4 and D in the worker worktree after the background job died with the old chat, same command, one site per process); Leader `verify_rf.py`: 20/20 test preds array_equal to `results/preds/`, node counts = `runs_rf.csv`, 0 mismatch; Leader `621aad9` adds 20 val npz. sklearn 1.9.1, numpy 2.4.1. Colab 09:38Z: Drive runs.csv 600 rows 15/(model, site) + newline; shap npz times as expected (HANDOFF checks 1, 3).
   - 2026-11-27 qa round 2 PASS on `621aad9`: (a) 20 val npz shape (26162, 3) = y_val, finite; (b) 20/20 array_equal; (c) selftest 3/3 "dat", conformal_q = exact k-th for 10 (n, a) cases; (d) diff = 11_conformal.py + 20 new npz only; missing-pair path exits 1 before write; val-only calibration (code read); in-memory RF A-H 240 rows, 0 NaN. Shift check 61 PASS / 4 WARN (qa checkout, unpushed worker commits, 2 worktrees, handoff age) / 0 FAIL / 2 NOT_VERIFIED. (e) Leader post-merge. QA-T07-01/-02/-03 fixed; -04 open (no nominal-coverage claim in T08). New: QA-T07-05 LOW (missing-pair check covers only `--models`; run all 6 and check 1440 rows); QA-T07-06 INFO (SEEDS hard-coded 5).
   - 2026-11-27 (Director, under User delegation of 2026-11-25): APPROVE round 2 code + data on QA PASS; criterion (e) still required before DONE.
+  - 2026-11-27 Leader criterion (e) on Colab (clone 4335e88, 240 val + 240 test preds present): selftest 3/3 "dat", `exit=0`; conformal.csv 1440 rows, 240 per model, 0 duplicate keys, all finite, PICP 0.816-0.973, PINAW > 0; md5 58d708db identical on Drive and in repo. RESULTS R29c (correction) + R30. QA-T07-05 met by running all 6 models and checking the row count. status: DONE (Leader). Open for T08: QA-T07-04 (no nominal-coverage claim), PINAW = train-range definition in the paper.
   - acceptance_criteria: (1) selftest prints PICP ~0.900 "dat"; (2) conformal.csv rows = 8 sites x 6 models x 5 seeds x 2 alphas x 3 horizons = 1440 (missing preds listed, not silently skipped); (3) PICP/PINAW finite, PINAW > 0, PICP in [0,1]; (4) calibration on val only, test untouched (code read); (5) RESULTS row with run_id; (6) HANDOFF section 7 checks: Drive runs.csv PatchTST 15/site A-H (120) + others 15/site + newline; `py scripts/24_shift_check.py --full` 0 FAIL, every WARN/NOT_VERIFIED read; Drive shap_*.npz modifiedTime (2026-11-25 expected; open finding F-T05-01 for A-D).
 - last_update: 2026-11-27
 
