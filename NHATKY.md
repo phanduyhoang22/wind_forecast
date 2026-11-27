@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 17:20 — leader — F-T05-01 đóng, T06 QA_PASSED, M18 chốt
+- Làm được: F-T05-01 đóng (`917953a`, qa PASS, SHAP R27 dùng được); T06 chạy Colab, R31 (`2f2d0ae`), qa vòng 2 PASS sau sửa đường dẫn (`58a2648`); họp M18 (`eef7308`).
+- Quyết định: M18 = A + B(1) (User giao cho họp quyết): claim "không khác biệt có ý nghĩa" Mamba/Transformer/RF, DM theo seed là chính, chi phí CPU từ `latency.csv`.
+- Dở dang / bước tiếp: T06 vòng 2 — tải 200 preds NN từ Drive về scratch, qa tự tính lại DM + regime NN; rồi Director APPROVE T06; sau đó T08.
+- Mở chat tiếp: /role leader T06
+
 ## 2026-11-27 16:55 — leader — T07 DONE
 - Làm được: chạy tiếp RF C, D (job nền chết theo chat cũ); 20/20 dự đoán test trùng bit với bản cũ; `621aad9` thêm 20 val npz; qa vòng 2 PASS; merge `dc6587b`; Colab chạy lại conformal: 1440 dòng (R30, R29c sửa R29).
 - Quyết định: Director APPROVE theo ủy quyền User 2026-11-25; T07 DONE.
