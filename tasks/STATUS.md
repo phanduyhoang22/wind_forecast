@@ -34,6 +34,7 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 
 - 2026-11-27 (M18, User delegated to the agent meeting): E1 claim = A + B(1). Paper: "no significant difference" between Mamba, Transformer and RF (no "indistinguishable"/"equivalent" without TOST with a pre-stated margin), skill-difference effect sizes with CIs, 1h mixed results stated (vs Transformer 6/4, vs RF 4/4 of 40); per-seed DM primary, ensemble DM secondary with the seed-averaging asymmetry disclosed; Mamba beats LSTM (1h/3h), PatchTST, DLinear; CPU cost from `results/latency.csv` (`15_latency.py`), never `summary_cost`; PatchTST negative skill 1h D/H disclosed. T06 APPROVE only after an independent recompute of NN DM + NN regime rows.
 - 2026-11-27 (M17, User): T07 option A: regenerate RF A-D val preds on CPU, gated by a seed-0 reproducibility check (no mixing of old test and new val preds); `11_conformal.py` reports missing pairs and fails on them; exact k-th order statistic; PINAW denominator = train-target range; RESULTS correction row for R29 + sklearn version.
+- 2026-11-27 (M19, agent meeting under User delegation): option B before the Discussion: L09 target-free-scaler re-evaluation (T21) and L10/L07 lagged RF/Ridge references (T22); variants and tests pre-registered in the contracts; the old per-site-scaler LOSO result is named "zero-shot with target-normalised inputs"; added test reuse disclosed; a result that changes the M13 claim triggers a meeting. L11/L06 deferred; L13 check-only.
 
 ## Colab queue (2026-11-21 ~13:30 UTC, live)
 - Main chain (restarted 2026-11-21 12:2x UTC on commit 3a4ad2b): T01 → T03a (13/40 done before the restart) → T03b → T04a → T04b (`losoW8`) → T05 (PatchTST A–H) → `results/all.done`. T02 is finished (72/72) and was removed from the chain. At 12:57 UTC T01 was 9/27.
@@ -388,3 +389,35 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - acceptance_criteria: (1) `26_feature_set_stats.py` in the `--full` selftest list; (2) HEADLINE entries for R22 (W skill, 31 skill, W−31 pp, W−31 wins 1/0/0, Holm p, seed-mean Holm p) and R23/R23e (own/same/cross W, W−31 same and cross with Holm p, same−cross 1h/3h, R23e 6h +17.9) using the existing `check_headline` format; (3) `py scripts/24_shift_check.py --full` -> every new recompute line PASS, 0 FAIL; `--selftest` of 24 still passes; (4) a deliberately wrong number in a temp copy is caught (FAIL) — show it, then discard; (5) <= ~50 lines, only `scripts/24_shift_check.py` changes; (6) HANDOFF §7 Drive checks -> NOT_VERIFIED (Leader on Colab).
 - allowed_paths: `scripts/24_shift_check.py`
 - 2026-11-26 worker `0b4637a` (1 file, +26/−2, pre-check OK). qa PASS: 16 new HEADLINE mappings verified against RESULTS rows and CSV filters; `--full` 61 PASS, 4 WARN (worktree housekeeping), 0 FAIL, 2 NOT_VERIFIED; `--selftest` dat; in-memory negative tests FAIL 16/16 (text), 16/16 (number). QA-T20-01 info: one entry anchors on the known-wrong R23 "18.0" text (rows are append-only; edit would FAIL, a correct signal). Drive checks NOT_VERIFIED. Leader APPROVE (light task). Merged `8594f40`.
+
+## T21 — LOSO-8 re-evaluation with a target-free scaler (L09, M19)
+- owner: worker | priority: P1 | status: TODO | attempt_count: 0 | created: 2026-11-27 (Leader, M19)
+- goal: measure how much the LOSO-W 8-fold result (R21) depends on the target site's own train MinMax (`04_data_pipeline.py:180-181`), using scalers that need no target data.
+- pre-registered design (fixed before any test score is seen; M19 condition 1):
+  - variants: (S0) current per-site target scaler = R21, re-computed as a reproduction check; (S1, primary) target `sx`/`sy` = MinMax fitted on the pooled train segments of the 7 source sites of that fold; (S2, secondary) target `sx`/`sy` fitted on the k-week few-shot window of the target (same windows as `scripts/18_fewshot.py`, k = 4, each window reported).
+  - models: Mamba-W `losoW8_*` 8 folds × 3 seeds, inference only from Drive `results/models_loso/` (no retraining); RF-W depth 16 refit on CPU (models not saved), one job at a time.
+  - metrics/test: same as M13: per-site skill vs persistence of the median-seed RMSE (m/s, test split), two-sided exact Wilcoxon n = 8, Holm over 3 horizons; RMSE difference S1−S0 reported per site.
+- scope: new script `scripts/27_loso_scaler.py` (with `--selftest` and a CPU mode: 1 fold, 1 seed, few batches), output `results/loso8_scaler.csv` and `results/loso8_scaler_stats.csv`; GPU inference on free Colab T4 (no paid compute).
+- acceptance_criteria:
+  1. S0 reproduces R21 per (fold, seed, horizon) RMSE within 1e-4 m/s; otherwise stop and report (no S1/S2 claim).
+  2. S1/S2 scalers use no target train or test data (S2: only the k-week window); qa checks the fit indices in code.
+  3. `py scripts/27_loso_scaler.py --selftest` passes; CPU mode runs locally; results whatever the direction are logged as new RESULTS rows (failed runs too).
+  4. Only the allowed paths change; `data_v2/` untouched.
+  5. HANDOFF 2026-11-27 §7 mandatory checks, each with real output or NOT_VERIFIED: (i) `py scripts/24_shift_check.py --full` -> 0 FAIL, read every WARN / NOT_VERIFIED; (ii) Drive `results/runs.csv` -> 600 rows, 15 per (model, site), ends with newline; (iii) Drive `results/shap_*.npz` modifiedTime as in HANDOFF §2 (nothing newer); (iv) `git diff --stat 2f2d0ae HEAD -- results/ scripts/` -> only this task's files; (v) `git diff --stat 6d2819a HEAD -- docs/paper/` -> empty.
+- allowed_paths: `scripts/27_loso_scaler.py`, `results/loso8_scaler.csv`, `results/loso8_scaler_stats.csv`
+- dependencies: R21 (DONE); Drive `models_loso/losoW8_*` (24 files per STATUS Colab queue 2026-11-26; confirm first)
+- risk: a skill drop that changes the M13 claim -> meeting (M19 condition 4).
+
+## T22 — Few-shot references with lagged inputs (L10 + L07, M19)
+- owner: worker | priority: P2 | status: TODO | attempt_count: 0 | created: 2026-11-27 (Leader, M19)
+- goal: stronger, fairer k-week references: Ridge and RF see lagged inputs, not only the last step.
+- pre-registered design: lags {0, 1, 2, 4, 8, 16, 48, 96} steps (15 min) of the 19 W features; Ridge alpha and RF depth from the existing grid, selected on the k-week inner validation only (M15 protocol); same sites A–H, k = 1/2/4, windows and seeds as R25; RF depth ≤ 16, one job at a time (memory).
+- scope: add a lagged-input option to the ridge/rf modes of `scripts/18_fewshot.py` (default off, so old results reproduce), output `results/fewshot8_lag.csv`; statistics with `scripts/23_fewshot_stats.py` (unchanged) as a secondary reference row.
+- acceptance_criteria:
+  1. Default behaviour unchanged: one existing R25 Ridge/RF row reproduces within 1e-6.
+  2. No target test data in selection; lag windows never cross the split boundaries (purged as in Section 2).
+  3. Self-check for the lag builder (shapes, no look-ahead); results logged in RESULTS whatever the direction.
+  4. Only the allowed paths change.
+  5. HANDOFF 2026-11-27 §7 mandatory checks as in T21 criterion 5.
+- allowed_paths: `scripts/18_fewshot.py`, `results/fewshot8_lag.csv`
+- dependencies: none (runs on CPU, parallel to T21; different files)

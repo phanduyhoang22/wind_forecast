@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 18:40 — leader — họp M19: backlog cải thiện
+- Làm được: họp M19 (qa + worker chỉ đọc); qa xác nhận L09 qua code (scaler MinMax của site đích fit trên train của chính nó → "zero-shot" cần ghi rõ).
+- Quyết định: phương án B (theo ủy quyền User): T21 đánh giá lại LOSO-8 với scaler không dùng dữ liệu đích; T22 Ridge/RF có lag cho few-shot; hoãn L11/L06; L13 chỉ kiểm tra.
+- Dở dang / bước tiếp: xác nhận checkpoint `losoW8_*` trên Drive, giao T21 + T22 cho worker; sau đó Discussion.
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-27 18:00 — leader — handoff: T06 + T08 DONE, tiếp theo họp cải thiện
 - Làm được: T06 DONE (qa vòng 2 tính lại DM/regime NN khớp, `8e2fc16`); T08 DONE (Results E1, merge `265ba61`, `939d210`); Colab reset → mount lại Drive, T4 rảnh.
 - Quyết định: không cần họp về câu chữ RF 3h/6h (qa: khớp M18).
