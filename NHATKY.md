@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 18:00 — leader — handoff: T06 + T08 DONE, tiếp theo họp cải thiện
+- Làm được: T06 DONE (qa vòng 2 tính lại DM/regime NN khớp, `8e2fc16`); T08 DONE (Results E1, merge `265ba61`, `939d210`); Colab reset → mount lại Drive, T4 rảnh.
+- Quyết định: không cần họp về câu chữ RF 3h/6h (qa: khớp M18).
+- Dở dang / bước tiếp: bật keep-alive; `/meeting` chọn hạng mục cải thiện trước Discussion; căn §2.5.4, đánh lại số 3.x; xoá Drive `tmp_t06/`.
+- Mở chat tiếp: /role leader
+
 ## 2026-11-27 17:55 — leader — T08 DONE (Results E1)
 - Làm được: `docs/paper/section3_results.md` (3.1–3.6: độ chính xác, DM theo seed, regime, conformal, độ trễ CPU, sai lệch công khai); qa vòng 1 FAIL (2 câu sai số §3.3), vòng 2 PASS; merge `265ba61`.
 - Quyết định: Director APPROVE theo ủy quyền; câu chữ RF 3h/6h giữ nguyên (qa: khớp M18, trung thực), không cần họp.
