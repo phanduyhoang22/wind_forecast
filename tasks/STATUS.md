@@ -140,7 +140,10 @@ Kit set up on 2026-11-21. Work before that date followed a 3-agent meeting proce
 - goal: final E1 tables + DM/Holm + per-seed evidence for 8 sites; regime tables; Wilcoxon for transfer.
 - scope: run `08_aggregate.py`, `14_regime.py` on 8 sites; transfer stats script for LOSO-8 (Mamba vs RF vs persistence, rank-biserial).
 - dependencies: T01, T03, T05 | allowed_paths: `scripts/`, `results/`
-- last_update: 2026-11-21
+- last_update: 2026-11-27
+- 2026-11-27 Leader contract (round 1): owner Leader on Colab (NN test preds live only on Drive `results/preds/`, 240 npz = 6 models x 8 sites x 5 seeds); no code change. Transfer Wilcoxon already done (T12, R21/R21c), not repeated here.
+  - commands (clone of main, Drive `preds/` copied in): `python scripts/08_aggregate.py --selftest`; `python scripts/08_aggregate.py` (reads `runs.csv` 600 rows + `runs_rf.csv`); `python scripts/14_regime.py`. Outputs to repo `results/`: `summary_by_site.csv`, `summary_overall.csv`, `summary_cost.csv`, `dm_tests.csv`, `dm_per_seed.csv`, `dm_per_seed_summary.csv`, `regime.csv`, plus logs on Drive.
+  - acceptance_criteria: (1) selftest prints "selftest DM: dat", "selftest Holm: dat"; (2) summary_by_site = 6 models x 8 sites x 3 h = 144 rows, n_seeds = 5 everywhere, skill uses `baselines.csv` persistence; summary_overall 18 rows; summary_cost 6 rows; (3) no silent skip: dm_per_seed 8 x 3 x 5 rivals x 5 seeds = 600 rows, dm_tests 120 rows, dm_per_seed_summary 120 rows with n = 5; (4) DM uses lag max(h-1, 96) + HLN, Holm over the whole family (code read); (5) regime.csv: 7 models (incl. persistence) x 8 sites x 3 h x 7 regime values = 1176 rows, 5 preds per NN/RF model per site, persistence RMSE overall consistent with `baselines.csv`; (6) all numbers finite except documented NaN; (7) summaries recomputable locally from repo `runs.csv` + `runs_rf.csv` + `baselines.csv` (qa recomputes); (8) RESULTS row with run_id; (9) HANDOFF checks: Drive runs.csv 600 rows 15/(model, site) + newline; `py scripts/24_shift_check.py --full` 0 FAIL, every WARN / NOT_VERIFIED read; Drive shap_*.npz modifiedTime unchanged (E1 E-H, losoW8 A-H 2026-11-25; E1 A-D 2026-11-26 01:34-02:24Z); RF A-D test preds unchanged (T07 20/20 array_equal).
 
 ## T07 — Conformal intervals (E11)
 - owner: worker | priority: P2 | status: DONE | attempt_count: 2
