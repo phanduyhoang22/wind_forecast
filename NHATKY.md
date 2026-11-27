@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-28 05:10 — leader — T25 bước 1 DONE, T21 RF chạy lại, T23 chờ qa vòng 2
+- Làm được: T25 bước 1 (2007–2015 có trên NREL, probe A/2007 HTTP 200, 72 request ≈ 1 ngày) qa vòng 2 PASS, merge `5a20aa8`; RF T21 chết lặng ở chat trước → chạy lại bằng tiến trình tách riêng; T23 worker sửa QA-T23-02/03 (`55af237`, nhánh `worktree-agent-a35e331e8a47afaa6`), qa vòng 2 đang chạy.
+- Quyết định: làm xong phần local trước (User), Colab để sau; keep-alive Colab đã tắt.
+- Dở dang / bước tiếp: qa T23 → merge; RF xong (24 fold) → ghép Mamba từ Drive, `--stats`, qa phase B; rồi LightGBM; mục công khai: 2016 bắt đầu 2016-01-02.
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-27 23:40 — leader — T21 chạy phase B, T23 chờ qa
 - Làm được: contract T23 khoá trước (`aaa048b`); qa T21 phase A PASS, merge `2ef6c47`; Mamba T21 xong trên Colab 24/24, S0 khớp R21 (R35, Drive `results/t21/`); RF T21 đang chạy local; T23: references.csv xong (R33), LightGBM chọn `--lag-step 4` theo thời gian (R34).
 - Quyết định: làm rõ T21 (Δskill val nguồn, trigger RevIN chỉ Mamba, mốc RF = R16); T23 thống kê theo quy ước 22, một config cho mọi horizon, bỏ DM từng seed cho LightGBM.
