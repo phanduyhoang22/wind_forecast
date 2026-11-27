@@ -1,5 +1,11 @@
 # NHATKY
 
+## 2026-11-27 19:30 — leader — họp M20 đầy đủ (reviewer ngoài + tài liệu)
+- Làm được: kiểm Drive (24 checkpoint `losoW8_*`, runs.csv 85118 B khớp repo, không npz SHAP mới); họp M20 với qa, worker, reviewer ngoài, agent đọc tài liệu (22 bài, mức abstract/snippet).
+- Quyết định: phương án B "gói độ tin cậy" (cả 4 đồng ý có sửa): T21 + T23 baseline (smart persistence, blend, LightGBM) + T24 foundation model zero-shot + T25 năm 2007–2015 làm test khoá trước + T26 kiểm soát/công suất + T27 thăm dò; T22 xuống P3.
+- Dở dang / bước tiếp: viết contract đầy đủ, giao T21 ‖ T23 cho 2 worker.
+- Mở chat tiếp: /role leader T21
+
 ## 2026-11-27 18:40 — leader — họp M19: backlog cải thiện
 - Làm được: họp M19 (qa + worker chỉ đọc); qa xác nhận L09 qua code (scaler MinMax của site đích fit trên train của chính nó → "zero-shot" cần ghi rõ).
 - Quyết định: phương án B (theo ủy quyền User): T21 đánh giá lại LOSO-8 với scaler không dùng dữ liệu đích; T22 Ridge/RF có lag cho few-shot; hoãn L11/L06; L13 chỉ kiểm tra.
